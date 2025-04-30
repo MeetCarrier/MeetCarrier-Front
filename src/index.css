@@ -1,1 +1,16 @@
 @import 'tailwindcss';
+
+@font-face {
+  font-family: 'MuseumClassic_L';
+  src: url('./src/assets/fonts/국립박물관문화재단클래식L.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'GanwonEduAll_Bold';
+  src: url('./src/assets/fonts/강원교육모두-Bold.woff') format('woff');
+}
+
+@theme {
+  --font-MuseumClassic_L: MuseumClassic_L;
+  --font-GanwonEduAll_Bold: GanwonEduAll_Bold;
+}
