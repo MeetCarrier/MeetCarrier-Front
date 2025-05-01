@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import bgMeetCarrier from '../assets/img/bg-meetCarrier.webp';
 import chMeetCarrier from '../assets/img/character/MeetCarrier_character.gif';
 import btn1 from '../assets/img/button/btn1.webp';
@@ -5,8 +6,11 @@ import btn2 from '../assets/img/button/btn2.webp';
 import bell_default from '../assets/img/icons/bell_default.svg';
 
 import NavBar from '../components/NavBar';
+import Modal from '../components/Modal';
 
 function Main() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   return (
     <div className="w-screen h-screen bg-[#404040] flex justify-center items-center">
       <div
@@ -16,7 +20,10 @@ function Main() {
         <NavBar />
 
         <div className="w-[80%] max-w-md flex flex-col items-center space-y-3 mb-4">
-          <button className="relative w-full max-w-md">
+          <button
+            className="relative w-full max-w-md"
+            onClick={() => setIsModalOpen(true)}
+          >
             <img src={btn1} alt="버튼1" className="w-full" />
             <span className="absolute inset-0 flex items-center justify-center font-GanwonEduAll_Bold">
               친구 찾기
@@ -44,6 +51,10 @@ function Main() {
             className="absolute top-1/2 -translate-y-1/2 right-6 w-[20px] h-[20px]"
           />
         </div>
+        <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+          <h2>친구 찾기</h2>
+          <p>아아아아아아</p>
+        </Modal>
       </div>
     </div>
   );
