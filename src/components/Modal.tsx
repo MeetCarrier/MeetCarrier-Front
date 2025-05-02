@@ -18,12 +18,11 @@ const Modal: FC<ModalProps> = ({ isOpen, onClose, children }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={onClose}
           />
 
           {/* 모달 박스 */}
           <motion.div
-            className={`absolute z-50 inset-0 flex items-center justify-center p-4`}
+            className={`absolute z-50 inset-0 flex items-center justify-center`}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}

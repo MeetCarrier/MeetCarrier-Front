@@ -1,12 +1,12 @@
 import navbg from '../assets/img/nav_bg.webp';
-import icon1 from '../assets/img/icons/tap_1.svg';
-import icon2 from '../assets/img/icons/tap_2.svg';
-import icon3 from '../assets/img/icons/tap_3.svg';
-import icon4 from '../assets/img/icons/tap_4.svg';
-import icon1_hover from '../assets/img/icons/tap_1_clicked.svg';
-import icon2_hover from '../assets/img/icons/tap_2_clicked.svg';
-import icon3_hover from '../assets/img/icons/tap_3_clicked.svg';
-import icon4_hover from '../assets/img/icons/tap_4_clicked.svg';
+import icon1 from '../assets/img/icons/NavIcon/tap_1.svg';
+import icon2 from '../assets/img/icons/NavIcon/tap_2.svg';
+import icon3 from '../assets/img/icons/NavIcon/tap_3.svg';
+import icon4 from '../assets/img/icons/NavIcon/tap_4.svg';
+import icon1_hover from '../assets/img/icons/NavIcon/tap_1_clicked.svg';
+import icon2_hover from '../assets/img/icons/NavIcon/tap_2_clicked.svg';
+import icon3_hover from '../assets/img/icons/NavIcon/tap_3_clicked.svg';
+import icon4_hover from '../assets/img/icons/NavIcon/tap_4_clicked.svg';
 
 const navIcons = [
   { default: icon1, hover: icon1_hover },

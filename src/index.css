@@ -10,7 +10,13 @@
   src: url('./src/assets/fonts/강원교육모두-Bold.woff') format('woff');
 }
 
+@font-face {
+  font-family: 'GanwonEduAll_Light';
+  src: url('./src/assets/fonts/강원교육모두-Light.woff') format('woff');
+}
+
 @theme {
   --font-MuseumClassic_L: MuseumClassic_L;
   --font-GanwonEduAll_Bold: GanwonEduAll_Bold;
+  --font-GanwonEduAll_Light: GanwonEduAll_Light;
 }
