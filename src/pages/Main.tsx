@@ -4,7 +4,6 @@ import btn1 from '../assets/img/button/btn1.webp';
 import btn2 from '../assets/img/button/btn2.webp';
 import bell_default from '../assets/img/icons/NavIcon/bell_default.svg';
 
-import Layout from '../components/Layout';
 import NavBar from '../components/NavBar';
 import Modal from '../components/Modal';
 import MainModal from '../Modal/MainModal';
@@ -13,7 +12,7 @@ function Main() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
-    <Layout>
+    <>
       <NavBar />
 
       <div className="w-[80%] max-w-md flex flex-col items-center space-y-3 mb-4">
@@ -52,7 +51,7 @@ function Main() {
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <MainModal />
       </Modal>
-    </Layout>
+    </>
   );
 }
 
