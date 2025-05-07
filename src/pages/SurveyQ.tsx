@@ -75,7 +75,7 @@ function SurveyQ() {
   const navigate = useNavigate();
 
   const handleBackClick = () => {
-    navigate('/');
+    navigate('/?modal=true');
   };
 
   return (

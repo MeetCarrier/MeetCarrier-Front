@@ -38,7 +38,6 @@ function Hobby() {
     }
   };
 
-  // 나중에 수정
   const handleSubmit = async () => {
     try {
       await axios.patch(
@@ -158,7 +157,7 @@ function Hobby() {
   const navigate = useNavigate();
 
   const handleBackClick = () => {
-    navigate('/');
+    navigate('/?modal=true');
   };
 
   return (

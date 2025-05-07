@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import btn1 from '../assets/img/button/btn1.webp';
 import btn2 from '../assets/img/button/btn2.webp';
 import bell_default from '../assets/img/icons/NavIcon/bell_default.svg';
@@ -20,7 +21,9 @@ function Main() {
     dispatch(fetchUser());
   }, [dispatch]);
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isModalOpen = searchParams.get('modal') === 'true';
   const [status, setStatus] = useState<MatchingStatus>('default');
 
   const handleMatchingButtonClick = () => {
@@ -42,16 +45,16 @@ function Main() {
           onClick={handleMatchingButtonClick}
         >
           <img src={btn1} alt="버튼1" className="w-full" />
-          <span className="absolute inset-0 flex items-center justify-center font-GanwonEduAll_Bold">
+          <span className="absolute inset-0 flex items-center justify-center font-GanwonEduAll_Bold cursor-pointer">
             {MatchingContent[status].buttonText}
           </span>
         </button>
         <button
           className="relative w-full max-w-md"
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => navigate('/?modal=true')}
         >
           <img src={btn2} alt="버튼2" className="w-full" />
-          <span className="absolute inset-0 flex items-center justify-center font-GanwonEduAll_Bold">
+          <span className="absolute inset-0 flex items-center justify-center font-GanwonEduAll_Bold cursor-pointer">
             내 매칭 정보 수정하기
           </span>
         </button>
@@ -78,7 +81,7 @@ function Main() {
         />
       </div>
 
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+      <Modal isOpen={isModalOpen} onClose={() => navigate('/')}>
         <MainModal />
       </Modal>
     </>
