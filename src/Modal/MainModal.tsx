@@ -22,15 +22,33 @@ const MainModal: FC = () => {
     navigate('/SurveyQuestion');
   };
 
+  const handleRnageSettingClick = () => {
+    navigate('/RangeSetting');
+  };
+
   const user = useSelector(
     (state: RootState) => state.user
   ) as UserState | null;
 
   const interestsText =
-    user?.interests && user?.interests.trim() !== '' ? user.interests : '무관';
+    user?.interests && user.interests.trim() !== '' ? user.interests : '무관';
 
   const questionsText =
     user?.questions && user.questions.trim() !== '' ? user.questions : '없음';
+
+  // 거리 텍스트
+  const distanceText =
+    user?.maxMatchingDistance !== undefined
+      ? `${user.maxMatchingDistance}km`
+      : '정보 없음';
+
+  // 연령차이 텍스트
+  const ageGapText =
+    user?.maxAgeGap !== undefined ? `±${user.maxAgeGap}세` : '정보 없음';
+
+  // 이성 매칭 허용 여부 텍스트
+  const genderAllowText =
+    user?.allowOppositeGender === true ? '허용' : '비허용';
 
   useEffect(() => {
     if (user) {
@@ -97,14 +115,19 @@ const MainModal: FC = () => {
                 거리
               </span>
             </div>
-            <span className="text-gray-400 text-xl">›</span>
+            <span
+              className="text-gray-400 text-xl cursor-pointer"
+              onClick={handleRnageSettingClick}
+            >
+              ›
+            </span>
           </div>
           <div className="flex justify-between items-center mt-1">
             <span className="text-gray-500 text-xs font-GanwonEduAll_Light">
-              10km
+              매칭 거리
             </span>
             <span className="text-gray-500 text-xs font-GanwonEduAll_Light">
-              10km
+              {distanceText}
             </span>
           </div>
           <div className="flex justify-between items-center mt-1">
@@ -112,7 +135,7 @@ const MainModal: FC = () => {
               상대와 연령 차이
             </span>
             <span className="text-gray-500 text-xs font-GanwonEduAll_Light">
-              ±5세
+              {ageGapText}
             </span>
           </div>
           <div className="flex justify-between items-center mt-1">
@@ -120,7 +143,7 @@ const MainModal: FC = () => {
               이성 매칭 허용
             </span>
             <span className="text-gray-500 text-xs font-GanwonEduAll_Light">
-              허용
+              {genderAllowText}
             </span>
           </div>
         </li>
