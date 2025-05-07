@@ -1,11 +1,11 @@
-import MainPage from './pages/Main';
-import Layout from './components/Layout';
-import MeetCenter from './pages/MeetCenter';
-import Hobby from './pages/Hobby';
-import SurveyQ from './pages/SurveyQ';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import { Provider } from 'react-redux';
-import { store } from './Utils/store';
+import MainPage from "./pages/Main";
+import Layout from "./components/Layout";
+import MeetCenter from "./pages/MeetCenter";
+import Hobby from "./pages/Hobby";
+import SurveyQ from "./pages/SurveyQ";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { Provider } from "react-redux";
+import { store } from "./Utils/store";
 
 function App() {
   return (
