@@ -46,7 +46,7 @@ const ItemCard: React.FC<ItemCardProps> = ({
   onClickReview,
 }) => {
   return (
-    <div className="flex justify-between items-center bg-white px-4 py-3 ">
+    <div className="flex justify-between items-center bg-white px-4 py-3">
       {/* 왼쪽: 스탬프 + 프로필 */}
       <div className="flex items-center">
         <div className="relative w-12 h-12 mr-3">
@@ -59,6 +59,10 @@ const ItemCard: React.FC<ItemCardProps> = ({
             src={profileImageUrl}
             alt="profile"
             className="absolute inset-1 w-[80%] h-[80%] object-cover rounded z-10 left-1 top-1"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = sampleProfile;
+            }}
           />
         </div>
         <div>

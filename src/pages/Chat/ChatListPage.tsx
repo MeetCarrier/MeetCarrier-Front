@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../Utils/store";
@@ -6,68 +6,49 @@ import { fetchUser } from "../../Utils/userSlice";
 
 import NavBar from "../../components/NavBar";
 import ItemCard from "./components/ItemCard";
-import sampleProfile from "../../assets/img/sample/sample_profile.svg";
 import bell_default from "../../assets/img/icons/NavIcon/bell_default.svg";
 
-type Chat = {
+type MatchData = {
   id: number;
-  name: string;
-  timestamp: string;
-  profileImageUrl: string;
+  matchedAt: string;
+  status: string;
+  relatedId: number;
+  user1Id: number;
+  user1Nickname: string;
+  user1ImageUrl: string;
+  user2Id: number;
+  user2Nickname: string;
+  user2ImageUrl: string;
 };
-
-type Survey = {
-  id: number;
-  name: string;
-  timestamp: string;
-  profileImageUrl: string;
-};
-
-const dummyChatList: Chat[] = [
-  {
-    id: 1,
-    name: "김철수",
-    timestamp: "2025-05-06T14:30:00",
-    profileImageUrl: sampleProfile,
-  },
-  {
-    id: 2,
-    name: "박영희",
-    timestamp: "2025-05-05T11:10:00",
-    profileImageUrl: sampleProfile,
-  },
-];
-
-const dummySurveyList: Survey[] = [
-  {
-    id: 101,
-    name: "이번 만남 어땠나요?",
-    timestamp: "2025-05-05T18:00:00",
-    profileImageUrl: sampleProfile,
-  },
-  {
-    id: 102,
-    name: "매칭 만족도를 평가해주세요",
-    timestamp: "2025-05-04T10:20:00",
-    profileImageUrl: sampleProfile,
-  },
-];
 
 function ChatListPage() {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+  const [matchList, setMatchList] = useState<MatchData[]>([]);
 
   useEffect(() => {
     dispatch(fetchUser());
+
+    const fetchMatches = async () => {
+      try {
+        const res = await fetch("/api/matches");
+        const data = await res.json();
+        setMatchList(data);
+      } catch (e) {
+        const fallbackRes = await fetch("./ChatListFallBack.json");
+        const fallbackData = await fallbackRes.json();
+        setMatchList(fallbackData);
+      }
+    };
+
+    fetchMatches();
   }, [dispatch]);
 
-  const handleChatClick = (chatId: number) => {
-    navigate(`/chat/${chatId}`);
-  };
+  const chattingList = matchList.filter((m) => m.status === "Chatting");
+  const surveyList = matchList.filter((m) => m.status === "Surveying");
 
-  const handleSurveyClick = (surveyId: number) => {
-    navigate(`/survey/${surveyId}`);
-  };
+  const handleChatClick = (id: number) => navigate(`/chat/${id}`);
+  const handleSurveyClick = (id: number) => navigate(`/survey/${id}`);
 
   return (
     <>
@@ -86,16 +67,16 @@ function ChatListPage() {
         <h2 className="text-xl font-GanwonEduAll_Bold text-center mb-2">
           채팅 목록
         </h2>
-        {dummyChatList.map((chat) => (
+        {chattingList.map((chat) => (
           <div
             key={chat.id}
             onClick={() => handleChatClick(chat.id)}
             className="cursor-pointer"
           >
             <ItemCard
-              profileImageUrl={chat.profileImageUrl}
-              username={chat.name}
-              time={chat.timestamp}
+              profileImageUrl={chat.user2ImageUrl}
+              username={chat.user2Nickname}
+              time={chat.matchedAt}
             />
           </div>
         ))}
@@ -103,16 +84,16 @@ function ChatListPage() {
         <h2 className="text-xl font-GanwonEduAll_Bold text-center mt-6 mb-2">
           설문 목록
         </h2>
-        {dummySurveyList.map((survey) => (
+        {surveyList.map((survey) => (
           <div
             key={survey.id}
             onClick={() => handleSurveyClick(survey.id)}
             className="cursor-pointer"
           >
             <ItemCard
-              profileImageUrl={survey.profileImageUrl}
-              username={survey.name}
-              time={survey.timestamp}
+              profileImageUrl={survey.user2ImageUrl}
+              username={survey.user2Nickname}
+              time={survey.matchedAt}
             />
           </div>
         ))}
