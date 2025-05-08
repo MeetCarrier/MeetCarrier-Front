@@ -5,6 +5,8 @@ import Hobby from "./pages/Hobby";
 import SurveyQ from "./pages/SurveyQ";
 import RangeSetting from "./pages/RangeSetting";
 import ChatListPage from "./pages/Chat/ChatListPage";
+import SurveyPage from "./pages/Chat/SurveyPage";
+
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Provider } from "react-redux";
 import { store } from "./Utils/store";
@@ -21,6 +23,7 @@ function App() {
             <Route path="MeetCenter" element={<MeetCenter />} />
             <Route path="RangeSetting" element={<RangeSetting />} />
             <Route path="chat" element={<ChatListPage />} />
+            <Route path="survey/:surveyId" element={<SurveyPage />} />
           </Route>
         </Routes>
       </BrowserRouter>
