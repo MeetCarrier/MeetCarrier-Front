@@ -1,0 +1,7 @@
+[
+  { "name": "Seoul", "label": "서울" },
+  { "name": "Busan", "label": "부산" },
+  { "name": "Daegu", "label": "대구" },
+  { "name": "Gwangju", "label": "광주" },
+  { "name": "Daejeon", "label": "대전" }
+]
