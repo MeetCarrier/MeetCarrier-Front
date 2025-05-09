@@ -11,7 +11,7 @@ const Login: React.FC = () => {
       <div className="absolute top-[50px] text-[#333333] left-0 right-0 px-6 text-center">
         <p className="text-[20px] font-MuseumClassic_L italic">만남 </p>
       </div>
-      <div className="flex flex-col items-center justify-center w-full h-[calc(100vh-100px)] bg-[#F2F2F2]">
+      <div className="flex flex-col items-center justify-center w-full h-[calc(100vh-100px)]">
         <button
           onClick={() => handleLogin("google")}
           className="w-[80%] max-w-xs py-3 mb-4 rounded-lg bg-white shadow font-GanwonEduAll_Bold text-[#333] border border-gray-200 text-lg cursor-pointer hover:bg-[#f0f0f0] hover:shadow-md transition"
