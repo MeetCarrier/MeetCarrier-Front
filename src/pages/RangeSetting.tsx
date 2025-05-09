@@ -13,7 +13,7 @@ function RangeSetting() {
   const navigate = useNavigate();
 
   const handleBackClick = () => {
-    navigate('/?modal=true');
+    navigate('/main?modal=true');
   };
 
   const [isOn, setIsOn] = useState(true);
