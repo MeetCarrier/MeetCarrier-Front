@@ -1,18 +1,18 @@
-import { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import btn1 from '../assets/img/button/btn1.webp';
-import btn2 from '../assets/img/button/btn2.webp';
-import bell_default from '../assets/img/icons/NavIcon/bell_default.svg';
+import { useState, useEffect } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import btn1 from "../assets/img/button/btn1.webp";
+import btn2 from "../assets/img/button/btn2.webp";
+import bell_default from "../assets/img/icons/NavIcon/bell_default.svg";
 
-import NavBar from '../components/NavBar';
-import Modal from '../components/Modal';
-import MainModal from '../Modal/MainModal';
-import { useDispatch } from 'react-redux';
-import { AppDispatch } from '../Utils/store';
-import { fetchUser } from '../Utils/userSlice';
+import NavBar from "../components/NavBar";
+import Modal from "../components/Modal";
+import MainModal from "../Modal/MainModal";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../Utils/store";
+import { fetchUser } from "../Utils/userSlice";
 
-import { MatchingContent, type MatchingStatus } from '../Utils/MatchingContent';
 import { startMatchingClient, type MatchingClient } from '../Utils/Matching';
+import { MatchingContent, type MatchingStatus } from "../Utils/MatchingContent";
 
 function Main() {
   const dispatch = useDispatch<AppDispatch>();
@@ -126,7 +126,7 @@ function Main() {
         />
       </div>
 
-      <Modal isOpen={isModalOpen} onClose={() => navigate('/')}>
+      <Modal isOpen={isModalOpen} onClose={() => navigate("/main")}>
         <MainModal />
       </Modal>
     </>

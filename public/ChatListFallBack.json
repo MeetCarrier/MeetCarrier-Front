@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "matchedAt": "2025-05-07T14:20:00Z",
+    "status": "Chatting",
+    "relatedId": 101,
+    "user1Id": 10,
+    "user1Nickname": "김철수",
+    "user1ImageUrl": "/images/user1.svg",
+    "user2Id": 20,
+    "user2Nickname": "이영희",
+    "user2ImageUrl": "/images/user2.svg"
+  },
+  {
+    "id": 2,
+    "matchedAt": "2025-05-06T09:15:00Z",
+    "status": "Chatting",
+    "relatedId": 102,
+    "user1Id": 10,
+    "user1Nickname": "김철수",
+    "user1ImageUrl": "/images/user1.svg",
+    "user2Id": 30,
+    "user2Nickname": "박민수",
+    "user2ImageUrl": "/images/user3.svg"
+  },
+  {
+    "id": 3,
+    "matchedAt": "2025-05-08T13:00:00Z",
+    "status": "Surveying",
+    "relatedId": 103,
+    "user1Id": 10,
+    "user1Nickname": "김철수",
+    "user1ImageUrl": "/images/user1.svg",
+    "user2Id": 40,
+    "user2Nickname": "최수지",
+    "user2ImageUrl": "/images/user4.svg"
+  },
+  {
+    "id": 4,
+    "matchedAt": "2025-05-08T11:45:00Z",
+    "status": "Surveying",
+    "relatedId": 104,
+    "user1Id": 10,
+    "user1Nickname": "김철수",
+    "user1ImageUrl": "/images/user1.svg",
+    "user2Id": 50,
+    "user2Nickname": "정하늘",
+    "user2ImageUrl": "/images/user5.svg"
+  }
+]
