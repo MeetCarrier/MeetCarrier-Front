@@ -1,6 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useRef, useEffect, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
+import SwiperCore from "swiper"; // SwiperCore 직접 import
 import "swiper/css";
 
 import back_arrow from "../../assets/img/icons/HobbyIcon/back_arrow.svg";
@@ -33,6 +34,7 @@ function SurveyPage() {
   const [editedContent, setEditedContent] = useState("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const swiperRef = useRef<SwiperCore | null>(null);
 
   const myId = 10;
 
@@ -63,6 +65,12 @@ function SurveyPage() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isMenuOpen]);
+
+  useEffect(() => {
+    if (swiperRef.current) {
+      swiperRef.current.allowTouchMove = !isEditing;
+    }
+  }, [isEditing]);
 
   const handleBackClick = () => {
     if (isEditing) {
