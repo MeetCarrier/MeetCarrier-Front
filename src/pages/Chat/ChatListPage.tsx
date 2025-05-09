@@ -63,7 +63,7 @@ function ChatListPage() {
         />
       </div>
 
-      <div className="absolute top-[0px] flex flex-col pt-[100px] pb-[100px] w-[90%] max-w-md mx-auto space-y-4">
+      <div className="flex flex-col w-full h-[calc(100%-200px)] overflow-y-auto px-4 z-0">
         <h2 className="text-xl font-GanwonEduAll_Bold text-center mb-2">
           채팅 목록
         </h2>
