@@ -10,7 +10,7 @@ import icon3_hover from "../assets/img/icons/NavIcon/tap_3_clicked.svg";
 import icon4_hover from "../assets/img/icons/NavIcon/tap_4_clicked.svg";
 
 const navIcons = [
-  { default: icon1, hover: icon1_hover, path: "/" },
+  { default: icon1, hover: icon1_hover, path: "/main" },
   { default: icon2, hover: icon2_hover, path: "/chat" },
   { default: icon3, hover: icon3_hover, path: "/calendar" },
   { default: icon4, hover: icon4_hover, path: "/profile" },
@@ -36,9 +36,16 @@ function NavBar() {
               className="relative w-[30px] h-[30px] cursor-pointer"
             >
               <img
-                src={isActive ? icon.hover : icon.default}
+                src={icon.default}
                 alt={`nav-icon-${idx}`}
-                className="absolute inset-0 w-full h-full transition-opacity"
+                className={`absolute inset-0 w-full h-full transition-opacity 
+          ${isActive ? "opacity-0" : "opacity-100 hover:opacity-0"}`}
+              />
+              <img
+                src={icon.hover}
+                alt={`nav-icon-hover-${idx}`}
+                className={`absolute inset-0 w-full h-full transition-opacity 
+          ${isActive ? "opacity-100" : "opacity-0 hover:opacity-100"}`}
               />
             </button>
           );
