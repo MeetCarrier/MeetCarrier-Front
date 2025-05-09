@@ -2,6 +2,8 @@ import { useNavigate } from "react-router-dom";
 import { ChevronLeft, MoreVertical } from "lucide-react";
 import stamp from "../../assets/img/stamp.svg"; // 발자국 스탬프
 import bell_default from "../../assets/img/icons/NavIcon/bell_default.svg";
+import check_icon from "../../assets/img/icons/HobbyIcon/check.svg";
+import back_arrow from "../../assets/img/icons/HobbyIcon/back_arrow.svg";
 
 import NavBar from "../../components/NavBar";
 import FootPrintCheck from "./components/FootPrintCheck";
@@ -9,20 +11,32 @@ import FootPrintCheck from "./components/FootPrintCheck";
 function SurveyPage() {
   const navigate = useNavigate();
 
+  const handleBackClick = () => {
+    navigate("/?modal=true");
+  };
+
   return (
     <>
       <NavBar />
+
+      <div className="absolute top-[50px] text-[#333333] left-0 right-0 px-6 text-center">
+        <img
+          src={back_arrow}
+          alt="back_arrow"
+          className="absolute top-1/2 -translate-y-1/2 left-6 w-[9px] h-[20px] cursor-pointer"
+          onClick={handleBackClick}
+        />
+        <p className="text-[20px] font-MuseumClassic_L italic">질문 센터</p>
+        <img
+          src={bell_default}
+          alt="bell_default"
+          className="absolute top-1/2 -translate-y-1/2 right-6 w-[20px] h-[20px] cursor-pointer"
+          onClick={handleBackClick}
+        />
+      </div>
+
       <div className="w-[90%] max-w-md flex flex-col items-center space-y-3 mb-4">
         {/* 상단 헤더 */}
-        <div className="absolute top-[50px] left-0 right-0 px-6 flex items-center justify-between text-[#333333]">
-          <ChevronLeft className="w-6 h-6" onClick={() => navigate(-1)} />
-          <p className="text-[20px] font-MuseumClassic_L italic">질문 센터</p>
-          <img
-            src={bell_default}
-            alt="bell_default"
-            className="w-[20px] h-[20px]"
-          />
-        </div>
 
         {/* 발자국 스탬프 컴포넌트 */}
         <FootPrintCheck currentStep={1} />
