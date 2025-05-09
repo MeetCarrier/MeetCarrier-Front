@@ -1,17 +1,17 @@
-import { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import btn1 from '../assets/img/button/btn1.webp';
-import btn2 from '../assets/img/button/btn2.webp';
-import bell_default from '../assets/img/icons/NavIcon/bell_default.svg';
+import { useState, useEffect } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import btn1 from "../assets/img/button/btn1.webp";
+import btn2 from "../assets/img/button/btn2.webp";
+import bell_default from "../assets/img/icons/NavIcon/bell_default.svg";
 
-import NavBar from '../components/NavBar';
-import Modal from '../components/Modal';
-import MainModal from '../Modal/MainModal';
-import { useDispatch } from 'react-redux';
-import { AppDispatch } from '../Utils/store';
-import { fetchUser } from '../Utils/userSlice';
+import NavBar from "../components/NavBar";
+import Modal from "../components/Modal";
+import MainModal from "../Modal/MainModal";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../Utils/store";
+import { fetchUser } from "../Utils/userSlice";
 
-import { MatchingContent, type MatchingStatus } from '../Utils/MatchingContent';
+import { MatchingContent, type MatchingStatus } from "../Utils/MatchingContent";
 
 function Main() {
   const dispatch = useDispatch<AppDispatch>();
@@ -23,14 +23,14 @@ function Main() {
 
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const isModalOpen = searchParams.get('modal') === 'true';
-  const [status, setStatus] = useState<MatchingStatus>('default');
+  const isModalOpen = searchParams.get("modal") === "true";
+  const [status, setStatus] = useState<MatchingStatus>("default");
 
   const handleMatchingButtonClick = () => {
-    if (status == 'default') {
-      setStatus('matching');
+    if (status == "default") {
+      setStatus("matching");
     } else {
-      setStatus('default');
+      setStatus("default");
     }
   };
 
@@ -51,7 +51,7 @@ function Main() {
         </button>
         <button
           className="relative w-full max-w-md"
-          onClick={() => navigate('/?modal=true')}
+          onClick={() => navigate("/main?modal=true")}
         >
           <img src={btn2} alt="버튼2" className="w-full" />
           <span className="absolute inset-0 flex items-center justify-center font-GanwonEduAll_Bold cursor-pointer">
@@ -81,7 +81,7 @@ function Main() {
         />
       </div>
 
-      <Modal isOpen={isModalOpen} onClose={() => navigate('/')}>
+      <Modal isOpen={isModalOpen} onClose={() => navigate("/main")}>
         <MainModal />
       </Modal>
     </>
