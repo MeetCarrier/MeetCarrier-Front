@@ -7,6 +7,7 @@ import RangeSetting from "./pages/RangeSetting";
 import ChatListPage from "./pages/Chat/ChatListPage";
 import SurveyPage from "./pages/Chat/SurveyPage";
 import Login from "./pages/Login";
+import Register from "./pages/Register";
 
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Provider } from "react-redux";
@@ -27,6 +28,7 @@ function App() {
             <Route path="chat" element={<ChatListPage />} />
             <Route path="survey/:surveyId" element={<SurveyPage />} />
             <Route path="Login" element={<Login />} />
+            <Route path="register" element={<Register />} />
           </Route>
         </Routes>
       </BrowserRouter>
