@@ -34,10 +34,8 @@ function SurveyPage() {
           onClick={handleBackClick}
         />
       </div>
-
-      <div className="w-[90%] max-w-md flex flex-col items-center space-y-3 mb-4">
-        {/* 상단 헤더 */}
-
+      <div className="flex flex-col w-full h-[calc(100%-200px)] p-4 z-0 bg-[#F2F2F2]">
+        {/* 메인 컨텐츠 영역 */}
         {/* 발자국 스탬프 컴포넌트 */}
         <FootPrintCheck currentStep={1} />
 
