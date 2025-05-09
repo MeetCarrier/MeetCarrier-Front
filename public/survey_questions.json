@@ -1,0 +1,13 @@
+[
+  {
+    "questionId": 0,
+    "content": "죽기 전에 꼭 해보고 싶은 버킷리스트 한 가지와 이유는?"
+  },
+  { "questionId": 1, "content": "가장 최근에 울었던 이유는 무엇인가요?" },
+  {
+    "questionId": 2,
+    "content": "내가 생각하는 나의 가장 큰 장점은 무엇인가요?"
+  },
+  { "questionId": 3, "content": "스트레스를 해소하는 나만의 방법은?" },
+  { "questionId": 4, "content": "나를 가장 웃게 만든 순간은 언제인가요?" }
+]

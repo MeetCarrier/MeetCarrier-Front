@@ -1,5 +1,5 @@
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 
@@ -10,21 +10,50 @@ import back_arrow from "../../assets/img/icons/HobbyIcon/back_arrow.svg";
 import NavBar from "../../components/NavBar";
 import FootPrintCheck from "./components/FootPrintCheck";
 
-const questions = [
-  "죽기 전에 꼭 해보고 싶은 버킷리스트 한 가지와 이유는?",
-  "가장 최근에 울었던 이유는 무엇인가요?",
-  "내가 생각하는 나의 가장 큰 장점은 무엇인가요?",
-  "스트레스를 해소하는 나만의 방법은?",
-  "나를 가장 웃게 만든 순간은 언제인가요?",
-];
+interface Question {
+  questionId: number;
+  content: string;
+}
+
+interface Answer {
+  content: string;
+  questionId: number;
+  userId: number;
+}
 
 function SurveyPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user1Id, user1Nickname, user2Id, user2Nickname } =
+    location.state || {};
+
   const [currentStep, setCurrentStep] = useState(0);
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [answers, setAnswers] = useState<Answer[]>([]);
+
+  useEffect(() => {
+    fetch("/survey_questions.json")
+      .then((res) => res.json())
+      .then(setQuestions)
+      .catch(console.error);
+
+    fetch("/survey_answers.json")
+      .then((res) => res.json())
+      .then(setAnswers)
+      .catch(console.error);
+  }, []);
 
   const handleBackClick = () => {
-    if (currentStep === 0) navigate("/?modal=true");
-    else setCurrentStep((prev) => prev - 1);
+    if (currentStep > 0) {
+      setCurrentStep((prev) => prev - 1);
+    } else {
+      navigate(-1);
+    }
+  };
+
+  const getLabeledQuestionTitle = (index: number, total: number) => {
+    const labels = ["첫", "두", "세", "네"];
+    return index === total - 1 ? "마지막-질문" : `${labels[index]}번째-질문`;
   };
 
   return (
@@ -57,51 +86,81 @@ function SurveyPage() {
           onSlideChange={(swiper) => setCurrentStep(swiper.activeIndex)}
           className="py-6"
         >
-          {questions.map((question, index) => (
-            <SwiperSlide key={index}>
-              <div className="h-[calc(100%-400px)]">
-                <p className="text-sm text-[#BD4B2C] font-GanwonEduAll_Bold mb-1">
-                  {index + 1 === 1
-                    ? "첫번째 질문"
-                    : index + 1 === 2
-                    ? "두번째 질문"
-                    : index + 1 === 3
-                    ? "세번째 질문"
-                    : index + 1 === 4
-                    ? "네번째 질문"
-                    : "다섯번째 질문"}
-                </p>
-                <p className="text-md font-GanwonEduAll_Bold my-2 text-[#333]">
-                  {question}
-                </p>
-                <p className="text-xs text-gray-400 mb-4">2025.03.29</p>
-                <div className="bg-white rounded p-4 shadow-sm border border-gray-200">
-                  <p className="text-sm font-semibold text-gray-800">
-                    밥만 잘먹더라
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    이곳을 눌러 떠오르는 생각을 남겨보세요.
-                    <br />
-                    친구는 답변을 통해 당신을 알아가게 될 거예요.
-                  </p>
-                </div>
+          {questions.map((question, index) => {
+            const user1Answer = answers.find(
+              (a) =>
+                a.questionId === question.questionId && a.userId === user1Id
+            );
+            const user2Answer = answers.find(
+              (a) =>
+                a.questionId === question.questionId && a.userId === user2Id
+            );
 
-                <div className="bg-white rounded p-4 shadow-sm border border-gray-200 mt-4">
-                  <div className="flex justify-between items-center mb-1">
-                    <p className="text-sm font-semibold text-gray-800">
-                      우민준
-                    </p>
-                    <p className="text-xs text-[#C67B5A] underline underline-offset-2 cursor-pointer">
-                      작성 재촉하기
+            const label = getLabeledQuestionTitle(index, questions.length);
+
+            return (
+              <SwiperSlide key={question.questionId}>
+                <div>
+                  {/* 질문 내용 */}
+                  <p className="text-md font-GanwonEduAll_Bold my-2 text-[#333]">
+                    {question.content}
+                  </p>
+
+                  {/* 질문 라벨 박스 */}
+                  <div className="flex items-center text-sm text-[#333] font-GanwonEduAll_Bold mb-1">
+                    {getLabeledQuestionTitle(index, questions.length)
+                      .split("")
+                      .map((char, i) =>
+                        char === "-" ? (
+                          <span key={i} className="mx-[2px]">
+                            {char}
+                          </span>
+                        ) : (
+                          <span
+                            key={i}
+                            className="border border-[#BD4B2C] px-2 py-[4px] mx-[1px]"
+                          >
+                            {char}
+                          </span>
+                        )
+                      )}
+                  </div>
+
+                  <p className="text-xs text-gray-400 mb-4">2025.03.29</p>
+
+                  {/* 유저 1 답변 */}
+                  <div className="bg-white rounded p-4 shadow-sm border border-gray-200 mb-3">
+                    <div className="flex justify-between items-center mb-1">
+                      <p className="text-sm font-semibold text-gray-800">
+                        {user1Nickname ?? `사용자 ${user1Id}`}
+                      </p>
+                      <p className="text-xs text-[#C67B5A] underline underline-offset-2 cursor-pointer">
+                        작성 재촉하기
+                      </p>
+                    </div>
+                    <p className="text-xs text-gray-600">
+                      {user1Answer?.content ?? "아직 작성하지 않았어요."}
                     </p>
                   </div>
-                  <p className="text-xs text-gray-400">
-                    아직 작성하지 않았어요.
-                  </p>
+
+                  {/* 유저 2 답변 */}
+                  <div className="bg-white rounded p-4 shadow-sm border border-gray-200 mb-3">
+                    <div className="flex justify-between items-center mb-1">
+                      <p className="text-sm font-semibold text-gray-800">
+                        {user2Nickname ?? `사용자 ${user2Id}`}
+                      </p>
+                      <p className="text-xs text-[#C67B5A] underline underline-offset-2 cursor-pointer">
+                        작성 재촉하기
+                      </p>
+                    </div>
+                    <p className="text-xs text-gray-600">
+                      {user2Answer?.content ?? "아직 작성하지 않았어요."}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </SwiperSlide>
-          ))}
+              </SwiperSlide>
+            );
+          })}
         </Swiper>
 
         {currentStep === questions.length - 1 && (

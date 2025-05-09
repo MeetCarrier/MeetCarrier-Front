@@ -48,7 +48,16 @@ function ChatListPage() {
   const surveyList = matchList.filter((m) => m.status === "Surveying");
 
   const handleChatClick = (id: number) => navigate(`/chat/${id}`);
-  const handleSurveyClick = (id: number) => navigate(`/survey/${id}`);
+  const handleSurveyClick = (match: MatchData) => {
+    navigate(`/survey/${match.id}`, {
+      state: {
+        user1Id: match.user1Id,
+        user1Nickname: match.user1Nickname,
+        user2Id: match.user2Id,
+        user2Nickname: match.user2Nickname,
+      },
+    });
+  };
 
   return (
     <>
@@ -87,7 +96,7 @@ function ChatListPage() {
         {surveyList.map((survey) => (
           <div
             key={survey.id}
-            onClick={() => handleSurveyClick(survey.id)}
+            onClick={() => handleSurveyClick(survey)}
             className="cursor-pointer"
           >
             <ItemCard
