@@ -12,6 +12,7 @@ import { AppDispatch } from '../Utils/store';
 import { fetchUser } from '../Utils/userSlice';
 
 import { MatchingContent, type MatchingStatus } from '../Utils/MatchingContent';
+import { startMatchingClient, type MatchingClient } from '../Utils/Matching';
 
 function Main() {
   const dispatch = useDispatch<AppDispatch>();
@@ -25,13 +26,57 @@ function Main() {
   const [searchParams] = useSearchParams();
   const isModalOpen = searchParams.get('modal') === 'true';
   const [status, setStatus] = useState<MatchingStatus>('default');
+  const [matchingClient, setMatchingClient] = useState<MatchingClient | null>(
+    null
+  );
 
-  const handleMatchingButtonClick = () => {
-    if (status == 'default') {
-      setStatus('matching');
-    } else {
+  // 매칭 시작
+  const handleStartMatching = () => {
+    setStatus('matching');
+    const client = startMatchingClient({
+      onSuccess: (data) => {
+        console.log('매칭 성공', data);
+        setStatus('success');
+      },
+      onFail: (data) => {
+        console.log('매칭 실패', data);
+        setStatus('fail');
+      },
+    });
+    setMatchingClient(client);
+  };
+
+  // 수정해야 함.
+  const handleButton1ClickByStatus: Record<MatchingStatus, () => void> = {
+    default: () => {
+      handleStartMatching();
+    },
+    matching: () => {
+      matchingClient?.disconnect();
       setStatus('default');
-    }
+    },
+    success: () => {
+      setStatus('fail');
+    },
+    fail: () => {
+      handleStartMatching();
+    },
+  };
+
+  const handleButton2ClickByStatus: Record<MatchingStatus, () => void> = {
+    default: () => {
+      navigate('/?modal=true');
+    },
+    matching: () => {
+      navigate('/?modal=true');
+    },
+    success: () => {
+      navigate('/?modal=true');
+    },
+    fail: () => {
+      matchingClient?.disconnect();
+      setStatus('default');
+    },
   };
 
   return (
@@ -42,27 +87,27 @@ function Main() {
         {/* 친구 찾기 버튼 */}
         <button
           className="relative w-full max-w-md"
-          onClick={handleMatchingButtonClick}
+          onClick={handleButton1ClickByStatus[status]}
         >
           <img src={btn1} alt="버튼1" className="w-full" />
           <span className="absolute inset-0 flex items-center justify-center font-GanwonEduAll_Bold cursor-pointer">
-            {MatchingContent[status].buttonText}
+            {MatchingContent[status].buttonText1}
           </span>
         </button>
         <button
           className="relative w-full max-w-md"
-          onClick={() => navigate('/?modal=true')}
+          onClick={handleButton2ClickByStatus[status]}
         >
           <img src={btn2} alt="버튼2" className="w-full" />
           <span className="absolute inset-0 flex items-center justify-center font-GanwonEduAll_Bold cursor-pointer">
-            내 매칭 정보 수정하기
+            {MatchingContent[status].buttonText2}
           </span>
         </button>
       </div>
 
       {/* 캐릭터 */}
       <div className="relative w-[309px] h-[309px] mb-4">
-        <p className="absolute top-12 left-1/2 -translate-x-1/2 w-[250px] text-center text-[#333333] font-GanwonEduAll_Light underline decoration-1 underline-offset-4">
+        <p className="absolute top-10 left-1/2 -translate-x-1/2 w-[250px] text-center text-[#333333] font-GanwonEduAll_Light underline decoration-1 underline-offset-4">
           {MatchingContent[status].text}
         </p>
         <img
