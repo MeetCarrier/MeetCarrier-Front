@@ -36,9 +36,16 @@ function NavBar() {
               className="relative w-[30px] h-[30px] cursor-pointer"
             >
               <img
-                src={isActive ? icon.hover : icon.default}
+                src={icon.default}
                 alt={`nav-icon-${idx}`}
-                className="absolute inset-0 w-full h-full transition-opacity"
+                className={`absolute inset-0 w-full h-full transition-opacity 
+          ${isActive ? "opacity-0" : "opacity-100 hover:opacity-0"}`}
+              />
+              <img
+                src={icon.hover}
+                alt={`nav-icon-hover-${idx}`}
+                className={`absolute inset-0 w-full h-full transition-opacity 
+          ${isActive ? "opacity-100" : "opacity-0 hover:opacity-100"}`}
               />
             </button>
           );
