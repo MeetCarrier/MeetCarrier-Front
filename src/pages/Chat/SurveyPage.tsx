@@ -69,6 +69,7 @@ function SurveyPage() {
   useEffect(() => {
     if (swiperRef.current) {
       swiperRef.current.allowTouchMove = !isEditing;
+      swiperRef.current.update();
     }
   }, [isEditing]);
 
@@ -140,11 +141,13 @@ function SurveyPage() {
           spaceBetween={16}
           slidesPerView={1}
           centeredSlides={false}
+          allowTouchMove={!isEditing}
           onSlideChange={(swiper) => {
             setCurrentStep(swiper.activeIndex);
             setIsEditing(false);
             setEditedContent("");
           }}
+          onSwiper={(swiper) => (swiperRef.current = swiper)}
           className="py-6"
         >
           {questions.map((question, index) => {
