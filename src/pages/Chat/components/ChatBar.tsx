@@ -15,10 +15,26 @@ import survey_icon from '../../../assets/img/icons/ChatIcon/ic_survey.svg';
 type ChatBarProps = {
   onEmojiToggle?: () => void;
   emojiOpen?: boolean;
+  onSendMessage?: (message: string) => void;
 };
 
-function ChatBar({ onEmojiToggle, emojiOpen }: ChatBarProps) {
+function ChatBar({ onEmojiToggle, emojiOpen, onSendMessage }: ChatBarProps) {
   const [message, setMessage] = useState('');
+
+  const handleSendMessage = () => {
+    if (message.trim() && onSendMessage) {
+      onSendMessage(message);
+      setMessage('');
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
   return (
     <>
       {/* 이모지 영역 내부 포함 */}
@@ -65,6 +81,7 @@ function ChatBar({ onEmojiToggle, emojiOpen }: ChatBarProps) {
               placeholder="전할 말 입력"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
+              onKeyPress={handleKeyPress}
               className={`flex-1 bg-transparent text-white text-sm placeholder:text-white outline-none`}
             />
             <button onClick={onEmojiToggle}>
@@ -72,9 +89,12 @@ function ChatBar({ onEmojiToggle, emojiOpen }: ChatBarProps) {
             </button>
           </div>
 
-          {/* 오른쪽 ? 버튼 */}
-          <button className="w-9 h-9 rounded-full bg-[#A34027] flex items-center justify-center flex-shrink-0">
-            <img src={questionmark_icon} alt="?" className="w-5 h-5" />
+          {/* 오른쪽 전송 버튼 */}
+          <button 
+            onClick={handleSendMessage}
+            className="w-9 h-9 rounded-full bg-[#A34027] flex items-center justify-center flex-shrink-0"
+          >
+            <img src={arrow_icon} alt="send" className="w-5 h-5" />
           </button>
         </div>
       </div>
