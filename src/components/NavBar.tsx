@@ -11,7 +11,7 @@ import icon4_hover from "../assets/img/icons/NavIcon/tap_4_clicked.svg";
 
 const navIcons = [
   { default: icon1, hover: icon1_hover, path: "/main" },
-  { default: icon2, hover: icon2_hover, path: "/chat" },
+  { default: icon2, hover: icon2_hover, path: "/ChatList" },
   { default: icon3, hover: icon3_hover, path: "/calendar" },
   { default: icon4, hover: icon4_hover, path: "/profile" },
 ];

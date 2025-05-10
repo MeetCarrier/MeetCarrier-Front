@@ -26,11 +26,11 @@ function App() {
             <Route path="SurveyQuestion" element={<SurveyQ />} />
             <Route path="MeetCenter" element={<MeetCenter />} />
             <Route path="RangeSetting" element={<RangeSetting />} />
-            <Route path="chat" element={<ChatListPage />} />
+            <Route path="ChatList" element={<ChatListPage />} />
             <Route path="survey/:surveyId" element={<SurveyPage />} />
             <Route path="Login" element={<Login />} />
             <Route path="register" element={<Register />} />
-            <Route path="chatpage" element={<ChatPage />} />
+            <Route path="chat/:chatId" element={<ChatPage />} />
           </Route>
         </Routes>
       </BrowserRouter>
