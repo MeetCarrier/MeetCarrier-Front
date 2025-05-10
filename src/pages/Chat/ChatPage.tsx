@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { UserState } from '../Utils/userSlice';
 import axios from 'axios';
 import ChatBar from './components/ChatBar';
@@ -17,9 +17,19 @@ interface ChatMessage {
   sentAt: string;
 }
 
+interface LocationState {
+  roomId: number;
+  user1Id: number;
+  user1Nickname: string;
+  user2Id: number;
+  user2Nickname: string;
+}
+
 function ChatPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { roomId } = useParams();
+  const state = location.state as LocationState;
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [emojiOpen, setEmojiOpen] = useState(false);
   const stompClientRef = useRef<Client | null>(null);
@@ -28,11 +38,17 @@ function ChatPage() {
   const emojiHeight = emojiOpen ? 200 : 0;
 
   useEffect(() => {
+    if (!state?.roomId) {
+      console.error('방 정보가 없습니다.');
+      navigate(-1);
+      return;
+    }
+
     // 채팅 기록 조회
     const fetchChatHistory = async () => {
       try {
-        console.log('채팅 기록 조회 시작:', roomId);
-        const response = await axios.get(`https://www.mannamdeliveries.link/chat/1`);
+        console.log('채팅 기록 조회 시작:', state.roomId);
+        const response = await axios.get(`https://www.mannamdeliveries.link/chat/${state.roomId}`);
         console.log('채팅 기록 조회 결과:', response.data);
         setMessages(response.data);
       } catch (error) {
@@ -48,7 +64,7 @@ function ChatPage() {
       onConnect: () => {
         console.log('WebSocket 연결 성공');
         // 채팅방 구독
-        stompClient.subscribe(`/topic/room/${roomId}`, (message) => {
+        stompClient.subscribe(`/topic/room/${state.roomId}`, (message) => {
           const newMessage = JSON.parse(message.body);
           console.log('새로운 메시지 수신:', newMessage);
           setMessages((prev) => [...prev, newMessage]);
@@ -77,13 +93,13 @@ function ChatPage() {
         stompClientRef.current.deactivate();
       }
     };
-  }, [roomId]);
+  }, [state?.roomId, navigate]);
 
   // 메시지 전송 함수
   const sendMessage = (message: string) => {
     if (stompClientRef.current && stompClientRef.current.connected) {
       const messageData = {
-        roomId: 1,
+        roomId: state.roomId,
         type: 'TEXT',
         message: message,
         imageUrl: null
@@ -102,7 +118,7 @@ function ChatPage() {
   const handleLeave = () => {
     if (stompClientRef.current && stompClientRef.current.connected) {
       const leaveData = {
-        roomId: 1,
+        roomId: state.roomId,
         type: 'LEAVE'
       };
       console.log('채팅방 퇴장 요청:', leaveData);
@@ -111,7 +127,7 @@ function ChatPage() {
         body: JSON.stringify(leaveData)
       });
     }
-    navigate('/main');
+    navigate(-1);
   };
 
   const handleBackClick = () => {
@@ -124,7 +140,6 @@ function ChatPage() {
   }, [messages]);
 
   return (
-    // 제목에 닉네임 뜨도록 해야함., 돋보기 기능 넣어야 함.
     <>
       <div className="absolute top-[50px] text-[#333333] left-0 right-0 px-6 text-center">
         <img
@@ -133,12 +148,11 @@ function ChatPage() {
           className="absolute top-1/2 -translate-y-1/2 left-6 w-[9px] h-[20px] cursor-pointer"
           onClick={handleBackClick}
         />
-        <p className="text-[20px] font-MuseumClassic_L italic">이땃쥐돌이</p>
+        <p className="text-[20px] font-MuseumClassic_L italic">{state?.user2Nickname || '상대방'}</p>
         <img
           src={search_icon}
           alt="search_icon"
           className="absolute top-1/2 -translate-y-1/2 right-6 w-[20px] h-[20px] cursor-pointer"
-          // onClick={handleSubmit}
         />
       </div>
 
@@ -148,7 +162,7 @@ function ChatPage() {
         onEmojiToggle={() => setEmojiOpen((prev) => !prev)}
         onSendMessage={sendMessage}
       />
-      
+
       <div
         className="flex flex-col w-full overflow-y-auto p-4 z-0 bg-[#F2F2F2]"
         style={{
@@ -156,17 +170,16 @@ function ChatPage() {
           transition: 'height 0.3s ease',
         }}
       >
-        {/* 내용 */}
         {messages.map((msg, index) => (
           <div
             key={index}
             className={`mb-4 ${
-              msg.sender === 1 ? 'self-end' : 'self-start'
+              msg.sender === state?.user1Id ? 'self-end' : 'self-start'
             }`}
           >
             <div
               className={`max-w-[70%] p-3 rounded-lg ${
-                msg.sender === 1
+                msg.sender === state?.user1Id
                   ? 'bg-blue-500 text-white ml-auto'
                   : 'bg-gray-200 text-gray-800'
               }`}
@@ -180,7 +193,6 @@ function ChatPage() {
         ))}
         <div ref={messagesEndRef} />
       </div>
-
     </>
   );
 }

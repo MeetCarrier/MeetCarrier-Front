@@ -89,6 +89,11 @@ function ChatBar({ onEmojiToggle, emojiOpen, onSendMessage }: ChatBarProps) {
             </button>
           </div>
 
+          {/* 오른쪽 ? 버튼 */
+          <button className="w-9 h-9 rounded-full bg-[#A34027] flex items-center justify-center flex-shrink-0">
+            <img src={questionmark_icon} alt="?" className="w-5 h-5" />
+          */</button>}
+        
           {/* 오른쪽 전송 버튼 */}
           <button 
             onClick={handleSendMessage}

@@ -47,15 +47,29 @@ function ChatListPage() {
   const chattingList = matchList.filter((m) => m.status === "Chatting");
   const surveyList = matchList.filter((m) => m.status === "Surveying");
 
-  const handleChatClick = (id: number) => navigate(`/chat/${id}`);
-  const handleSurveyClick = (match: MatchData) => {
-    navigate(`/survey/${match.id}`, {
+  const handleChatClick = (match: MatchData) => {
+    console.log('채팅방 입장:', match.id);
+    navigate(`/chat/${match.id}`, {
       state: {
+        roomId: match.id,
         user1Id: match.user1Id,
         user1Nickname: match.user1Nickname,
         user2Id: match.user2Id,
         user2Nickname: match.user2Nickname,
-      },
+      }
+    });
+  };
+
+  const handleSurveyClick = (match: MatchData) => {
+    console.log('설문방 입장:', match.id);
+    navigate(`/survey/${match.id}`, {
+      state: {
+        roomId: match.id,
+        user1Id: match.user1Id,
+        user1Nickname: match.user1Nickname,
+        user2Id: match.user2Id,
+        user2Nickname: match.user2Nickname,
+      }
     });
   };
 
@@ -79,7 +93,7 @@ function ChatListPage() {
         {chattingList.map((chat) => (
           <div
             key={chat.id}
-            onClick={() => handleChatClick(chat.id)}
+            onClick={() => handleChatClick(chat)}
             className="cursor-pointer"
           >
             <ItemCard
