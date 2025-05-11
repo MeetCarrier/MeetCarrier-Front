@@ -37,7 +37,7 @@ function ChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const emojiHeight = emojiOpen ? 200 : 0;
-  /* 서버용
+
   useEffect(() => {
     if (!state?.roomId) {
       console.error('방 정보가 없습니다.');
@@ -66,8 +66,15 @@ function ChatPage() {
         console.log('WebSocket 연결 성공');
         // 채팅방 구독
         stompClient.subscribe(`/topic/room/${state.roomId}`, (message) => {
-          const newMessage = JSON.parse(message.body);
-          console.log('새로운 메시지 수신:', newMessage);
+          const newMessage: ChatMessage = JSON.parse(message.body);
+
+          // 내 메시지는 이미 로컬에서 띄웠으므로 무시
+          if (newMessage.sender === state.user1Id) {
+            console.log('[무시된 내 메시지]', newMessage);
+            return;
+          }
+
+          console.log('[수신 메시지]', newMessage);
           setMessages((prev) => [...prev, newMessage]);
         });
       },
@@ -95,66 +102,84 @@ function ChatPage() {
       }
     };
   }, [state?.roomId, navigate]);
-  */
 
-  useEffect(() => {
-    if (!state?.roomId) {
-      console.error('방 정보가 없습니다.');
-      navigate(-1);
-      return;
-    }
+  // useEffect(() => {
+  //   if (!state?.roomId) {
+  //     console.error('방 정보가 없습니다.');
+  //     navigate(-1);
+  //     return;
+  //   }
 
-    // 더미 메시지 데이터 설정
-    const dummyMessages: ChatMessage[] = [
-      {
-        messageType: 'TEXT',
-        message: '안녕하세요!',
-        imageUrl: null,
-        sender: state.user1Id,
-        sentAt: new Date().toISOString(),
-      },
-      {
-        messageType: 'TEXT',
-        message: '반가워요~',
-        imageUrl: null,
-        sender: state.user2Id,
-        sentAt: new Date().toISOString(),
-      },
-      {
-        messageType: 'TEXT',
-        message: '반가워요~',
-        imageUrl: null,
-        sender: state.user2Id,
-        sentAt: new Date().toISOString(),
-      },
-      {
-        messageType: 'TEXT',
-        message: '오늘 날씨 좋죠?',
-        imageUrl: null,
-        sender: state.user1Id,
-        sentAt: new Date().toISOString(),
-      },
-    ];
-    setMessages(dummyMessages);
+  //   // 더미 메시지 데이터 설정
+  //   const dummyMessages: ChatMessage[] = [
+  //     {
+  //       messageType: 'TEXT',
+  //       message: '안녕하세요!',
+  //       imageUrl: null,
+  //       sender: state.user1Id,
+  //       sentAt: new Date().toISOString(),
+  //     },
+  //     {
+  //       messageType: 'TEXT',
+  //       message: '반가워요~',
+  //       imageUrl: null,
+  //       sender: state.user2Id,
+  //       sentAt: new Date().toISOString(),
+  //     },
+  //     {
+  //       messageType: 'TEXT',
+  //       message: '반가워요~',
+  //       imageUrl: null,
+  //       sender: state.user2Id,
+  //       sentAt: new Date().toISOString(),
+  //     },
+  //     {
+  //       messageType: 'TEXT',
+  //       message: '오늘 날씨 좋죠?',
+  //       imageUrl: null,
+  //       sender: state.user1Id,
+  //       sentAt: new Date().toISOString(),
+  //     },
+  //   ];
+  //   setMessages(dummyMessages);
 
-    return () => {
-      console.log('더미 테스트 - cleanup 호출');
-    };
-  }, [state?.roomId, navigate]);
+  //   return () => {
+  //     console.log('더미 테스트 - cleanup 호출');
+  //   };
+  // }, [state?.roomId, navigate]);
 
   // 메시지 전송 함수
   const sendMessage = (message: string) => {
     if (stompClientRef.current && stompClientRef.current.connected) {
-      const messageData = {
+      // 서버에 보낼 메시지 (규격 준수)
+      const outgoingMessage = {
         roomId: state.roomId,
         type: 'TEXT',
         message: message,
+        userId: state.user1Id,
         imageUrl: null
       };
-      console.log('메시지 전송:', messageData);
+
+      // 로컬에서 바로 화면에 띄울 메시지 (내가 보낸 것이므로 sender와 sentAt 명시)
+      const now = new Date();
+      // 현재 시간을 UTC로 변환 (한국 시간에서 9시간을 빼서 UTC로 만듦)
+      const utcSentAt = new Date(now.getTime() - (9 * 60 * 60 * 1000)).toISOString();
+      const localMessage: ChatMessage = {
+        messageType: 'TEXT',
+        message: message,
+        imageUrl: null,
+        sender: state.user1Id,
+        sentAt: utcSentAt
+      };
+
+      // 1. 화면에 즉시 표시
+      console.log("[보낸 메시지]", outgoingMessage);
+      setMessages(prev => [...prev, localMessage]);
+
+      // 2. 서버에 전송
       stompClientRef.current.publish({
         destination: '/app/chat/send',
-        body: JSON.stringify(messageData)
+        body: JSON.stringify(outgoingMessage)
       });
     } else {
       console.warn('WebSocket이 연결되어 있지 않습니다.');
@@ -174,7 +199,7 @@ function ChatPage() {
         body: JSON.stringify(leaveData)
       });
     }
-    navigate("/main");
+    navigate("/ChatList");
   };
 
   const handleBackClick = () => {
@@ -211,7 +236,7 @@ function ChatPage() {
       />
 
       <div
-        className="flex flex-col w-full overflow-y-auto p-4 z-0 bg-[#F2F2F2]"
+        className="flex flex-col w-full overflow-y-auto p-4 z-0"
         style={{
           height: `calc(100% - 240px - ${emojiHeight}px)`,
           transition: 'height 0.3s ease',
@@ -225,6 +250,11 @@ function ChatPage() {
 
           const profileUrl = !isMine && msg.imageUrl ? msg.imageUrl : sampleProfile;
           const nickname = isMine ? state.user1Nickname : state.user2Nickname;
+
+          // UTC 시간을 한국 시간으로 변환
+          const messageDate = new Date(msg.sentAt);
+          // UTC 시간에 9시간을 더해서 한국 시간으로 변환
+          const koreanTime = new Date(messageDate.getTime() + (9 * 60 * 60 * 1000));
 
           return (
             <div
@@ -251,8 +281,8 @@ function ChatPage() {
 
                 <div
                   className={`px-3 py-2 rounded-xl whitespace-pre-wrap ${isMine
-                      ? 'bg-[#BD4B2C] text-[#F2F2F2] rounded-br-none self-end'
-                      : 'bg-[#FFFFFF] text-[#333333] rounded-bl-none'
+                    ? 'bg-[#BD4B2C] text-[#F2F2F2] rounded-br-none self-end'
+                    : 'bg-[#FFFFFF] text-[#333333] rounded-bl-none'
                     }`}
                 >
                   {msg.message}
@@ -263,7 +293,7 @@ function ChatPage() {
                     className={`text-xs text-gray-400 mt-1 ${isMine ? 'text-right pr-1' : 'text-left pl-1'
                       }`}
                   >
-                    {new Date(msg.sentAt).toLocaleTimeString([], {
+                    {koreanTime.toLocaleTimeString('ko-KR', {
                       hour: '2-digit',
                       minute: '2-digit',
                       hour12: true,
