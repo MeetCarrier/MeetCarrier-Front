@@ -15,7 +15,7 @@
     "id": 2,
     "matchedAt": "2025-05-06T09:15:00Z",
     "status": "Chatting",
-    "relatedId": 2,
+    "relatedId": 12,
     "user1Id": 1,
     "user1Nickname": "김철수",
     "user1ImageUrl": "/images/user1.svg",

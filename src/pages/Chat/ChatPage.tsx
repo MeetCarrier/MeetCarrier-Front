@@ -5,6 +5,7 @@ import axios from 'axios';
 import ChatBar from './components/ChatBar';
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
+import sampleProfile from "../../assets/img/sample/sample_profile.svg";
 
 import back_arrow from '../../assets/img/icons/HobbyIcon/back_arrow.svg';
 import search_icon from '../../assets/img/icons/ChatIcon/search.svg';
@@ -36,7 +37,7 @@ function ChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const emojiHeight = emojiOpen ? 200 : 0;
-
+  /* 서버용
   useEffect(() => {
     if (!state?.roomId) {
       console.error('방 정보가 없습니다.');
@@ -94,6 +95,52 @@ function ChatPage() {
       }
     };
   }, [state?.roomId, navigate]);
+  */
+
+  useEffect(() => {
+    if (!state?.roomId) {
+      console.error('방 정보가 없습니다.');
+      navigate(-1);
+      return;
+    }
+
+    // 더미 메시지 데이터 설정
+    const dummyMessages: ChatMessage[] = [
+      {
+        messageType: 'TEXT',
+        message: '안녕하세요!',
+        imageUrl: null,
+        sender: state.user1Id,
+        sentAt: new Date().toISOString(),
+      },
+      {
+        messageType: 'TEXT',
+        message: '반가워요~',
+        imageUrl: null,
+        sender: state.user2Id,
+        sentAt: new Date().toISOString(),
+      },
+      {
+        messageType: 'TEXT',
+        message: '반가워요~',
+        imageUrl: null,
+        sender: state.user2Id,
+        sentAt: new Date().toISOString(),
+      },
+      {
+        messageType: 'TEXT',
+        message: '오늘 날씨 좋죠?',
+        imageUrl: null,
+        sender: state.user1Id,
+        sentAt: new Date().toISOString(),
+      },
+    ];
+    setMessages(dummyMessages);
+
+    return () => {
+      console.log('더미 테스트 - cleanup 호출');
+    };
+  }, [state?.roomId, navigate]);
 
   // 메시지 전송 함수
   const sendMessage = (message: string) => {
@@ -127,7 +174,7 @@ function ChatPage() {
         body: JSON.stringify(leaveData)
       });
     }
-    navigate(-1);
+    navigate("/main");
   };
 
   const handleBackClick = () => {
@@ -170,27 +217,64 @@ function ChatPage() {
           transition: 'height 0.3s ease',
         }}
       >
-        {messages.map((msg, index) => (
-          <div
-            key={index}
-            className={`mb-4 ${
-              msg.sender === state?.user1Id ? 'self-end' : 'self-start'
-            }`}
-          >
+        {messages.map((msg, index) => {
+          const isMine = msg.sender === state.user1Id;
+          const isPrevSameSender = index > 0 && messages[index - 1].sender === msg.sender;
+          const isNextDifferentSender =
+            index === messages.length - 1 || messages[index + 1].sender !== msg.sender;
+
+          const profileUrl = !isMine && msg.imageUrl ? msg.imageUrl : sampleProfile;
+          const nickname = isMine ? state.user1Nickname : state.user2Nickname;
+
+          return (
             <div
-              className={`max-w-[70%] p-3 rounded-lg ${
-                msg.sender === state?.user1Id
-                  ? 'bg-blue-500 text-white ml-auto'
-                  : 'bg-gray-200 text-gray-800'
-              }`}
+              key={index}
+              className={`flex ${isMine ? 'justify-end' : 'justify-start'} mb-1`}
             >
-              {msg.message}
+              {/* 왼쪽 프로필 (처음 메시지일 때만) */}
+              {!isMine && !isPrevSameSender ? (
+                <div className="w-8 mr-2">
+                  <img src={profileUrl} alt="프로필" className="w-8 h-8 rounded-[2px]" />
+                </div>
+              ) : (
+                !isMine && <div className="w-8 mr-2" /> // 차지하는 공간 유지
+              )}
+
+              {/* 채팅 div */}
+              <div
+                className={`max-w-[70%] flex flex-col`} // ← 이 부분이 핵심
+              >
+                {/* 닉네임은 첫 메시지일 때만 */}
+                {!isMine && !isPrevSameSender && (
+                  <span className="text-sm text-gray-700 mb-1">{nickname}</span>
+                )}
+
+                <div
+                  className={`px-3 py-2 rounded-xl whitespace-pre-wrap ${isMine
+                      ? 'bg-[#BD4B2C] text-[#F2F2F2] rounded-br-none self-end'
+                      : 'bg-[#FFFFFF] text-[#333333] rounded-bl-none'
+                    }`}
+                >
+                  {msg.message}
+                </div>
+
+                {isNextDifferentSender && (
+                  <span
+                    className={`text-xs text-gray-400 mt-1 ${isMine ? 'text-right pr-1' : 'text-left pl-1'
+                      }`}
+                  >
+                    {new Date(msg.sentAt).toLocaleTimeString([], {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: true,
+                    })}
+                  </span>
+                )}
+              </div>
             </div>
-            <div className="text-xs text-gray-500 mt-1">
-              {new Date(msg.sentAt).toLocaleTimeString()}
-            </div>
-          </div>
-        ))}
+          );
+        })}
+
         <div ref={messagesEndRef} />
       </div>
     </>
