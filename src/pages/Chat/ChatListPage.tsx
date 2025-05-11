@@ -33,7 +33,7 @@ function ChatListPage() {
     const fetchMatches = async () => {
       try {
         console.log("[매치 불러오기] API 호출 시작...");
-        const res = await fetch("https://www.mannamdeliveries.link/matches/2");
+        const res = await fetch("https://www.mannamdeliveries.link/matches/1");
 
         console.log(`[매치 불러오기] 응답 상태 코드: ${res.status}`);
 
@@ -89,7 +89,7 @@ function ChatListPage() {
     fetchMatches();
   }, [dispatch]);
 
-  const chattingList = matchList.filter((m) => m.status === "Chatting");
+  const chattingList = matchList.filter((m) => m.status === "Chatting" && m.agreed === true);
   const surveyList = matchList.filter((m) => m.status === "Surveying" || (m.status === "Chatting" && m.agreed === false));
 
   const handleChatClick = (match: MatchData) => {
@@ -110,13 +110,14 @@ function ChatListPage() {
     navigate(`/survey/${match.id}`, {
       state: {
         roomId: match.id,
+        status: match.status,
         user1Id: match.user1Id,
         user1Nickname: match.user1Nickname,
         user2Id: match.user2Id,
         user2Nickname: match.user2Nickname,
         matchedAt: match.matchedAt,
-        status: match.status,
         agreed: match.agreed,
+        id: match.id
       }
     });
   };

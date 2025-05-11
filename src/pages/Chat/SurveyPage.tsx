@@ -27,11 +27,14 @@ interface Answer {
 
 interface LocationState {
   roomId: number;
+  status: string;
   user1Id: number;
   user1Nickname: string;
   user2Id: number;
   user2Nickname: string;
   matchedAt: string;
+  agreed: boolean;
+  id: number;
 }
 
 function SurveyPage() {
@@ -77,6 +80,19 @@ function SurveyPage() {
   }, [isSubmitted, roomId]);
 
   useEffect(() => {
+    // 로컬 스토리지에 저장된 임시 답변 불러오기
+    const savedAnswers = localStorage.getItem(`tempAnswers_${roomId}`);
+    if (savedAnswers) {
+      try {
+        const parsed = JSON.parse(savedAnswers);
+        setTempAnswers(parsed);
+      } catch (e) {
+        console.error("임시 답변 불러오기 실패", e);
+      }
+    }
+  }, [roomId]);
+
+  useEffect(() => {
     if (!state?.roomId) {
       console.error('방 정보가 없습니다.');
       navigate('/ChatList');
@@ -91,14 +107,35 @@ function SurveyPage() {
       onConnect: () => {
         console.log('WebSocket 연결 성공');
         // 설문 완료 알림 구독
-        stompClient.subscribe(`/topic/survey/${state.roomId}/complete`, (message) => {
+        stompClient.subscribe(`/topic/survey/${state.roomId}/complete`, async (message) => {
           const data = JSON.parse(message.body);
           console.log('[✔️ 설문 제출 알림 수신]', {
             destination: `/topic/survey/${state.roomId}/complete`,
             data,
           });
-          setChatRoomId(data.roomId);
-          setShowCompleteModal(true);
+          
+          try {
+            // 최신 매치 상태 조회
+            const response = await axios.get(`https://www.mannamdeliveries.link/matches/${state.roomId}`);
+            const updatedMatch = response.data;
+            
+            // 상태 업데이트
+            setChatRoomId(data.roomId);
+            setShowCompleteModal(true);
+            
+            // location state 업데이트
+            navigate(`/survey/${state.roomId}`, {
+              state: {
+                ...state,
+                status: "Chatting",
+                agreed: updatedMatch.agreed,
+                matchedAt: updatedMatch.matchedAt
+              },
+              replace: true
+            });
+          } catch (error) {
+            console.error('매치 상태 업데이트 실패:', error);
+          }
         });
 
         // 설문 퇴장 알림 구독
@@ -208,10 +245,17 @@ function SurveyPage() {
     if (!currentQuestion) return;
 
     // 임시 저장소에 답변 저장
-    setTempAnswers(prev => ({
-      ...prev,
-      [currentQuestion.questionId]: editedContent
-    }));
+    const updatedAnswers = {
+      ...tempAnswers,
+      [currentQuestion.questionId]: editedContent,
+    };
+  
+    // 상태 업데이트
+    setTempAnswers(updatedAnswers);
+  
+    // 로컬스토리지에 저장 (질문별로 분리 저장 or 통째로 저장 가능 — 여기선 통째로 저장)
+    localStorage.setItem(`tempAnswers_${roomId}`, JSON.stringify(updatedAnswers));
+  
     setIsEditing(false);
   };
 
@@ -250,9 +294,22 @@ function SurveyPage() {
     return index === total - 1 ? "마지막-질문" : `${labels[index]}번째-질문`;
   };
 
-  const handleJoinChat = () => {
-    if (chatRoomId) {
-      navigate(`/chat/${chatRoomId}`);
+  const handleJoinChat = async () => {
+    try {
+      const response = await axios.post(
+        `https://www.mannamdeliveries.link/room/${state.id}/${myId}/enter`
+      );
+      const newRoomId = response.data.roomId;
+      setChatRoomId(newRoomId);
+      navigate(`/chat/${newRoomId}`, {
+        state: {
+          ...state,
+          roomId: newRoomId,
+        },
+      });
+    } catch (error) {
+      console.error("채팅방 입장 요청 실패:", error);
+      alert("채팅방에 입장할 수 없습니다.");
     }
   };
 
@@ -367,9 +424,9 @@ function SurveyPage() {
 
                 {/* 내 답변 */}
                 <div
-                  className="bg-white rounded p-4 shadow-sm border border-gray-200 mb-3 min-h-[200px] cursor-pointer"
+                  className={`bg-white rounded p-4 shadow-sm border border-gray-200 mb-3 min-h-[200px] ${!isSubmitted ? 'cursor-pointer' : ''}`}
                   onClick={() => {
-                    if (!isEditing) {
+                    if (!isEditing && !isSubmitted) {
                       setIsEditing(true);
                       setEditedContent(currentAnswer);
                     }
@@ -419,7 +476,7 @@ function SurveyPage() {
           })}
         </Swiper>
 
-        {currentStep === questions.length - 1 && !isEditing && isAllQuestionsAnswered() && !isSubmitted && (
+        { !isSubmitted && !isEditing && isAllQuestionsAnswered() && (
           <div className="flex justify-center mt-4">
             <button
               className="px-6 py-2 bg-[#C67B5A] text-white text-sm font-GanwonEduAll_Bold rounded-md"
@@ -454,14 +511,20 @@ function SurveyPage() {
       </Modal>
 
       {/* 설문 완료 모달 */}
-      <Modal isOpen={showCompleteModal} onClose={() => setShowCompleteModal(false)}>
+      <Modal isOpen={showCompleteModal} onClose={() => {
+        setShowCompleteModal(false);
+        // 설문 완료 모달이 닫힐 때 채팅방 입장 요청
+        handleJoinChat();
+      }}>
         <div className="flex flex-col items-center">
           <h3 className="text-lg font-GanwonEduAll_Bold mb-4">설문 완료!</h3>
           <p className="text-sm mb-6 text-center">둘 다 모든 설문에 답변했어요!</p>
           <div className="flex justify-center w-full">
             <button
               className="px-6 py-2 bg-[#C67B5A] text-white text-sm rounded"
-              onClick={() => setShowCompleteModal(false)}
+              onClick={() => {
+                setShowCompleteModal(false);
+              }}
             >
               답변 확인하기
             </button>
@@ -470,8 +533,8 @@ function SurveyPage() {
       </Modal>
 
       {/* 채팅방 참가 버튼 */}
-      {chatRoomId && !showCompleteModal && (
-        <div className="fixed bottom-6 left-0 right-0 flex justify-center">
+      {state.status === "Chatting" && !state.agreed && !showCompleteModal && (
+        <div className="fixed bottom-30 left-0 right-0 flex justify-center">
           <button
             className="px-6 py-3 bg-[#C67B5A] text-white text-sm font-GanwonEduAll_Bold rounded-full shadow-lg"
             onClick={handleJoinChat}
