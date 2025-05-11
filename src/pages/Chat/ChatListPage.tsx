@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "../../Utils/store";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState, AppDispatch } from "../../Utils/store";
 import { fetchUser } from "../../Utils/userSlice";
 
 import NavBar from "../../components/NavBar";
@@ -12,6 +12,7 @@ type MatchData = {
   id: number;
   matchedAt: string;
   status: string;
+  agreed: boolean;
   relatedId: number;
   user1Id: number;
   user1Nickname: string;
@@ -32,7 +33,7 @@ function ChatListPage() {
     const fetchMatches = async () => {
       try {
         console.log("[매치 불러오기] API 호출 시작...");
-        const res = await fetch("https://www.mannamdeliveries.link/matches");
+        const res = await fetch("https://www.mannamdeliveries.link/matches/2");
 
         console.log(`[매치 불러오기] 응답 상태 코드: ${res.status}`);
 
@@ -49,13 +50,14 @@ function ChatListPage() {
         setMatchList(data);
       } catch (e) {
         console.error("[매치 불러오기] 실패:", e);
-
+      
         // 더미 데이터 출력
         const dummyData: MatchData[] = [
           {
             id: 1,
             matchedAt: "2024-03-20T10:00:00",
             status: "Chatting",
+            agreed: true,
             relatedId: 1,
             user1Id: 1,
             user1Nickname: "사용자1",
@@ -68,6 +70,7 @@ function ChatListPage() {
             id: 2,
             matchedAt: "2024-03-20T11:00:00",
             status: "Surveying",
+            agreed: true,
             relatedId: 2,
             user1Id: 1,
             user1Nickname: "사용자1",
@@ -87,7 +90,7 @@ function ChatListPage() {
   }, [dispatch]);
 
   const chattingList = matchList.filter((m) => m.status === "Chatting");
-  const surveyList = matchList.filter((m) => m.status === "Surveying");
+  const surveyList = matchList.filter((m) => m.status === "Surveying" || (m.status === "Chatting" && m.agreed === false));
 
   const handleChatClick = (match: MatchData) => {
     console.log('채팅방 입장:', match.id);
@@ -112,6 +115,8 @@ function ChatListPage() {
         user2Id: match.user2Id,
         user2Nickname: match.user2Nickname,
         matchedAt: match.matchedAt,
+        status: match.status,
+        agreed: match.agreed,
       }
     });
   };
