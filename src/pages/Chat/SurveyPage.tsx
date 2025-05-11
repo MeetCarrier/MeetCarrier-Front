@@ -44,17 +44,40 @@ function SurveyPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [tempAnswers, setTempAnswers] = useState<{[key: number]: string}>({});
+  const [tempAnswers, setTempAnswers] = useState<{ [key: number]: string }>({});
+  const [showSubmitModal, setShowSubmitModal] = useState(false);
+  const [showCompleteModal, setShowCompleteModal] = useState(false);
+  const [chatRoomId, setChatRoomId] = useState<number | null>(() => {
+    const saved = localStorage.getItem(`chatRoomId_${roomId}`);
+    return saved ? parseInt(saved) : null;
+  });
+  const [isSubmitted, setIsSubmitted] = useState(() => {
+    const saved = localStorage.getItem(`isSubmitted_${roomId}`);
+    return saved === 'true';
+  });
+
   const menuRef = useRef<HTMLDivElement>(null);
   const swiperRef = useRef<SwiperCore | null>(null);
   const stompClientRef = useRef<Client | null>(null);
 
-  const myId = user1Id; // 현재 로그인한 사용자 ID
+  const myId = user1Id;
+
+  // chatRoomId가 변경될 때마다 localStorage에 저장
+  useEffect(() => {
+    if (chatRoomId) {
+      localStorage.setItem(`chatRoomId_${roomId}`, chatRoomId.toString());
+    }
+  }, [chatRoomId, roomId]);
+
+  // isSubmitted가 변경될 때마다 localStorage에 저장
+  useEffect(() => {
+    localStorage.setItem(`isSubmitted_${roomId}`, isSubmitted.toString());
+  }, [isSubmitted, roomId]);
 
   useEffect(() => {
     if (!state?.roomId) {
       console.error('방 정보가 없습니다.');
-      navigate(-1);
+      navigate('/ChatList');
       return;
     }
 
@@ -65,7 +88,6 @@ function SurveyPage() {
       webSocketFactory: () => socket,
       onConnect: () => {
         console.log('WebSocket 연결 성공');
-      
         // 설문 완료 알림 구독
         stompClient.subscribe(`/topic/survey/${state.roomId}/complete`, (message) => {
           const data = JSON.parse(message.body);
@@ -73,9 +95,10 @@ function SurveyPage() {
             destination: `/topic/survey/${state.roomId}/complete`,
             data,
           });
-          navigate(`/chat/${data.roomId}`);
+          setChatRoomId(data.roomId);
+          setShowCompleteModal(true);
         });
-      
+
         // 설문 퇴장 알림 구독
         stompClient.subscribe(`/topic/survey/${state.roomId}/leave`, (message) => {
           const data = JSON.parse(message.body);
@@ -84,10 +107,9 @@ function SurveyPage() {
             data,
           });
           alert(`${data.leaverNickname}님이 설문을 나갔습니다.`);
-          navigate(-1);
+          navigate('/ChatList');
         });
       },
-      
       onDisconnect: () => {
         console.log('WebSocket 연결 해제');
       },
@@ -125,7 +147,7 @@ function SurveyPage() {
         // 기존 답변을 임시 저장소에 복사
         const existingAnswers = response.data
           .filter((a: Answer) => a.userId === myId)
-          .reduce((acc: {[key: number]: string}, curr: Answer) => {
+          .reduce((acc: { [key: number]: string }, curr: Answer) => {
             acc[curr.questionId] = curr.content;
             return acc;
           }, {});
@@ -173,9 +195,9 @@ function SurveyPage() {
       setIsEditing(false);
       setEditedContent("");
     } else if (currentStep > 0) {
-      setCurrentStep((prev) => prev - 1);
+      navigate('/ChatList');
     } else {
-      navigate(-1);
+      navigate('/ChatList');
     }
   };
 
@@ -194,8 +216,7 @@ function SurveyPage() {
   const handleSubmit = async () => {
     try {
       console.log('설문 제출 시작');
-      
-      // 모든 답변을 배열로 변환 (userId 제외)
+
       const answersToSubmit = Object.entries(tempAnswers).map(([questionId, content]) => ({
         questionId: parseInt(questionId),
         content: content
@@ -203,14 +224,14 @@ function SurveyPage() {
 
       console.log('제출할 답변:', answersToSubmit);
 
-      // 모든 답변을 한 번에 제출
       await axios.post(
         `https://www.mannamdeliveries.link/survey/${state.roomId}/answers/${myId}`,
         answersToSubmit
       );
 
       console.log('설문 제출 성공');
-      alert('모든 질문이 완료되었습니다!');
+      setShowSubmitModal(false);
+      setIsSubmitted(true); // ✅ 제출 완료로 표시
     } catch (error) {
       console.error('설문 제출 실패:', error);
       alert('설문 제출에 실패했습니다.');
@@ -225,6 +246,12 @@ function SurveyPage() {
   const getLabeledQuestionTitle = (index: number, total: number) => {
     const labels = ["첫", "두", "세", "네"];
     return index === total - 1 ? "마지막-질문" : `${labels[index]}번째-질문`;
+  };
+
+  const handleJoinChat = () => {
+    if (chatRoomId) {
+      navigate(`/chat/${chatRoomId}`);
+    }
   };
 
   return (
@@ -268,7 +295,7 @@ function SurveyPage() {
                 });
               }
               setIsMenuOpen(false);
-              navigate(-1);
+              navigate('/ChatList');
             }}
           >
             설문 나가기
@@ -388,17 +415,71 @@ function SurveyPage() {
           })}
         </Swiper>
 
-        {currentStep === questions.length - 1 && !isEditing && isAllQuestionsAnswered() && (
+        {currentStep === questions.length - 1 && !isEditing && isAllQuestionsAnswered() && !isSubmitted && (
           <div className="flex justify-center mt-4">
             <button
               className="px-6 py-2 bg-[#C67B5A] text-white text-sm font-GanwonEduAll_Bold rounded-md"
-              onClick={handleSubmit}
+              onClick={() => setShowSubmitModal(true)}
             >
               제출하기
             </button>
           </div>
         )}
       </div>
+
+      {/* 제출 확인 모달 */}
+      {showSubmitModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-[80%] max-w-md">
+            <h3 className="text-lg font-GanwonEduAll_Bold mb-4">제출 확인</h3>
+            <p className="text-sm mb-6">제출 후에는 답변을 수정할 수 없습니다. 정말 제출하시겠습니까?</p>
+            <div className="flex justify-end gap-4">
+              <button
+                className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded"
+                onClick={() => setShowSubmitModal(false)}
+              >
+                취소
+              </button>
+              <button
+                className="px-4 py-2 bg-[#C67B5A] text-white text-sm rounded"
+                onClick={handleSubmit}
+              >
+                제출하기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 설문 완료 모달 */}
+      {showCompleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-[80%] max-w-md">
+            <h3 className="text-lg font-GanwonEduAll_Bold mb-4">설문 완료!</h3>
+            <p className="text-sm mb-6">둘 다 모든 설문에 답변했어요!</p>
+            <div className="flex justify-center">
+              <button
+                className="px-6 py-2 bg-[#C67B5A] text-white text-sm rounded"
+                onClick={() => setShowCompleteModal(false)}
+              >
+                답변 확인하기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 채팅방 참가 버튼 */}
+      {chatRoomId && !showCompleteModal && (
+        <div className="fixed bottom-6 left-0 right-0 flex justify-center">
+          <button
+            className="px-6 py-3 bg-[#C67B5A] text-white text-sm font-GanwonEduAll_Bold rounded-full shadow-lg"
+            onClick={handleJoinChat}
+          >
+            채팅방 참가하기
+          </button>
+        </div>
+      )}
     </>
   );
 }
