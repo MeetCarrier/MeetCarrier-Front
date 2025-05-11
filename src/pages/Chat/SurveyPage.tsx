@@ -12,6 +12,7 @@ import NavBar from "../../components/NavBar";
 import FootPrintCheck from "./components/FootPrintCheck";
 import menuIcon from "../../assets/img/icons/HobbyIcon/menu.svg";
 import checkIcon from "../../assets/img/icons/HobbyIcon/check.svg";
+import Modal from "../../components/Modal";
 
 interface Question {
   questionId: number;
@@ -30,6 +31,7 @@ interface LocationState {
   user1Nickname: string;
   user2Id: number;
   user2Nickname: string;
+  matchedAt: string;
 }
 
 function SurveyPage() {
@@ -323,6 +325,8 @@ function SurveyPage() {
             const allAnswers = answers.filter(
               (a) => a.questionId === question.questionId
             );
+            const { matchedAt } = state;
+
             const myAnswer = allAnswers.find((a) => a.userId === myId);
             const otherAnswer = allAnswers.find((a) => a.userId !== myId);
 
@@ -358,7 +362,7 @@ function SurveyPage() {
                         )
                       )}
                   </div>
-                  <p className="text-xs text-gray-400">2025.03.29</p>
+                  <p className="text-xs text-gray-400">{new Date(matchedAt).toLocaleDateString("ko-KR")}</p>
                 </div>
 
                 {/* 내 답변 */}
@@ -428,46 +432,42 @@ function SurveyPage() {
       </div>
 
       {/* 제출 확인 모달 */}
-      {showSubmitModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-[80%] max-w-md">
-            <h3 className="text-lg font-GanwonEduAll_Bold mb-4">제출 확인</h3>
-            <p className="text-sm mb-6">제출 후에는 답변을 수정할 수 없습니다. 정말 제출하시겠습니까?</p>
-            <div className="flex justify-end gap-4">
-              <button
-                className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded"
-                onClick={() => setShowSubmitModal(false)}
-              >
-                취소
-              </button>
-              <button
-                className="px-4 py-2 bg-[#C67B5A] text-white text-sm rounded"
-                onClick={handleSubmit}
-              >
-                제출하기
-              </button>
-            </div>
+      <Modal isOpen={showSubmitModal} onClose={() => setShowSubmitModal(false)}>
+        <div className="flex flex-col items-center">
+          <h3 className="text-lg font-GanwonEduAll_Bold mb-4">제출 확인</h3>
+          <p className="text-sm mb-6 text-center">답변을 등록하시겠어요?<br/>등록 후에는 수정이 불가능해요.</p>
+          <div className="flex justify-center gap-4 w-full">
+            <button
+              className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded"
+              onClick={() => setShowSubmitModal(false)}
+            >
+              취소
+            </button>
+            <button
+              className="px-4 py-2 bg-[#C67B5A] text-white text-sm rounded"
+              onClick={handleSubmit}
+            >
+              제출하기
+            </button>
           </div>
         </div>
-      )}
+      </Modal>
 
       {/* 설문 완료 모달 */}
-      {showCompleteModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-[80%] max-w-md">
-            <h3 className="text-lg font-GanwonEduAll_Bold mb-4">설문 완료!</h3>
-            <p className="text-sm mb-6">둘 다 모든 설문에 답변했어요!</p>
-            <div className="flex justify-center">
-              <button
-                className="px-6 py-2 bg-[#C67B5A] text-white text-sm rounded"
-                onClick={() => setShowCompleteModal(false)}
-              >
-                답변 확인하기
-              </button>
-            </div>
+      <Modal isOpen={showCompleteModal} onClose={() => setShowCompleteModal(false)}>
+        <div className="flex flex-col items-center">
+          <h3 className="text-lg font-GanwonEduAll_Bold mb-4">설문 완료!</h3>
+          <p className="text-sm mb-6 text-center">둘 다 모든 설문에 답변했어요!</p>
+          <div className="flex justify-center w-full">
+            <button
+              className="px-6 py-2 bg-[#C67B5A] text-white text-sm rounded"
+              onClick={() => setShowCompleteModal(false)}
+            >
+              답변 확인하기
+            </button>
           </div>
         </div>
-      )}
+      </Modal>
 
       {/* 채팅방 참가 버튼 */}
       {chatRoomId && !showCompleteModal && (
