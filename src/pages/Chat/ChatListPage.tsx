@@ -15,10 +15,10 @@ type MatchData = {
   relatedId: number;
   user1Id: number;
   user1Nickname: string;
-  user1ImageUrl: string;
+  user1ImageUrl: string | undefined;
   user2Id: number;
   user2Nickname: string;
-  user2ImageUrl: string;
+  user2ImageUrl: string | undefined;
 };
 
 function ChatListPage() {
@@ -31,13 +31,55 @@ function ChatListPage() {
 
     const fetchMatches = async () => {
       try {
-        const res = await fetch("/api/matches");
-        const data = await res.json();
+        console.log("[매치 불러오기] API 호출 시작...");
+        const res = await fetch("https://www.mannamdeliveries.link/matches");
+
+        console.log(`[매치 불러오기] 응답 상태 코드: ${res.status}`);
+
+
+        if (!res.ok) {
+          throw new Error(`API 호출 실패: ${res.status}`);
+        }
+
+        const rawText = await res.text();
+        console.log("[서버 응답 원문]", rawText);
+        const data = JSON.parse(rawText);
+        console.log("[매치 불러오기] 성공:", data);
+
         setMatchList(data);
       } catch (e) {
-        const fallbackRes = await fetch("./ChatListFallBack.json");
-        const fallbackData = await fallbackRes.json();
-        setMatchList(fallbackData);
+        console.error("[매치 불러오기] 실패:", e);
+
+        // 더미 데이터 출력
+        const dummyData: MatchData[] = [
+          {
+            id: 1,
+            matchedAt: "2024-03-20T10:00:00",
+            status: "Chatting",
+            relatedId: 1,
+            user1Id: 1,
+            user1Nickname: "사용자1",
+            user1ImageUrl: undefined,
+            user2Id: 2,
+            user2Nickname: "사용자2",
+            user2ImageUrl: undefined
+          },
+          {
+            id: 2,
+            matchedAt: "2024-03-20T11:00:00",
+            status: "Surveying",
+            relatedId: 2,
+            user1Id: 1,
+            user1Nickname: "사용자1",
+            user1ImageUrl: undefined,
+            user2Id: 3,
+            user2Nickname: "사용자3",
+            user2ImageUrl: undefined
+          }
+        ];
+
+        console.log("[매치 불러오기] 더미 데이터 사용:", dummyData);
+        setMatchList(dummyData);
       }
     };
 
@@ -69,6 +111,7 @@ function ChatListPage() {
         user1Nickname: match.user1Nickname,
         user2Id: match.user2Id,
         user2Nickname: match.user2Nickname,
+        matchedAt: match.matchedAt,
       }
     });
   };
@@ -87,39 +130,46 @@ function ChatListPage() {
       </div>
 
       <div className="flex flex-col w-full h-[calc(100%-200px)] overflow-y-auto px-4 z-0">
-        <h2 className="text-xl font-GanwonEduAll_Bold text-center mb-2">
-          채팅 목록
-        </h2>
-        {chattingList.map((chat) => (
-          <div
-            key={chat.id}
-            onClick={() => handleChatClick(chat)}
-            className="cursor-pointer"
-          >
-            <ItemCard
-              profileImageUrl={chat.user2ImageUrl}
-              username={chat.user2Nickname}
-              time={chat.matchedAt}
-            />
-          </div>
-        ))}
+        {chattingList.length > 0 && (
+          <>
+            <h2 className="text-xl font-GanwonEduAll_Bold text-center mb-2">
+              채팅 목록
+            </h2>
+            {chattingList.map((chat) => (
+              <div
+                key={chat.id}
+                onClick={() => handleChatClick(chat)}
+                className="cursor-pointer"
+              >
+                <ItemCard
+                  profileImageUrl={chat.user2ImageUrl}
+                  username={chat.user2Nickname}
+                  time={chat.matchedAt}
+                />
+              </div>
+            ))}
+          </>)}
 
-        <h2 className="text-xl font-GanwonEduAll_Bold text-center mt-6 mb-2">
-          설문 목록
-        </h2>
-        {surveyList.map((survey) => (
-          <div
-            key={survey.id}
-            onClick={() => handleSurveyClick(survey)}
-            className="cursor-pointer"
-          >
-            <ItemCard
-              profileImageUrl={survey.user2ImageUrl}
-              username={survey.user2Nickname}
-              time={survey.matchedAt}
-            />
-          </div>
-        ))}
+        {surveyList.length > 0 && (
+          <>
+            <h2 className="text-xl font-GanwonEduAll_Bold text-center mt-6 mb-2">
+              설문 목록
+            </h2>
+            {surveyList.map((survey) => (
+              <div
+                key={survey.id}
+                onClick={() => handleSurveyClick(survey)}
+                className="cursor-pointer"
+              >
+                <ItemCard
+                  profileImageUrl={survey.user2ImageUrl}
+                  username={survey.user2Nickname}
+                  time={survey.matchedAt}
+                />
+              </div>
+            ))}
+          </>)}
+
       </div>
     </>
   );
