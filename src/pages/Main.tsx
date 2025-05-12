@@ -33,10 +33,19 @@ function Main() {
   // 매칭 시작
   const handleStartMatching = () => {
     setStatus('matching');
+
+    const timeoutId = setTimeout(() => {
+      console.log('매칭 시간 초과');
+      setStatus('fail');
+    }, 360000);
+
     const client = startMatchingClient({
       onSuccess: (data) => {
         console.log('매칭 성공', data);
-        setStatus('success');
+        clearTimeout(timeoutId);
+        setTimeout(() => {
+          setStatus('success');
+        }, 5000);
       },
       onFail: (data) => {
         console.log('매칭 실패', data);
