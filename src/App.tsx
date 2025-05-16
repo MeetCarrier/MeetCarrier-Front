@@ -9,6 +9,8 @@ import SurveyPage from './pages/Chat/SurveyPage';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ChatPage from './pages/Chat/ChatPage';
+import Calendar from './pages/Calendar/Calendar';
+import Dairy from './pages/Calendar/Diary';
 
 import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import { Provider } from 'react-redux';
@@ -31,6 +33,8 @@ function App() {
             <Route path="Login" element={<Login />} />
             <Route path="register" element={<Register />} />
             <Route path="chat/:chatId" element={<ChatPage />} />
+            <Route path="Calendar" element={<Calendar />} />
+            <Route path="Diary" element={<Dairy />} />
           </Route>
         </Routes>
       </BrowserRouter>

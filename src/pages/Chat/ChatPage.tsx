@@ -5,7 +5,7 @@ import axios from 'axios';
 import ChatBar from './components/ChatBar';
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
-import sampleProfile from "../../assets/img/sample/sample_profile.svg";
+import sampleProfile from '../../assets/img/sample/sample_profile.svg';
 
 import back_arrow from '../../assets/img/icons/HobbyIcon/back_arrow.svg';
 import search_icon from '../../assets/img/icons/ChatIcon/search.svg';
@@ -49,7 +49,9 @@ function ChatPage() {
     const fetchChatHistory = async () => {
       try {
         console.log('채팅 기록 조회 시작:', state.roomId);
-        const response = await axios.get(`https://www.mannamdeliveries.link/chat/${state.roomId}`);
+        const response = await axios.get(
+          `https://www.mannamdeliveries.link/chat/${state.roomId}`
+        );
         console.log('채팅 기록 조회 결과:', response.data);
         setMessages(response.data);
       } catch (error) {
@@ -86,7 +88,7 @@ function ChatPage() {
       },
       onWebSocketError: (event) => {
         console.error('WebSocket 에러 발생:', event);
-      }
+      },
     });
 
     stompClientRef.current = stompClient;
@@ -157,29 +159,31 @@ function ChatPage() {
         type: 'TEXT',
         message: message,
         userId: state.user1Id,
-        imageUrl: null
+        imageUrl: null,
       };
 
       // 로컬에서 바로 화면에 띄울 메시지 (내가 보낸 것이므로 sender와 sentAt 명시)
       const now = new Date();
       // 현재 시간을 UTC로 변환 (한국 시간에서 9시간을 빼서 UTC로 만듦)
-      const utcSentAt = new Date(now.getTime() - (9 * 60 * 60 * 1000)).toISOString();
+      const utcSentAt = new Date(
+        now.getTime() - 9 * 60 * 60 * 1000
+      ).toISOString();
       const localMessage: ChatMessage = {
         messageType: 'TEXT',
         message: message,
         imageUrl: null,
         sender: state.user1Id,
-        sentAt: utcSentAt
+        sentAt: utcSentAt,
       };
 
       // 1. 화면에 즉시 표시
-      console.log("[보낸 메시지]", outgoingMessage);
-      setMessages(prev => [...prev, localMessage]);
+      console.log('[보낸 메시지]', outgoingMessage);
+      setMessages((prev) => [...prev, localMessage]);
 
       // 2. 서버에 전송
       stompClientRef.current.publish({
         destination: '/app/chat/send',
-        body: JSON.stringify(outgoingMessage)
+        body: JSON.stringify(outgoingMessage),
       });
     } else {
       console.warn('WebSocket이 연결되어 있지 않습니다.');
@@ -191,15 +195,15 @@ function ChatPage() {
     if (stompClientRef.current && stompClientRef.current.connected) {
       const leaveData = {
         roomId: state.roomId,
-        type: 'LEAVE'
+        type: 'LEAVE',
       };
       console.log('채팅방 퇴장 요청:', leaveData);
       stompClientRef.current.publish({
         destination: '/app/chat/leave',
-        body: JSON.stringify(leaveData)
+        body: JSON.stringify(leaveData),
       });
     }
-    navigate("/ChatList");
+    navigate('/ChatList');
   };
 
   const handleBackClick = () => {
@@ -220,7 +224,9 @@ function ChatPage() {
           className="absolute top-1/2 -translate-y-1/2 left-6 w-[9px] h-[20px] cursor-pointer"
           onClick={handleBackClick}
         />
-        <p className="text-[20px] font-MuseumClassic_L italic">{state?.user2Nickname || '상대방'}</p>
+        <p className="text-[20px] font-MuseumClassic_L italic">
+          {state?.user2Nickname || '상대방'}
+        </p>
         <img
           src={search_icon}
           alt="search_icon"
@@ -244,27 +250,38 @@ function ChatPage() {
       >
         {messages.map((msg, index) => {
           const isMine = msg.sender === state.user1Id;
-          const isPrevSameSender = index > 0 && messages[index - 1].sender === msg.sender;
+          const isPrevSameSender =
+            index > 0 && messages[index - 1].sender === msg.sender;
           const isNextDifferentSender =
-            index === messages.length - 1 || messages[index + 1].sender !== msg.sender;
+            index === messages.length - 1 ||
+            messages[index + 1].sender !== msg.sender;
 
-          const profileUrl = !isMine && msg.imageUrl ? msg.imageUrl : sampleProfile;
+          const profileUrl =
+            !isMine && msg.imageUrl ? msg.imageUrl : sampleProfile;
           const nickname = isMine ? state.user1Nickname : state.user2Nickname;
 
           // UTC 시간을 한국 시간으로 변환
           const messageDate = new Date(msg.sentAt);
           // UTC 시간에 9시간을 더해서 한국 시간으로 변환
-          const koreanTime = new Date(messageDate.getTime() + (9 * 60 * 60 * 1000));
+          const koreanTime = new Date(
+            messageDate.getTime() + 9 * 60 * 60 * 1000
+          );
 
           return (
             <div
               key={index}
-              className={`flex ${isMine ? 'justify-end' : 'justify-start'} mb-1`}
+              className={`flex ${
+                isMine ? 'justify-end' : 'justify-start'
+              } mb-1`}
             >
               {/* 왼쪽 프로필 (처음 메시지일 때만) */}
               {!isMine && !isPrevSameSender ? (
                 <div className="w-8 mr-2">
-                  <img src={profileUrl} alt="프로필" className="w-8 h-8 rounded-[2px]" />
+                  <img
+                    src={profileUrl}
+                    alt="프로필"
+                    className="w-8 h-8 rounded-[2px]"
+                  />
                 </div>
               ) : (
                 !isMine && <div className="w-8 mr-2" /> // 차지하는 공간 유지
@@ -280,18 +297,20 @@ function ChatPage() {
                 )}
 
                 <div
-                  className={`px-3 py-2 rounded-xl whitespace-pre-wrap ${isMine
-                    ? 'bg-[#BD4B2C] text-[#F2F2F2] rounded-br-none self-end'
-                    : 'bg-[#FFFFFF] text-[#333333] rounded-bl-none'
-                    }`}
+                  className={`px-3 py-2 rounded-xl whitespace-pre-wrap ${
+                    isMine
+                      ? 'bg-[#BD4B2C] text-[#F2F2F2] rounded-br-none self-end'
+                      : 'bg-[#FFFFFF] text-[#333333] rounded-bl-none'
+                  }`}
                 >
                   {msg.message}
                 </div>
 
                 {isNextDifferentSender && (
                   <span
-                    className={`text-xs text-gray-400 mt-1 ${isMine ? 'text-right pr-1' : 'text-left pl-1'
-                      }`}
+                    className={`text-xs text-gray-400 mt-1 ${
+                      isMine ? 'text-right pr-1' : 'text-left pl-1'
+                    }`}
                   >
                     {koreanTime.toLocaleTimeString('ko-KR', {
                       hour: '2-digit',

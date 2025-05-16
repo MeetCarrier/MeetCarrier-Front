@@ -6,6 +6,11 @@
 }
 
 @font-face {
+  font-family: 'MuseumClassic_B';
+  src: url('./src/assets/fonts/국립박물관문화재단클래식B.woff') format('woff');
+}
+
+@font-face {
   font-family: 'GanwonEduAll_Bold';
   src: url('./src/assets/fonts/강원교육모두-Bold.woff') format('woff');
 }
@@ -17,6 +22,7 @@
 
 @theme {
   --font-MuseumClassic_L: MuseumClassic_L;
+  --font-MuseumClassic_B: MuseumClassic_B;
   --font-GanwonEduAll_Bold: GanwonEduAll_Bold;
   --font-GanwonEduAll_Light: GanwonEduAll_Light;
 }
