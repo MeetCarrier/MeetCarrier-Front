@@ -16,12 +16,6 @@ import { MatchingContent, type MatchingStatus } from '../Utils/MatchingContent';
 
 function Main() {
   const dispatch = useDispatch<AppDispatch>();
-
-  // 페이지 진입 시 유저 정보 요청
-  useEffect(() => {
-    dispatch(fetchUser());
-  }, [dispatch]);
-
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isModalOpen = searchParams.get('modal') === 'true';
@@ -29,6 +23,55 @@ function Main() {
   const [matchingClient, setMatchingClient] = useState<MatchingClient | null>(
     null
   );
+
+  // 페이지 진입 시 유저 정보 요청 실패 시 로그인 요청
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        await dispatch(fetchUser()).unwrap(); // 실패 시 catch로 넘어감
+      } catch (error) {
+        console.warn('유저 정보 불러오기 실패 → 로그인 페이지로 이동', error);
+        navigate('/Login');
+      }
+    };
+
+    fetchData();
+  }, [dispatch, navigate]);
+
+  // 유저의 위치 정보 가져오기
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      console.error('이 브라우저는 위치 정보를 지원하지 않습니다.');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        console.log('사용자 위치:', {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
+      },
+      (error) => {
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            console.error('사용자가 위치 정보 제공을 거부했습니다.');
+            break;
+          case error.POSITION_UNAVAILABLE:
+            console.error('위치 정보를 사용할 수 없습니다.');
+            break;
+          case error.TIMEOUT:
+            console.error('위치 정보 요청이 시간 초과되었습니다.');
+            break;
+          default:
+            console.error('알 수 없는 오류가 발생했습니다.');
+            break;
+        }
+      }
+    );
+  }, []);
+
+  // 자가 평가 점수가 없다면? -> 매칭 시작 전에 한번 물어보기
 
   // 매칭 시작
   const handleStartMatching = () => {
