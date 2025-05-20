@@ -2,21 +2,21 @@ import NavBar from '../../components/NavBar';
 import calendar_icon from '../../assets/img/icons/Calendar/ic_calendar.svg';
 import comming_dage from '../../assets/img/calendar/comming_date.svg';
 import dairy_button from '../../assets/img/calendar/dairy.svg';
+import today_check from '../../assets/img/calendar/today_check.svg';
 import calendar_base from '../../assets/img/calendar/Calendar_base.png';
 import { useNavigate } from 'react-router-dom';
 
-// month 0 부터 시작임, 일단 기본 값을 넣음.. 나중에 수정
-function CalendarGrid({
-  year = 2025,
-  month = 4,
-}: {
-  year?: number;
-  month?: number;
-}) {
-  const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+const today = new Date();
 
-  const startDay = new Date(year, month, 1).getDay(); // 0: 일, 6: 토
-  const totalDays = new Date(year, month + 1, 0).getDate(); // 해당 월의 마지막 날짜
+// month 0 부터 시작임, 일단 기본 값을 넣음.. 나중에 수정
+function CalendarGrid() {
+  const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+  const currentYear = today.getFullYear();
+  const currentMonth = today.getMonth();
+  const currentDate = today.getDate();
+
+  const startDay = new Date(currentYear, currentMonth, 1).getDay(); // 0: 일, 6: 토
+  const totalDays = new Date(currentYear, currentMonth + 1, 0).getDate(); // 해당 월의 마지막 날짜
 
   const cells = Array.from({ length: 42 }, (_, i) => {
     const date = i - startDay + 1;
@@ -47,9 +47,20 @@ function CalendarGrid({
         {cells.map((day, i) => (
           <div
             key={i}
-            className="flex text-left text-xs p-2 text-black/50 font-MuseumClassic_L"
+            className="relative flex text-left text-xs p-2 text-black/50 font-MuseumClassic_L"
           >
-            {day}
+            {day && (
+              <>
+                <span>{day}</span>
+                {day === currentDate && (
+                  <img
+                    src={today_check}
+                    alt="today"
+                    className="absolute left-[6px] w-[15px] h-[15px]"
+                  />
+                )}
+              </>
+            )}
           </div>
         ))}
       </div>
@@ -78,9 +89,11 @@ function Calendar() {
       </div>
       <div className="flex flex-col w-full h-[calc(100%-170px)] overflow-y-auto px-4 z-0 text-center">
         <div className="mb-1">
-          <h2 className="text-2xl font-MuseumClassic_B">5</h2>
+          <h2 className="text-2xl font-MuseumClassic_B">
+            {today.getMonth() + 1}
+          </h2>
           <p className="text-sm font-MuseumClassic_L italic text-[#333333]/50">
-            2025
+            {today.getFullYear()}
           </p>
         </div>
         <CalendarGrid />
