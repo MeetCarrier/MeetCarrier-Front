@@ -4,7 +4,7 @@ import NavBar from '../../components/NavBar';
 import questionmark_icon from '../../assets/img/icons/Dairy/questionmark_icon.svg';
 import btn1 from '../../assets/img/button/btn1.webp';
 import back_arrow from '../../assets/img/icons/HobbyIcon/back_arrow.svg';
-import axios from 'axios';
+// import axios from 'axios';
 
 function Dairy() {
   const [text, setText] = useState('');
@@ -14,6 +14,10 @@ function Dairy() {
 
   const handleBackClick = () => {
     navigate('/Calendar');
+  };
+
+  const handleBtnClick = () => {
+    navigate('/Stamp');
   };
 
   // 한글은 글자제한을 받지 않는 문제 해결
@@ -27,17 +31,17 @@ function Dairy() {
   };
 
   // 일기 등록 <- 미완
-  const handleDiaryRegister = async () => {
-    try {
-      await axios.patch('https://www.mannamdeliveries.link/journals/register', {
-        withCredentials: true,
-      });
-      alert('저장 완료!');
-    } catch (error) {
-      console.error('저장 실패', error);
-      alert('저장에 실패했어요.');
-    }
-  };
+  // const handleDiaryRegister = async () => {
+  //   try {
+  //     await axios.patch('https://www.mannamdeliveries.link/journals/register', {
+  //       withCredentials: true,
+  //     });
+  //     alert('저장 완료!');
+  //   } catch (error) {
+  //     console.error('저장 실패', error);
+  //     alert('저장에 실패했어요.');
+  //   }
+  // };
 
   return (
     <>
@@ -83,10 +87,7 @@ function Dairy() {
           </div>
 
           {/* 버튼 */}
-          <button
-            className="relative w-full mb-3"
-            onClick={handleDiaryRegister}
-          >
+          <button className="relative w-full mb-3" onClick={handleBtnClick}>
             <img src={btn1} alt="버튼1" className="w-full" />
             <span className="absolute inset-0 flex items-center justify-center font-GanwonEduAll_Bold cursor-pointer">
               다음
