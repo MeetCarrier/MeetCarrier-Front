@@ -33,8 +33,9 @@ const MainModal: FC = () => {
   const interestsText =
     user?.interests && user.interests.trim() !== '' ? user.interests : '무관';
 
+  // 수정..?
   const questionsText =
-    user?.questions && user.questions.trim() !== '' ? user.questions : '없음';
+    user?.question && user.question.trim() !== '' ? user.question : '없음';
 
   // 거리 텍스트
   const distanceText =

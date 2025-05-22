@@ -4,6 +4,7 @@ import Stomp, { Message } from 'stompjs';
 export interface StartMatchingOptions {
   onSuccess: (data: MatchSuccessData) => void;
   onFail: (data: MatchFailData) => void;
+  onConnected: () => void;
 }
 
 export interface MatchSuccessData {
@@ -25,12 +26,15 @@ export interface MatchingClient {
 export function startMatchingClient({
   onSuccess,
   onFail,
+  onConnected,
 }: StartMatchingOptions): MatchingClient {
   const socket = new SockJS('https://www.mannamdeliveries.link/connection');
   const client = Stomp.over(socket);
 
   client.connect({}, () => {
     console.log('✅ WebSocket 연결됨');
+
+    onConnected?.();
 
     client.subscribe('/topic/match_result', (message: Message) => {
       const data = JSON.parse(message.body);

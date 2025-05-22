@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import btn1 from '../assets/img/button/btn1.webp';
 import btn2 from '../assets/img/button/btn2.webp';
 import bell_default from '../assets/img/icons/NavIcon/bell_default.svg';
@@ -10,7 +11,9 @@ import MainModal from '../Modal/MainModal';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../Utils/store';
 import { fetchUser } from '../Utils/userSlice';
-
+import { useSelector } from 'react-redux';
+import { RootState } from '../Utils/store';
+import { UserState } from '../Utils/userSlice';
 import { startMatchingClient, type MatchingClient } from '../Utils/Matching';
 import { MatchingContent, type MatchingStatus } from '../Utils/MatchingContent';
 
@@ -20,15 +23,52 @@ function Main() {
   const [searchParams] = useSearchParams();
   const isModalOpen = searchParams.get('modal') === 'true';
   const [status, setStatus] = useState<MatchingStatus>('default');
-  const [matchingClient, setMatchingClient] = useState<MatchingClient | null>(
-    null
-  );
+  const matchingClientRef = useRef<MatchingClient | null>(null);
+  const [isSocketConnected, setIsSocketConnected] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [locationAllowed, setLocationAllowed] = useState(false);
+  const user = useSelector(
+    (state: RootState) => state.user
+  ) as UserState | null;
 
   // 페이지 진입 시 유저 정보 요청 실패 시 로그인 요청
   useEffect(() => {
     const fetchData = async () => {
       try {
-        await dispatch(fetchUser()).unwrap(); // 실패 시 catch로 넘어감
+        await dispatch(fetchUser()).unwrap();
+        console.log('로그인 성공');
+
+        if (!navigator.geolocation) {
+          console.error('위치 정보 지원 안됨');
+          return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const { latitude, longitude } = position.coords;
+            console.log('위치:', { latitude, longitude });
+            setLocationAllowed(true);
+
+            try {
+              await axios.patch(
+                'https://www.mannamdeliveries.link/user',
+                { latitude: latitude, longitude: longitude },
+                {
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  withCredentials: true,
+                }
+              );
+              console.log('위치 전송 완료');
+            } catch (error) {
+              console.error('위치 전송 실패', error);
+            }
+          },
+          (error) => {
+            console.error('위치 정보 실패', error.message);
+          }
+        );
       } catch (error) {
         console.warn('유저 정보 불러오기 실패 → 로그인 페이지로 이동', error);
         navigate('/Login');
@@ -38,46 +78,12 @@ function Main() {
     fetchData();
   }, [dispatch, navigate]);
 
-  // 유저의 위치 정보 가져오기
-  useEffect(() => {
-    if (!navigator.geolocation) {
-      console.error('이 브라우저는 위치 정보를 지원하지 않습니다.');
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        console.log('사용자 위치:', {
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        });
-      },
-      (error) => {
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            console.error('사용자가 위치 정보 제공을 거부했습니다.');
-            break;
-          case error.POSITION_UNAVAILABLE:
-            console.error('위치 정보를 사용할 수 없습니다.');
-            break;
-          case error.TIMEOUT:
-            console.error('위치 정보 요청이 시간 초과되었습니다.');
-            break;
-          default:
-            console.error('알 수 없는 오류가 발생했습니다.');
-            break;
-        }
-      }
-    );
-  }, []);
-
-  // 자가 평가 점수가 없다면? -> 매칭 시작 전에 한번 물어보기
-
+  // 자가 평가 점수가 없다면?(매칭 정보 설정을 안한 상태라면) -> 매칭 시작 전에 한번 물어보기
   // 매칭 시작
   const handleStartMatching = () => {
     setStatus('matching');
 
-    const timeoutId = setTimeout(() => {
+    timeoutRef.current = setTimeout(() => {
       console.log('매칭 시간 초과');
       setStatus('fail');
     }, 360000);
@@ -85,26 +91,57 @@ function Main() {
     const client = startMatchingClient({
       onSuccess: (data) => {
         console.log('매칭 성공', data);
-        clearTimeout(timeoutId);
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+          timeoutRef.current = null;
+        }
         setTimeout(() => {
           setStatus('success');
         }, 5000);
       },
       onFail: (data) => {
         console.log('매칭 실패', data);
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+          timeoutRef.current = null;
+        }
         setStatus('fail');
       },
+      onConnected: () => {
+        setIsSocketConnected(true); // 연결 완료 시점
+      },
     });
-    setMatchingClient(client);
+    matchingClientRef.current = client;
   };
 
   // 수정해야 함.
   const handleButton1ClickByStatus: Record<MatchingStatus, () => void> = {
     default: () => {
+      if (!locationAllowed) {
+        alert('위치 권한이 허용되어야 매칭을 시작할 수 있습니다.');
+        return;
+      }
+
+      if (!user?.personalities || user.personalities.trim() === '') {
+        alert('자가 평가 테스트를 먼저 완료해주세요.');
+        return;
+      }
       handleStartMatching();
     },
     matching: () => {
-      matchingClient?.disconnect();
+      // 소켓 연결 중 해제
+      if (!isSocketConnected) {
+        console.log('아직 연결되지 않았습니다.');
+        return;
+      }
+
+      matchingClientRef.current?.disconnect();
+      matchingClientRef.current = null; // 연결 종료 후 초기화
+      setIsSocketConnected(false);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
       setStatus('default');
     },
     success: () => {
@@ -126,7 +163,13 @@ function Main() {
       navigate('/main?modal=true');
     },
     fail: () => {
-      matchingClient?.disconnect();
+      matchingClientRef.current?.disconnect();
+      matchingClientRef.current = null; // 연결 종료 후 초기화
+      setIsSocketConnected(false);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
       setStatus('default');
     },
   };

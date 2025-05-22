@@ -10,14 +10,18 @@ export const fetchUser = createAsyncThunk('user/fetchUser', async () => {
 });
 
 export interface UserState {
+  userId: number;
+  socialType: string;
   nickname: string;
   gender: string;
-  region: string;
-  interests: string;
+  latitude: number;
+  longitude: number;
   age: number;
   personalities: string;
+  interests: string;
   footprint: number;
-  questions: string;
+  question: string;
+  questionList: string;
   imgUrl: string;
   maxAgeGap: number;
   allowOppositeGender: boolean;

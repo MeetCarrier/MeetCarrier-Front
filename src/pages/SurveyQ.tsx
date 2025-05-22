@@ -21,13 +21,13 @@ function SurveyQ() {
   ) as UserState | null;
 
   useEffect(() => {
-    if (user?.questions) {
-      const parseQuestions = user.questions
+    if (user?.questionList) {
+      const parseQuestions = user.questionList
         .split(',')
         .map((tag) => tag.trim())
         .filter((tag) => tag != '');
       setQuestions(parseQuestions);
-      setSelectedQuestions(null);
+      setSelectedQuestions(user?.question);
     }
   }, [user]);
 
@@ -54,10 +54,11 @@ function SurveyQ() {
   // 나중에 수정
   const handleSubmit = async () => {
     const questionStr = questions.join(',');
+    const selectedQuestionStr = selectedQuestion;
     try {
       await axios.patch(
         'https://www.mannamdeliveries.link/user',
-        { questions: questionStr },
+        { question: selectedQuestionStr, questionList: questionStr },
         {
           headers: {
             'Content-Type': 'application/json',
