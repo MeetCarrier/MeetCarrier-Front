@@ -151,15 +151,15 @@ function ChatPage() {
   // }, [state?.roomId, navigate]);
 
   // 메시지 전송 함수
-  const sendMessage = (message: string) => {
+  const sendMessage = (message: string, imageUrl?: string) => {
     if (stompClientRef.current && stompClientRef.current.connected) {
       // 서버에 보낼 메시지 (규격 준수)
       const outgoingMessage = {
         roomId: state.roomId,
-        type: 'TEXT',
+        type: imageUrl ? 'IMAGE' : 'TEXT',
         message: message,
         userId: state.user1Id,
-        imageUrl: null,
+        imageUrl: imageUrl || null,
       };
 
       // 로컬에서 바로 화면에 띄울 메시지 (내가 보낸 것이므로 sender와 sentAt 명시)
@@ -169,9 +169,9 @@ function ChatPage() {
         now.getTime() - 9 * 60 * 60 * 1000
       ).toISOString();
       const localMessage: ChatMessage = {
-        messageType: 'TEXT',
+        messageType: imageUrl ? 'IMAGE' : 'TEXT',
         message: message,
-        imageUrl: null,
+        imageUrl: imageUrl || null,
         sender: state.user1Id,
         sentAt: utcSentAt,
       };
@@ -289,7 +289,7 @@ function ChatPage() {
 
               {/* 채팅 div */}
               <div
-                className={`max-w-[70%] flex flex-col`} // ← 이 부분이 핵심
+                className={`max-w-[70%] flex flex-col`}
               >
                 {/* 닉네임은 첫 메시지일 때만 */}
                 {!isMine && !isPrevSameSender && (
@@ -303,7 +303,15 @@ function ChatPage() {
                       : 'bg-[#FFFFFF] text-[#333333] rounded-bl-none'
                   }`}
                 >
-                  {msg.message}
+                  {msg.messageType === 'IMAGE' && msg.imageUrl ? (
+                    <img 
+                      src={msg.imageUrl} 
+                      alt="전송된 이미지" 
+                      className="max-w-full max-h-[300px] rounded-lg"
+                    />
+                  ) : (
+                    msg.message
+                  )}
                 </div>
 
                 {isNextDifferentSender && (
