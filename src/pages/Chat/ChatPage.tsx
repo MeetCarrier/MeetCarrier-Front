@@ -286,7 +286,7 @@ function ChatPage() {
           );
 
           // 날짜 구분선 표시 여부 확인
-          const showDateDivider = index === 0 || 
+          const showDateDivider = index === 0 ||
             new Date(messages[index - 1].sentAt).toDateString() !== messageDate.toDateString();
 
           return (
@@ -300,9 +300,8 @@ function ChatPage() {
               )}
               <div
                 key={index}
-                className={`flex ${
-                  isMine ? 'justify-end' : 'justify-start'
-                } mb-1`}
+                className={`flex ${isMine ? 'justify-end' : 'justify-start'
+                  } mb-1`}
               >
                 {/* 왼쪽 프로필 (처음 메시지일 때만) */}
                 {!isMine && !isPrevSameSender ? (
@@ -325,16 +324,15 @@ function ChatPage() {
                   )}
 
                   <div
-                    className={`px-3 py-2 rounded-xl whitespace-pre-wrap ${
-                      isMine
+                    className={`px-3 py-2 rounded-xl whitespace-pre-wrap ${isMine
                         ? 'bg-[#BD4B2C] text-[#F2F2F2] rounded-br-none self-end'
                         : 'bg-[#FFFFFF] text-[#333333] rounded-bl-none'
-                    }`}
+                      }`}
                   >
-                    {msg.messageType === 'IMAGE' && msg.imageUrl ? (
-                      <img 
-                        src={msg.imageUrl} 
-                        alt="전송된 이미지" 
+                    {msg.imageUrl ? (
+                      <img
+                        src={msg.imageUrl}
+                        alt="전송된 이미지"
                         className="max-w-full max-h-[300px] rounded-lg"
                       />
                     ) : (
@@ -344,9 +342,8 @@ function ChatPage() {
 
                   {isNextDifferentSender && (
                     <span
-                      className={`text-xs text-gray-400 mt-1 ${
-                        isMine ? 'text-right pr-1' : 'text-left pl-1'
-                      }`}
+                      className={`text-xs text-gray-400 mt-1 ${isMine ? 'text-right pr-1' : 'text-left pl-1'
+                        }`}
                     >
                       {koreanTime.toLocaleTimeString('ko-KR', {
                         hour: '2-digit',

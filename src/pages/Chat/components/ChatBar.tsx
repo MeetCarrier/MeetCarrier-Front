@@ -12,6 +12,7 @@ import end_icon from '../../../assets/img/icons/ChatIcon/ic_end.svg';
 import report_icon from '../../../assets/img/icons/ChatIcon/ic_report.svg';
 import survey_icon from '../../../assets/img/icons/ChatIcon/ic_survey.svg';
 import imageCompression from 'browser-image-compression';
+import axios from 'axios';
 
 type ChatBarProps = {
   onEmojiToggle?: () => void;
@@ -23,20 +24,42 @@ function ChatBar({ onEmojiToggle, emojiOpen, onSendMessage }: ChatBarProps) {
   const [message, setMessage] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const uploadImageAndSendMessage = async (file: File) => {
+    const formData = new FormData();
+    formData.append('multipartFile', file);
+
+    for (const [key, value] of formData.entries()) {
+      console.log(`[FormData] ${key}:`, value);
+    }
+
+    try {
+      console.log('이미지 서버 업로드 시작');
+      const response = await axios.post('https://www.mannamdeliveries.link/file/chat', formData);
+      console.log('이미지 서버 업로드 성공:', response.data);
+      const imageUrl = response.data;
+
+      if (onSendMessage) {
+        onSendMessage('', imageUrl);
+      }
+    } catch (error) {
+      console.error('이미지 서버 업로드 실패:', error);
+      alert('이미지 업로드에 실패했습니다.');
+    }
+  };
+
   const handleSendMessage = () => {
-    if ((message.trim() || fileInputRef.current?.files?.length) && onSendMessage) {
+    if (message.trim() && onSendMessage) {
       onSendMessage(message);
       setMessage('');
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
     }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSendMessage();
+      if (message.trim()) {
+        handleSendMessage();
+      }
     }
   };
 
@@ -44,34 +67,44 @@ function ChatBar({ onEmojiToggle, emojiOpen, onSendMessage }: ChatBarProps) {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // 파일 타입 검사: 이미지 파일인지 확인
+    if (!file.type.startsWith('image/')) {
+      alert('이미지 파일만 선택할 수 있습니다.');
+      // 파일 입력 초기화
+      if (e.target) {
+        e.target.value = '';
+      }
+      return;
+    }
+
     try {
-      // 이미지 압축 옵션
       const options = {
-        maxSizeMB: 1,
-        maxWidthOrHeight: 1024,
-        useWebWorker: true
+        maxSizeMB: 0.5,
+        maxWidthOrHeight: 800,
+        useWebWorker: true,
+        initialQuality: 0.7,
+        alwaysKeepResolution: false
       };
 
-      // 이미지 압축
+      console.log('이미지 압축 시작');
       const compressedFile = await imageCompression(file, options);
+      console.log('이미지 압축 완료');
       
-      // 압축된 이미지를 Base64로 변환
-      const reader = new FileReader();
-      reader.readAsDataURL(compressedFile);
-      reader.onloadend = () => {
-        const base64data = reader.result as string;
-        if (onSendMessage) {
-          onSendMessage('', base64data);
-        }
-      };
+      uploadImageAndSendMessage(compressedFile);
+
     } catch (error) {
-      console.error('이미지 압축 중 오류 발생:', error);
+      console.error('이미지 처리 중 오류 발생:', error);
+      alert('이미지 처리에 실패했습니다.');
+    } finally {
+      // 파일 입력 초기화 (이미지 파일이 아닐 경우에도 초기화하도록 위로 이동)
+      // if (e.target) {
+      //   e.target.value = '';
+      // }
     }
   };
 
   return (
     <>
-      {/* 이모지 영역 내부 포함 */}
       <div
         className={`w-full overflow-hidden transition-all duration-300 ease-in-out`}
         style={{
@@ -88,7 +121,7 @@ function ChatBar({ onEmojiToggle, emojiOpen, onSendMessage }: ChatBarProps) {
             { icon: survey_icon, label: '비대면설문지' },
           ].map(({ icon, label, onClick }, index) => (
             <div key={index} className="flex flex-col items-center">
-              <div 
+              <div
                 className="w-12 h-12 rounded-full bg-[#722518] flex items-center justify-center cursor-pointer"
                 onClick={onClick}
               >
@@ -106,12 +139,10 @@ function ChatBar({ onEmojiToggle, emojiOpen, onSendMessage }: ChatBarProps) {
         style={{ backgroundImage: `url(${navbg})` }}
       >
         <div className="flex items-center w-full gap-2">
-          {/* 왼쪽 + 버튼 */}
           <button className="w-9 h-9 rounded-full bg-[#A34027] flex items-center justify-center flex-shrink-0" onClick={onEmojiToggle}>
             <img src={plus_icon} alt="plus" className="w-5 h-5" />
           </button>
 
-          {/* 가운데 입력창 (얼굴 아이콘 포함) */}
           <div className="flex items-center flex-1 bg-[#A34027] rounded-full px-3 py-2">
             <input
               type="text"
@@ -126,22 +157,20 @@ function ChatBar({ onEmojiToggle, emojiOpen, onSendMessage }: ChatBarProps) {
             </button>
           </div>
 
-          {/* 오른쪽 ? 버튼 */}
           <button className="w-9 h-9 rounded-full bg-[#A34027] flex items-center justify-center flex-shrink-0">
             <img src={questionmark_icon} alt="?" className="w-5 h-5" />
           </button>
         
-          {/* 오른쪽 전송 버튼 */}
-          <button 
+          <button
             onClick={handleSendMessage}
-            className="w-9 h-9 rounded-full bg-[#A34027] flex items-center justify-center flex-shrink-0"
+            className={`w-9 h-9 rounded-full bg-[#A34027] flex items-center justify-center flex-shrink-0 ${message.trim() ? '' : 'opacity-50 cursor-not-allowed'}`}
+            disabled={!message.trim()}
           >
             <img src={arrow_icon} alt="send" className="w-5 h-5" />
           </button>
         </div>
       </div>
 
-      {/* 숨겨진 파일 입력 */}
       <input
         type="file"
         ref={fileInputRef}
