@@ -215,6 +215,25 @@ function ChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // 날짜 포맷팅 함수 추가
+  const formatDate = (date: Date) => {
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    if (date.toDateString() === today.toDateString()) {
+      return '오늘';
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return '어제';
+    } else {
+      return date.toLocaleDateString('ko-KR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    }
+  };
+
   return (
     <>
       <div className="absolute top-[50px] text-[#333333] left-0 right-0 px-6 text-center">
@@ -262,73 +281,83 @@ function ChatPage() {
 
           // UTC 시간을 한국 시간으로 변환
           const messageDate = new Date(msg.sentAt);
-          // UTC 시간에 9시간을 더해서 한국 시간으로 변환
           const koreanTime = new Date(
             messageDate.getTime() + 9 * 60 * 60 * 1000
           );
 
-          return (
-            <div
-              key={index}
-              className={`flex ${
-                isMine ? 'justify-end' : 'justify-start'
-              } mb-1`}
-            >
-              {/* 왼쪽 프로필 (처음 메시지일 때만) */}
-              {!isMine && !isPrevSameSender ? (
-                <div className="w-8 mr-2">
-                  <img
-                    src={profileUrl}
-                    alt="프로필"
-                    className="w-8 h-8 rounded-[2px]"
-                  />
-                </div>
-              ) : (
-                !isMine && <div className="w-8 mr-2" /> // 차지하는 공간 유지
-              )}
+          // 날짜 구분선 표시 여부 확인
+          const showDateDivider = index === 0 || 
+            new Date(messages[index - 1].sentAt).toDateString() !== messageDate.toDateString();
 
-              {/* 채팅 div */}
+          return (
+            <>
+              {showDateDivider && (
+                <div className="flex justify-center items-center my-4">
+                  <div className="bg-gray-200 text-gray-600 text-xs px-3 py-1 rounded-full">
+                    {formatDate(koreanTime)}
+                  </div>
+                </div>
+              )}
               <div
-                className={`max-w-[70%] flex flex-col`}
+                key={index}
+                className={`flex ${
+                  isMine ? 'justify-end' : 'justify-start'
+                } mb-1`}
               >
-                {/* 닉네임은 첫 메시지일 때만 */}
-                {!isMine && !isPrevSameSender && (
-                  <span className="text-sm text-gray-700 mb-1">{nickname}</span>
+                {/* 왼쪽 프로필 (처음 메시지일 때만) */}
+                {!isMine && !isPrevSameSender ? (
+                  <div className="w-8 mr-2">
+                    <img
+                      src={profileUrl}
+                      alt="프로필"
+                      className="w-8 h-8 rounded-[2px]"
+                    />
+                  </div>
+                ) : (
+                  !isMine && <div className="w-8 mr-2" />
                 )}
 
-                <div
-                  className={`px-3 py-2 rounded-xl whitespace-pre-wrap ${
-                    isMine
-                      ? 'bg-[#BD4B2C] text-[#F2F2F2] rounded-br-none self-end'
-                      : 'bg-[#FFFFFF] text-[#333333] rounded-bl-none'
-                  }`}
-                >
-                  {msg.messageType === 'IMAGE' && msg.imageUrl ? (
-                    <img 
-                      src={msg.imageUrl} 
-                      alt="전송된 이미지" 
-                      className="max-w-full max-h-[300px] rounded-lg"
-                    />
-                  ) : (
-                    msg.message
+                {/* 채팅 div */}
+                <div className={`max-w-[70%] flex flex-col`}>
+                  {/* 닉네임은 첫 메시지일 때만 */}
+                  {!isMine && !isPrevSameSender && (
+                    <span className="text-sm text-gray-700 mb-1">{nickname}</span>
                   )}
-                </div>
 
-                {isNextDifferentSender && (
-                  <span
-                    className={`text-xs text-gray-400 mt-1 ${
-                      isMine ? 'text-right pr-1' : 'text-left pl-1'
+                  <div
+                    className={`px-3 py-2 rounded-xl whitespace-pre-wrap ${
+                      isMine
+                        ? 'bg-[#BD4B2C] text-[#F2F2F2] rounded-br-none self-end'
+                        : 'bg-[#FFFFFF] text-[#333333] rounded-bl-none'
                     }`}
                   >
-                    {koreanTime.toLocaleTimeString('ko-KR', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      hour12: true,
-                    })}
-                  </span>
-                )}
+                    {msg.messageType === 'IMAGE' && msg.imageUrl ? (
+                      <img 
+                        src={msg.imageUrl} 
+                        alt="전송된 이미지" 
+                        className="max-w-full max-h-[300px] rounded-lg"
+                      />
+                    ) : (
+                      msg.message
+                    )}
+                  </div>
+
+                  {isNextDifferentSender && (
+                    <span
+                      className={`text-xs text-gray-400 mt-1 ${
+                        isMine ? 'text-right pr-1' : 'text-left pl-1'
+                      }`}
+                    >
+                      {koreanTime.toLocaleTimeString('ko-KR', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true,
+                      })}
+                    </span>
+                  )}
+                </div>
               </div>
-            </div>
+            </>
           );
         })}
 
