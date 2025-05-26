@@ -9,7 +9,7 @@ export const MatchingContent = {
     text: '여기야, 여기~~',
     image: ch_default,
     buttonText1: '친구 찾기',
-    buttonText2: '내 매칭 정보 수정하기기',
+    buttonText2: '내 매칭 정보 수정하기',
   },
   matching: {
     text: '내가 딱 맞는 친구를 찾아줄께!!!',

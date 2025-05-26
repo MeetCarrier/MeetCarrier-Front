@@ -6,11 +6,41 @@ import today_check from '../../assets/img/calendar/today_check.svg';
 import calendar_base from '../../assets/img/calendar/Calendar_base.png';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
+import { useAppDispatch } from '../../Utils/hooks';
+import { formatDate } from '../../Utils/formatDate';
+import {
+  setReadOnlyText,
+  setIsReadOnly,
+  setText,
+  setSelectedStamp,
+  setIsEditingToday,
+  setJournalId,
+  setDateLabel,
+} from '../../Utils/diarySlice';
+import axios from 'axios';
+
+// 나중에 스탬프 생기면 수정해야 함.
+import stamp_sample from '../../assets/img/icons/Stamp/stamp_1_activate.svg';
 
 const today = new Date();
 
+interface Journals {
+  id: number;
+  content: string;
+  createdAt: string;
+  stamp: string;
+}
+
 // month 0 부터 시작임, 일단 기본 값을 넣음.. 나중에 수정
-function CalendarGrid({ year, month }: { year: number; month: number }) {
+function CalendarGrid({
+  year,
+  month,
+  journals,
+}: {
+  year: number;
+  month: number;
+  journals: Journals[];
+}) {
   const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
   const currentYear = today.getFullYear();
   const currentMonth = today.getMonth();
@@ -18,6 +48,33 @@ function CalendarGrid({ year, month }: { year: number; month: number }) {
 
   const startDay = new Date(year, month, 1).getDay(); // 0: 일, 6: 토
   const totalDays = new Date(year, month + 1, 0).getDate(); // 해당 월의 마지막 날짜
+
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+
+  const handleStampClick = (journal: Journals) => {
+    const created = new Date(journal.createdAt);
+    dispatch(setDateLabel(formatDate(created)));
+
+    const isToday =
+      created.getFullYear() === currentYear &&
+      created.getMonth() === currentMonth &&
+      created.getDate() === currentDate;
+
+    if (isToday) {
+      dispatch(setJournalId(journal.id));
+      dispatch(setText(journal.content));
+      dispatch(setSelectedStamp(parseInt(journal.stamp)));
+      dispatch(setIsReadOnly(false)); // 수정 가능
+      dispatch(setIsEditingToday(true));
+    } else {
+      dispatch(setReadOnlyText(journal.content));
+      dispatch(setIsReadOnly(true)); // 읽기 전용
+      dispatch(setIsEditingToday(false));
+    }
+
+    navigate('/Diary');
+  };
 
   const cells = Array.from({ length: 42 }, (_, i) => {
     const date = i - startDay + 1;
@@ -45,27 +102,46 @@ function CalendarGrid({ year, month }: { year: number; month: number }) {
 
       {/* 날짜 셀 */}
       <div className="flex-1 grid grid-cols-7 grid-rows-6 h-[15.5%]">
-        {cells.map((day, i) => (
-          <div
-            key={i}
-            className="relative flex text-left text-xs p-2 text-black/50 font-MuseumClassic_L"
-          >
-            {day && (
-              <>
-                <span>{day}</span>
-                {day === currentDate &&
-                  year === currentYear &&
-                  month === currentMonth && (
+        {cells.map((day, i) => {
+          const journalForDay = journals.find((j) => {
+            const created = new Date(j.createdAt);
+            return (
+              created.getFullYear() === year &&
+              created.getMonth() === month &&
+              created.getDate() === day
+            );
+          });
+
+          return (
+            <div
+              key={i}
+              className="relative flex text-left text-xs p-2 text-black/50 font-MuseumClassic_L"
+            >
+              {day && (
+                <>
+                  <span>{day}</span>
+                  {day === currentDate &&
+                    year === currentYear &&
+                    month === currentMonth && (
+                      <img
+                        src={today_check}
+                        alt="today"
+                        className="absolute left-[6px] w-[15px] h-[15px]"
+                      />
+                    )}
+                  {journalForDay && (
                     <img
-                      src={today_check}
-                      alt="today"
-                      className="absolute left-[6px] w-[15px] h-[15px]"
+                      src={stamp_sample}
+                      alt="스탬프"
+                      className="absolute top-1/2 left-1/2 h-[60%] -translate-x-1/2 -translate-y-1/4 cursor-pointer"
+                      onClick={() => handleStampClick(journalForDay)}
                     />
                   )}
-              </>
-            )}
-          </div>
-        ))}
+                </>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -73,11 +149,36 @@ function CalendarGrid({ year, month }: { year: number; month: number }) {
 
 function Calendar() {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
   const [showSelector, setShowSelector] = useState(false);
   const [showYearList, setShowYearList] = useState(false);
   const [showMonthList, setShowMonthList] = useState(false);
+  const [journals, setJournals] = useState<Journals[]>([]);
+
+  useEffect(() => {
+    const fetchJournalList = async () => {
+      try {
+        const monthFix = month + 1;
+        console.log(year, monthFix);
+
+        const res = await axios.get(
+          `https://www.mannamdeliveries.link/journals/${year}/${monthFix}`,
+          {
+            withCredentials: true,
+          }
+        );
+
+        console.log('이번 달 일기 목록:', res.data);
+        setJournals(res.data);
+      } catch (err) {
+        console.error('일기 목록 조회 실패:', err);
+      }
+    };
+
+    fetchJournalList();
+  }, [year, month]);
 
   const currentYear = today.getFullYear();
 
@@ -85,6 +186,31 @@ function Calendar() {
   const months = Array.from({ length: 12 }, (_, i) => i);
 
   const handleDiaryClick = () => {
+    const todayJournal = journals.find((j) => {
+      const created = new Date(j.createdAt);
+      return (
+        created.getFullYear() === today.getFullYear() &&
+        created.getMonth() === today.getMonth() &&
+        created.getDate() === today.getDate()
+      );
+    });
+
+    dispatch(setDateLabel(formatDate(today)));
+
+    if (todayJournal) {
+      // 오늘 일기가 이미 존재할 경우: 수정 가능 모드로 열기
+      dispatch(setJournalId(todayJournal.id));
+      dispatch(setText(todayJournal.content));
+      dispatch(setSelectedStamp(parseInt(todayJournal.stamp)));
+      dispatch(setIsReadOnly(false));
+      dispatch(setIsEditingToday(true));
+    } else {
+      dispatch(setText(''));
+      dispatch(setSelectedStamp(null));
+      dispatch(setIsReadOnly(false));
+      dispatch(setIsEditingToday(false));
+    }
+
     navigate('/Diary');
   };
 
@@ -218,7 +344,7 @@ function Calendar() {
             {year}
           </p>
         </div>
-        <CalendarGrid year={year} month={month} />
+        <CalendarGrid year={year} month={month} journals={journals} />
         <div className="flex w-[95%] h-[25%] mx-auto mt-2 items-center justify-between">
           <div
             className="w-[210px] h-[100px] bg-no-repeat bg-contain bg-center relative flex flex-col items-center justify-center"
