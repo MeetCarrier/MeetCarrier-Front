@@ -4,6 +4,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "../../Utils/store";
 import { fetchUser } from "../../Utils/userSlice";
 import { UserState } from "../../Utils/userSlice";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 import bellIcon from "../../assets/img/icons/NavIcon/bell_default.svg";
 import arrowIcon from "../../assets/img/icons/HobbyIcon/back_arrow.svg";
@@ -14,6 +16,7 @@ import PsychTestList from "./PsychTestList";
 
 function ProfilePage() {
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
   const user = useSelector(
     (state: RootState) => state.user
   ) as UserState | null;
@@ -46,6 +49,15 @@ function ProfilePage() {
   const footprint = displayUser.footprint ?? 0;
   const footprintGoal = 1000;
   const percentage = Math.min((footprint / footprintGoal) * 100, 100);
+
+  const handleLogout = async () => {
+    try {
+      await axios.post("/api/user/logout", {});
+      navigate("/login");
+    } catch (error) {
+      console.error("로그아웃 중 오류가 발생했습니다:", error);
+    }
+  };
 
   return (
     <>
@@ -89,7 +101,7 @@ function ProfilePage() {
         </div>
 
         {/* 만남 발자국 */}
-        <div className="w-full px-4">
+        <div className="w-full bg-white rounded-xl px-5 py-4 shadow-sm">
           <div className="flex items-center justify-between mb-1">
             <div className="text-sm text-[#666666]">
               만남 발자국 <span className="text-[#bbb] text-xs">ⓘ</span>
@@ -107,6 +119,14 @@ function ProfilePage() {
         </div>
 
         <PsychTestList />
+
+        {/* 로그아웃 버튼 */}
+        <button
+          onClick={handleLogout}
+          className="w-full bg-[#BD4B2C] text-white py-3 rounded-xl font-semibold hover:bg-[#a33d22] transition-colors"
+        >
+          로그아웃
+        </button>
 
         {/* 상단 제목 */}
         <div className="absolute top-[50px] text-[#333333] left-0 right-0 px-6 text-center">

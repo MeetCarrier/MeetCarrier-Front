@@ -1,11 +1,7 @@
 import React from "react";
 import arrowIcon from "../../assets/img/icons/HobbyIcon/back_arrow.svg";
 
-const tests = [
-  { title: "자가평가 테스트", onClick: () => {} },
-  { title: "대인관계 테스트", onClick: () => {} },
-  { title: "우울증 테스트", onClick: () => {} },
-];
+const tests = [{ title: "자가평가 테스트", onClick: () => {} }];
 
 function PsychTestList() {
   return (
