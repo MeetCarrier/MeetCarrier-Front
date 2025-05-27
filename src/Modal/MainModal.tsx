@@ -59,7 +59,7 @@ const MainModal: FC = () => {
 
   return (
     <div className="w-full">
-      <h2 className="text-center text-base font-semibold mb-4">
+      <h2 className="text-center text-[20px] text-base font-GanwonEduAll_Bold mb-4">
         나의 매칭 정보
       </h2>
 

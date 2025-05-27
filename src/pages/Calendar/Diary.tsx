@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useAppDispatch, useAppSelector } from '../../Utils/hooks';
+import { setText } from '../../Utils/diarySlice';
 import { useNavigate } from 'react-router-dom';
 import NavBar from '../../components/NavBar';
 import questionmark_icon from '../../assets/img/icons/Dairy/questionmark_icon.svg';
@@ -7,7 +8,12 @@ import back_arrow from '../../assets/img/icons/HobbyIcon/back_arrow.svg';
 // import axios from 'axios';
 
 function Dairy() {
-  const [text, setText] = useState('');
+  const text = useAppSelector((state) =>
+    state.diary.isReadOnly ? state.diary.readOnlyText : state.diary.text
+  );
+  const isReadOnly = useAppSelector((state) => state.diary.isReadOnly);
+  const dateLabel = useAppSelector((state) => state.diary.dateLabel);
+  const dispatch = useAppDispatch();
   const maxLength = 100;
 
   const navigate = useNavigate();
@@ -24,24 +30,11 @@ function Dairy() {
   const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
     if (value.length <= maxLength) {
-      setText(value);
+      dispatch(setText(value));
     } else {
-      setText(value.slice(0, maxLength));
+      dispatch(setText(value.slice(0, maxLength)));
     }
   };
-
-  // 일기 등록 <- 미완
-  // const handleDiaryRegister = async () => {
-  //   try {
-  //     await axios.patch('https://www.mannamdeliveries.link/journals/register', {
-  //       withCredentials: true,
-  //     });
-  //     alert('저장 완료!');
-  //   } catch (error) {
-  //     console.error('저장 실패', error);
-  //     alert('저장에 실패했어요.');
-  //   }
-  // };
 
   return (
     <>
@@ -70,9 +63,13 @@ function Dairy() {
         </div>
 
         <div className="w-full max-w-md mx-auto flex flex-col flex-1">
-          <div className="text-left mb-3">
-            <p className="text-[16px] font-semibold">오늘의 나를 칭찬하자면?</p>
-            <p className="text-[14px] text-[#999]">2025.03.29</p>
+          <div className="mb-3">
+            <p className="text-[18px] font-GanwonEduAll_Bold text-center">
+              오늘의 나를 칭찬하자면?
+            </p>
+            <p className="text-[14px] font-GanwonEduAll_Light text-right text-[#333333]/50">
+              {dateLabel}
+            </p>
           </div>
 
           {/* textarea가 나머지 공간 전부 차지 */}
@@ -80,14 +77,19 @@ function Dairy() {
             value={text}
             onInput={handleInput}
             placeholder="입력해주세요..."
+            disabled={isReadOnly}
             className="w-full flex-1 p-3 rounded-t-[10px] resize-none text-[14px] bg-white focus:outline-none"
           />
-          <div className="text-right text-[12px] text-[#999] rounded-b-[10px] bg-white p-3 mb-4">
+          <div className="text-right text-[12px] text-[#333333]/50 rounded-b-[10px] bg-white p-3 mb-4">
             {text.length} / 100
           </div>
 
           {/* 버튼 */}
-          <button className="relative w-full mb-3" onClick={handleBtnClick}>
+          <button
+            className="relative w-full mb-3"
+            onClick={handleBtnClick}
+            disabled={isReadOnly}
+          >
             <img src={btn1} alt="버튼1" className="w-full" />
             <span className="absolute inset-0 flex items-center justify-center font-GanwonEduAll_Bold cursor-pointer">
               다음
