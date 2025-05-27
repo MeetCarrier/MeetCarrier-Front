@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import NavBar from '../../components/NavBar';
 // import BottomNavBar from '../../components/BottomNavBar'; // 필요시 주석 해제
 import bellIcon from '../../assets/img/icons/NavIcon/bell_default.svg';

@@ -1,6 +1,6 @@
 import navbg from '../../../assets/img/nav_bg.webp';
 import navbg2 from '../../../assets/img/nav_bg2.webp';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import plus_icon from '../../../assets/img/icons/ChatIcon/ic_plus.svg';
 import arrow_icon from '../../../assets/img/icons/ChatIcon/ic_arrow.svg';
 import face_icon from '../../../assets/img/icons/ChatIcon/ic_face.svg';

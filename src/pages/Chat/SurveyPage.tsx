@@ -2,6 +2,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useRef, useEffect, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import SwiperCore from "swiper";
+// @ts-ignore
 import "swiper/css";
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
@@ -41,7 +42,7 @@ function SurveyPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const state = location.state as LocationState;
-  const { user1Id, user1Nickname, user2Id, user2Nickname, roomId } = state || {};
+  const { user1Id, user1Nickname, user2Nickname, roomId } = state || {};
 
   const [currentStep, setCurrentStep] = useState(0);
   const [questions, setQuestions] = useState<Question[]>([]);
