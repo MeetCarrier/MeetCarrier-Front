@@ -1,23 +1,23 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @font-face {
-  font-family: 'MuseumClassic_L';
-  src: url('./src/assets/fonts/국립박물관문화재단클래식L.woff') format('woff');
+  font-family: "MuseumClassic_L";
+  src: url("./assets/fonts/국립박물관문화재단클래식L.woff") format("woff");
 }
 
 @font-face {
-  font-family: 'MuseumClassic_B';
-  src: url('./src/assets/fonts/국립박물관문화재단클래식B.woff') format('woff');
+  font-family: "MuseumClassic_B";
+  src: url("./assets/fonts/국립박물관문화재단클래식B.woff") format("woff");
 }
 
 @font-face {
-  font-family: 'GanwonEduAll_Bold';
-  src: url('./src/assets/fonts/강원교육모두-Bold.woff') format('woff');
+  font-family: "GanwonEduAll_Bold";
+  src: url("./assets/fonts/강원교육모두-Bold.woff") format("woff");
 }
 
 @font-face {
-  font-family: 'GanwonEduAll_Light';
-  src: url('./src/assets/fonts/강원교육모두-Light.woff') format('woff');
+  font-family: "GanwonEduAll_Light";
+  src: url("./assets/fonts/강원교육모두-Light.woff") format("woff");
 }
 
 @theme {
