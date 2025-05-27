@@ -1,113 +1,120 @@
-import React, { useState } from 'react';
-import NavBar from '../../components/NavBar';
-// import BottomNavBar from '../../components/BottomNavBar'; // 필요시 주석 해제
-import bellIcon from '../../assets/img/icons/NavIcon/bell_default.svg';
-import arrowIcon from '../../assets/img/icons/HobbyIcon/right_arrow.svg';
-import profileImg from '../../assets/img/sample/sample_profile.svg';
+import React, { useEffect } from "react";
+import NavBar from "../../components/NavBar";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState, AppDispatch } from "../../Utils/store";
+import { fetchUser } from "../../Utils/userSlice";
+import { UserState } from "../../Utils/userSlice";
+
+import bellIcon from "../../assets/img/icons/NavIcon/bell_default.svg";
+import arrowIcon from "../../assets/img/icons/HobbyIcon/back_arrow.svg";
+import stampImage from "../../assets/img/stamp.svg";
+import defaultProfileImg from "../../assets/img/sample/sample_profile.svg";
 
 function ProfilePage() {
-  // 예시 데이터 (실제 데이터 연동 시 API로 대체)
-  const [nickname] = useState('밥만 잘먹더라');
-  const [age] = useState(21);
-  const [footprint] = useState(245);
-  const [footprintMax] = useState(300);
-  const [reviews] = useState([
-    { text: '친절하고 배려심 있어요', count: 11 },
-    { text: '재미있어요', count: 9 },
-    { text: '말이 잘 통해요', count: 1 },
-  ]);
-  const [contactExclude, setContactExclude] = useState(false);
+  const dispatch = useDispatch<AppDispatch>();
+  const user = useSelector(
+    (state: RootState) => state.user
+  ) as UserState | null;
+
+  useEffect(() => {
+    if (!user) dispatch(fetchUser());
+  }, [dispatch, user]);
+
+  // 더미 데이터 대체용
+  const fallbackUser: UserState = {
+    userId: 0,
+    socialType: "KAKAO",
+    nickname: "밥만 잘먹더라",
+    gender: "MALE",
+    latitude: 0,
+    longitude: 0,
+    age: 21,
+    personalities: "",
+    interests: "",
+    footprint: 245,
+    question: "",
+    questionList: "",
+    imgUrl: "",
+    maxAgeGap: 0,
+    allowOppositeGender: true,
+    maxMatchingDistance: 0,
+  };
+
+  const displayUser = user || fallbackUser;
+  const footprint = displayUser.footprint ?? 0;
+  const footprintGoal = 1000;
+  const percentage = Math.min((footprint / footprintGoal) * 100, 100);
 
   return (
-    <div className="min-h-screen bg-[#F7F7F7] pb-20">
-      {/* 상단 헤더 */}
+    <>
       <NavBar />
-      <div className="relative flex items-center justify-center h-[50px] border-b border-gray-200 bg-white">
-        <span className="text-[20px] font-MuseumClassic_L italic">마이페이지</span>
-        <img
-          src={bellIcon}
-          alt="알림"
-          className="absolute right-6 top-1/2 -translate-y-1/2 w-[20px] h-[20px] cursor-pointer"
-        />
-      </div>
 
-      {/* 내 정보 요약 */}
-      <div className="flex items-center bg-white px-6 py-4 border-b border-gray-100">
-        <img src={profileImg} alt="프로필" className="w-16 h-16 rounded-[8px] object-cover" />
-        <div className="ml-4 flex-1">
-          <div className="text-lg font-bold text-[#333]">{nickname}, {age}</div>
-          <div className="text-xs text-gray-500 mt-1">내 정보 • 계정 관리</div>
-        </div>
-        <img src={arrowIcon} alt=">" className="w-5 h-5 ml-2" />
-      </div>
+      <div className="w-[80%] max-w-md flex flex-col items-center space-y-3 mb-4">
+        {/* 내 정보 요약 */}
+        <div className="flex items-center justify-between w-full px-4 py-2">
+          {/* 우표형 프로필 */}
+          <div className="flex items-center gap-3">
+            <div
+              className="relative w-[50px] h-[50px]"
+              style={{
+                backgroundImage: `url(${stampImage})`,
+                backgroundSize: "cover",
+                backgroundRepeat: "no-repeat",
+              }}
+            >
+              <img
+                src={displayUser.imgUrl || defaultProfileImg}
+                alt="profile"
+                className="absolute top-[6%] left-[6%] w-[88%] h-[88%] object-cover rounded-[2px]"
+              />
+            </div>
 
-      {/* 활동 지표 */}
-      <div className="bg-white px-6 py-4 border-b border-gray-100">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-[#333] font-semibold">만남 발자국 <span className="text-xs text-gray-400 ml-1">ⓘ</span></span>
-          <span className="text-xs text-[#BD4B2C] font-bold">{footprint}보</span>
+            {/* 닉네임 + 나이 */}
+            <div className="flex flex-col">
+              <div className="text-[16px] text-[#333] font-semibold">
+                {displayUser.nickname}, {displayUser.age}
+              </div>
+              <div className="text-sm text-[#999999]">내 정보 · 계정 관리</div>
+            </div>
+          </div>
+
+          {/* 반전된 화살표 */}
+          <img
+            src={arrowIcon}
+            alt="arrow"
+            className="w-4 h-4 transform scale-x-[-1]"
+          />
         </div>
-        <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-[#BD4B2C] rounded-full transition-all"
-            style={{ width: `${(footprint / footprintMax) * 100}%` }}
+
+        {/* 만남 발자국 */}
+        <div className="w-full px-4">
+          <div className="flex items-center justify-between mb-1">
+            <div className="text-sm text-[#666666]">
+              만남 발자국 <span className="text-[#bbb] text-xs">ⓘ</span>
+            </div>
+            <div className="text-sm text-[#BD4B2C] font-semibold">
+              {footprint} 보
+            </div>
+          </div>
+          <div className="w-full h-2 bg-gray-300 rounded-full">
+            <div
+              className="h-2 bg-[#BD4B2C] rounded-full"
+              style={{ width: `${percentage}%` }}
+            />
+          </div>
+        </div>
+
+        {/* 상단 제목 */}
+        <div className="absolute top-[50px] text-[#333333] left-0 right-0 px-6 text-center">
+          <p className="text-[20px] font-MuseumClassic_L italic">만남 배달부</p>
+          <img
+            src={bellIcon}
+            alt="bell_default"
+            className="absolute top-1/2 -translate-y-1/2 right-6 w-[20px] h-[20px]"
           />
         </div>
       </div>
-
-      {/* 심리 테스트 결과 */}
-      <div className="bg-white px-6 py-4 border-b border-gray-100">
-        <div className="text-sm font-semibold text-[#333] mb-2">심리 테스트 결과</div>
-        <ul>
-          <li className="py-2 border-b border-gray-50 cursor-pointer flex items-center justify-between">
-            <span>자기평가 테스트</span>
-            <img src={arrowIcon} alt=">" className="w-4 h-4" />
-          </li>
-          <li className="py-2 border-b border-gray-50 cursor-pointer flex items-center justify-between">
-            <span>대인관계 테스트</span>
-            <img src={arrowIcon} alt=">" className="w-4 h-4" />
-          </li>
-          <li className="py-2 cursor-pointer flex items-center justify-between">
-            <span>우울증 테스트</span>
-            <img src={arrowIcon} alt=">" className="w-4 h-4" />
-          </li>
-        </ul>
-      </div>
-
-      {/* 받은 후기 */}
-      <div className="bg-white px-6 py-4 border-b border-gray-100">
-        <div className="text-sm font-semibold text-[#333] mb-2">받은 후기</div>
-        <ul>
-          {reviews.map((review, idx) => (
-            <li key={idx} className="flex items-center justify-between py-1 text-xs text-gray-700">
-              <span>“{review.text}”</span>
-              <span className="flex items-center ml-2">
-                <svg className="w-4 h-4 text-[#BD4B2C] mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a6 6 0 016 6c0 4.418-6 10-6 10S4 12.418 4 8a6 6 0 016-6zm0 8a2 2 0 100-4 2 2 0 000 4z" /></svg>
-                {review.count}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {/* 매칭 설정 */}
-      <div className="bg-white px-6 py-4 mt-2">
-        <div className="text-sm font-semibold text-[#333] mb-2">매칭 설정</div>
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-gray-700">연락처에 있는 사람 매칭 제외</span>
-          <button
-            className={`w-10 h-6 flex items-center rounded-full p-1 transition-colors duration-200 ${contactExclude ? 'bg-[#BD4B2C]' : 'bg-gray-300'}`}
-            onClick={() => setContactExclude((prev) => !prev)}
-          >
-            <span
-              className={`w-4 h-4 bg-white rounded-full shadow transform transition-transform duration-200 ${contactExclude ? 'translate-x-4' : ''}`}
-            />
-          </button>
-        </div>
-      </div>
-
-      {/* <BottomNavBar /> */}
-    </div>
+    </>
   );
 }
 
