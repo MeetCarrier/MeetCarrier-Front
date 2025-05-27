@@ -3,9 +3,9 @@ import { useRef, useEffect, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import SwiperCore from "swiper";
 import "swiper/css";
-import SockJS from 'sockjs-client';
-import { Client } from '@stomp/stompjs';
-import axios from 'axios';
+import SockJS from "sockjs-client";
+import { Client } from "@stomp/stompjs";
+import axios from "axios";
 
 import back_arrow from "../../assets/img/icons/HobbyIcon/back_arrow.svg";
 import NavBar from "../../components/NavBar";
@@ -41,7 +41,8 @@ function SurveyPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const state = location.state as LocationState;
-  const { user1Id, user1Nickname, user2Id, user2Nickname, roomId } = state || {};
+  const { user1Id, user1Nickname, user2Id, user2Nickname, roomId } =
+    state || {};
 
   const [currentStep, setCurrentStep] = useState(0);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -58,7 +59,7 @@ function SurveyPage() {
   });
   const [isSubmitted, setIsSubmitted] = useState(() => {
     const saved = localStorage.getItem(`isSubmitted_${roomId}`);
-    return saved === 'true';
+    return saved === "true";
   });
 
   const menuRef = useRef<HTMLDivElement>(null);
@@ -94,70 +95,78 @@ function SurveyPage() {
 
   useEffect(() => {
     if (!state?.roomId) {
-      console.error('방 정보가 없습니다.');
-      navigate('/ChatList');
+      console.error("방 정보가 없습니다.");
+      navigate("/ChatList");
       return;
     }
 
     // WebSocket 연결 설정
-    console.log('WebSocket 연결 시작');
-    const socket = new SockJS('https://www.mannamdeliveries.link/connection');
+    console.log("WebSocket 연결 시작");
+    const socket = new SockJS("https://www.mannamdeliveries.link/connection");
     const stompClient = new Client({
       webSocketFactory: () => socket,
       onConnect: () => {
-        console.log('WebSocket 연결 성공');
+        console.log("WebSocket 연결 성공");
         // 설문 완료 알림 구독
-        stompClient.subscribe(`/topic/survey/${state.roomId}/complete`, async (message) => {
-          const data = JSON.parse(message.body);
-          console.log('[✔️ 설문 제출 알림 수신]', {
-            destination: `/topic/survey/${state.roomId}/complete`,
-            data,
-          });
-          
-          try {
-            // 최신 매치 상태 조회
-            const response = await axios.get(`https://www.mannamdeliveries.link/matches/${state.roomId}`);
-            const updatedMatch = response.data;
-            
-            // 상태 업데이트
-            setChatRoomId(data.roomId);
-            setShowCompleteModal(true);
-            
-            // location state 업데이트
-            navigate(`/survey/${state.roomId}`, {
-              state: {
-                ...state,
-                status: "Chatting",
-                agreed: updatedMatch.agreed,
-                matchedAt: updatedMatch.matchedAt
-              },
-              replace: true
+        stompClient.subscribe(
+          `/topic/survey/${state.roomId}/complete`,
+          async (message) => {
+            const data = JSON.parse(message.body);
+            console.log("[✔️ 설문 제출 알림 수신]", {
+              destination: `/topic/survey/${state.roomId}/complete`,
+              data,
             });
-          } catch (error) {
-            console.error('매치 상태 업데이트 실패:', error);
+
+            try {
+              // 최신 매치 상태 조회
+              const response = await axios.get(
+                `https://www.mannamdeliveries.link/api/matches/${state.roomId}`
+              );
+              const updatedMatch = response.data;
+
+              // 상태 업데이트
+              setChatRoomId(data.roomId);
+              setShowCompleteModal(true);
+
+              // location state 업데이트
+              navigate(`/survey/${state.roomId}`, {
+                state: {
+                  ...state,
+                  status: "Chatting",
+                  agreed: updatedMatch.agreed,
+                  matchedAt: updatedMatch.matchedAt,
+                },
+                replace: true,
+              });
+            } catch (error) {
+              console.error("매치 상태 업데이트 실패:", error);
+            }
           }
-        });
+        );
 
         // 설문 퇴장 알림 구독
-        stompClient.subscribe(`/topic/survey/${state.roomId}/leave`, (message) => {
-          const data = JSON.parse(message.body);
-          console.log('[❌ 설문 퇴장 알림 수신]', {
-            destination: `/topic/survey/${state.roomId}/leave`,
-            data,
-          });
-          alert(`${data.leaverNickname}님이 설문을 나갔습니다.`);
-          navigate('/ChatList');
-        });
+        stompClient.subscribe(
+          `/topic/survey/${state.roomId}/leave`,
+          (message) => {
+            const data = JSON.parse(message.body);
+            console.log("[❌ 설문 퇴장 알림 수신]", {
+              destination: `/topic/survey/${state.roomId}/leave`,
+              data,
+            });
+            alert(`${data.leaverNickname}님이 설문을 나갔습니다.`);
+            navigate("/ChatList");
+          }
+        );
       },
       onDisconnect: () => {
-        console.log('WebSocket 연결 해제');
+        console.log("WebSocket 연결 해제");
       },
       onStompError: (frame) => {
-        console.error('STOMP 에러 발생:', frame);
+        console.error("STOMP 에러 발생:", frame);
       },
       onWebSocketError: (event) => {
-        console.error('WebSocket 에러 발생:', event);
-      }
+        console.error("WebSocket 에러 발생:", event);
+      },
     });
 
     stompClientRef.current = stompClient;
@@ -166,23 +175,27 @@ function SurveyPage() {
     // 질문 목록 조회
     const fetchQuestions = async () => {
       try {
-        console.log('질문 목록 조회 시작');
-        const response = await axios.get(`https://www.mannamdeliveries.link/survey/${state.roomId}/questions`);
-        console.log('질문 목록 조회 결과:', response.data);
+        console.log("질문 목록 조회 시작");
+        const response = await axios.get(
+          `https://www.mannamdeliveries.link/api/survey/${state.roomId}/questions`
+        );
+        console.log("질문 목록 조회 결과:", response.data);
         setQuestions(response.data);
       } catch (error) {
-        console.error('질문 목록 조회 실패:', error);
+        console.error("질문 목록 조회 실패:", error);
       }
     };
 
     // 답변 목록 조회
     const fetchAnswers = async () => {
       try {
-        console.log('답변 목록 조회 시작');
-        const response = await axios.get(`https://www.mannamdeliveries.link/survey/${state.roomId}/answers`);
-        console.log('답변 목록 조회 결과:', response.data);
+        console.log("답변 목록 조회 시작");
+        const response = await axios.get(
+          `https://www.mannamdeliveries.link/api/survey/${state.roomId}/answers`
+        );
+        console.log("답변 목록 조회 결과:", response.data);
         setAnswers(response.data);
-        
+
         // 기존 답변을 임시 저장소에 복사
         const existingAnswers = response.data
           .filter((a: Answer) => a.userId === myId)
@@ -192,7 +205,7 @@ function SurveyPage() {
           }, {});
         setTempAnswers(existingAnswers);
       } catch (error) {
-        console.error('답변 목록 조회 실패:', error);
+        console.error("답변 목록 조회 실패:", error);
       }
     };
 
@@ -234,9 +247,9 @@ function SurveyPage() {
       setIsEditing(false);
       setEditedContent("");
     } else if (currentStep > 0) {
-      navigate('/ChatList');
+      navigate("/ChatList");
     } else {
-      navigate('/ChatList');
+      navigate("/ChatList");
     }
   };
 
@@ -249,44 +262,49 @@ function SurveyPage() {
       ...tempAnswers,
       [currentQuestion.questionId]: editedContent,
     };
-  
+
     // 상태 업데이트
     setTempAnswers(updatedAnswers);
-  
+
     // 로컬스토리지에 저장 (질문별로 분리 저장 or 통째로 저장 가능 — 여기선 통째로 저장)
-    localStorage.setItem(`tempAnswers_${roomId}`, JSON.stringify(updatedAnswers));
-  
+    localStorage.setItem(
+      `tempAnswers_${roomId}`,
+      JSON.stringify(updatedAnswers)
+    );
+
     setIsEditing(false);
   };
 
   const handleSubmit = async () => {
     try {
-      console.log('설문 제출 시작');
+      console.log("설문 제출 시작");
 
-      const answersToSubmit = Object.entries(tempAnswers).map(([questionId, content]) => ({
-        questionId: parseInt(questionId),
-        content: content
-      }));
+      const answersToSubmit = Object.entries(tempAnswers).map(
+        ([questionId, content]) => ({
+          questionId: parseInt(questionId),
+          content: content,
+        })
+      );
 
-      console.log('제출할 답변:', answersToSubmit);
+      console.log("제출할 답변:", answersToSubmit);
 
       await axios.post(
-        `https://www.mannamdeliveries.link/survey/${state.roomId}/answers/${myId}`,
+        `https://www.mannamdeliveries.link/api/survey/${state.roomId}/answers/${myId}`,
         answersToSubmit
       );
 
-      console.log('설문 제출 성공');
+      console.log("설문 제출 성공");
       setShowSubmitModal(false);
       setIsSubmitted(true); // ✅ 제출 완료로 표시
     } catch (error) {
-      console.error('설문 제출 실패:', error);
-      alert('설문 제출에 실패했습니다.');
+      console.error("설문 제출 실패:", error);
+      alert("설문 제출에 실패했습니다.");
     }
   };
 
   // 모든 질문에 답변했는지 확인
   const isAllQuestionsAnswered = () => {
-    return questions.every(question => tempAnswers[question.questionId]);
+    return questions.every((question) => tempAnswers[question.questionId]);
   };
 
   const getLabeledQuestionTitle = (index: number, total: number) => {
@@ -297,7 +315,7 @@ function SurveyPage() {
   const handleJoinChat = async () => {
     try {
       const response = await axios.post(
-        `https://www.mannamdeliveries.link/room/${state.id}/${myId}/enter`
+        `https://www.mannamdeliveries.link/api/room/${state.id}/${myId}/enter`
       );
       const newRoomId = response.data.roomId;
       setChatRoomId(newRoomId);
@@ -345,16 +363,17 @@ function SurveyPage() {
             onClick={() => {
               if (stompClientRef.current && stompClientRef.current.connected) {
                 stompClientRef.current.publish({
-                  destination: '/app/survey/leave',
+                  destination: "/app/survey/leave",
                   body: JSON.stringify({
                     sessionId: state.roomId,
                     leaverId: myId,
-                    leaverNickname: myId === user1Id ? user1Nickname : user2Nickname
-                  })
+                    leaverNickname:
+                      myId === user1Id ? user1Nickname : user2Nickname,
+                  }),
                 });
               }
               setIsMenuOpen(false);
-              navigate('/ChatList');
+              navigate("/ChatList");
             }}
           >
             설문 나가기
@@ -392,7 +411,8 @@ function SurveyPage() {
               myId === user1Id ? user2Nickname : user1Nickname;
 
             const showOther = !isEditing;
-            const currentAnswer = tempAnswers[question.questionId] || myAnswer?.content || "";
+            const currentAnswer =
+              tempAnswers[question.questionId] || myAnswer?.content || "";
 
             return (
               <SwiperSlide key={question.questionId}>
@@ -419,12 +439,16 @@ function SurveyPage() {
                         )
                       )}
                   </div>
-                  <p className="text-xs text-gray-400">{new Date(matchedAt).toLocaleDateString("ko-KR")}</p>
+                  <p className="text-xs text-gray-400">
+                    {new Date(matchedAt).toLocaleDateString("ko-KR")}
+                  </p>
                 </div>
 
                 {/* 내 답변 */}
                 <div
-                  className={`bg-white rounded p-4 shadow-sm border border-gray-200 mb-3 min-h-[200px] ${!isSubmitted ? 'cursor-pointer' : ''}`}
+                  className={`bg-white rounded p-4 shadow-sm border border-gray-200 mb-3 min-h-[200px] ${
+                    !isSubmitted ? "cursor-pointer" : ""
+                  }`}
                   onClick={() => {
                     if (!isEditing && !isSubmitted) {
                       setIsEditing(true);
@@ -476,7 +500,7 @@ function SurveyPage() {
           })}
         </Swiper>
 
-        { !isSubmitted && !isEditing && isAllQuestionsAnswered() && (
+        {!isSubmitted && !isEditing && isAllQuestionsAnswered() && (
           <div className="flex justify-center mt-4">
             <button
               className="px-6 py-2 bg-[#C67B5A] text-white text-sm font-GanwonEduAll_Bold rounded-md"
@@ -492,7 +516,11 @@ function SurveyPage() {
       <Modal isOpen={showSubmitModal} onClose={() => setShowSubmitModal(false)}>
         <div className="flex flex-col items-center">
           <h3 className="text-lg font-GanwonEduAll_Bold mb-4">제출 확인</h3>
-          <p className="text-sm mb-6 text-center">답변을 등록하시겠어요?<br/>등록 후에는 수정이 불가능해요.</p>
+          <p className="text-sm mb-6 text-center">
+            답변을 등록하시겠어요?
+            <br />
+            등록 후에는 수정이 불가능해요.
+          </p>
           <div className="flex justify-center gap-4 w-full">
             <button
               className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded"
@@ -511,14 +539,19 @@ function SurveyPage() {
       </Modal>
 
       {/* 설문 완료 모달 */}
-      <Modal isOpen={showCompleteModal} onClose={() => {
-        setShowCompleteModal(false);
-        // 설문 완료 모달이 닫힐 때 채팅방 입장 요청
-        handleJoinChat();
-      }}>
+      <Modal
+        isOpen={showCompleteModal}
+        onClose={() => {
+          setShowCompleteModal(false);
+          // 설문 완료 모달이 닫힐 때 채팅방 입장 요청
+          handleJoinChat();
+        }}
+      >
         <div className="flex flex-col items-center">
           <h3 className="text-lg font-GanwonEduAll_Bold mb-4">설문 완료!</h3>
-          <p className="text-sm mb-6 text-center">둘 다 모든 설문에 답변했어요!</p>
+          <p className="text-sm mb-6 text-center">
+            둘 다 모든 설문에 답변했어요!
+          </p>
           <div className="flex justify-center w-full">
             <button
               className="px-6 py-2 bg-[#C67B5A] text-white text-sm rounded"

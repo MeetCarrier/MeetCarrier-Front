@@ -1,5 +1,5 @@
-import SockJS from 'sockjs-client';
-import Stomp, { Message } from 'stompjs';
+import SockJS from "sockjs-client";
+import Stomp, { Message } from "stompjs";
 
 export interface StartMatchingOptions {
   onSuccess: (data: MatchSuccessData) => void;
@@ -28,32 +28,32 @@ export function startMatchingClient({
   onFail,
   onConnected,
 }: StartMatchingOptions): MatchingClient {
-  const socket = new SockJS('https://www.mannamdeliveries.link/connection');
+  const socket = new SockJS("https://www.mannamdeliveries.link/connection");
   const client = Stomp.over(socket);
 
   client.connect({}, () => {
-    console.log('✅ WebSocket 연결됨');
+    console.log("✅ WebSocket 연결됨");
 
     onConnected?.();
 
-    client.subscribe('/topic/match_result', (message: Message) => {
+    client.subscribe("/topic/match_result", (message: Message) => {
       const data = JSON.parse(message.body);
 
-      if ('surveySessionId' in data) {
+      if ("surveySessionId" in data) {
         onSuccess(data as MatchSuccessData);
       } else {
         onFail(data as MatchFailData);
       }
     });
 
-    client.send('/app/start-matching', {}, '');
+    client.send("/app/start-matching", {}, "");
   });
 
   return {
     disconnect: () => {
       if (client.connected) {
         client.disconnect(() => {
-          console.log('🔌 WebSocket 연결 해제됨');
+          console.log("🔌 WebSocket 연결 해제됨");
         });
       }
     },

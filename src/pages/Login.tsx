@@ -1,31 +1,31 @@
-import React from 'react';
-import axios from 'axios';
-import NavBar from '../components/NavBar';
+import React from "react";
+import axios from "axios";
+import NavBar from "../components/NavBar";
 
 const Login: React.FC = () => {
-  const handleLogin = (provider: 'google' | 'kakao') => {
-    const baseUrl = 'https://www.mannamdeliveries.link/oauth2/authorization';
+  const handleLogin = (provider: "google" | "kakao") => {
+    const baseUrl = "https://www.mannamdeliveries.link/oauth2/authorization";
     window.location.href = `${baseUrl}/${provider}`;
   };
 
   const handleTestLogin = async () => {
     try {
       const loginRes = await axios.post(
-        'https://www.mannamdeliveries.link/auth/test/login',
+        "https://www.mannamdeliveries.link/api/auth/test/login",
         null,
         { withCredentials: true }
       );
-      console.log('로그인 성공', loginRes.data);
+      console.log("로그인 성공", loginRes.data);
 
       setTimeout(async () => {
         const userRes = await axios.get(
-          'https://www.mannamdeliveries.link/user',
+          "https://www.mannamdeliveries.link/api/user",
           { withCredentials: true }
         );
-        console.log('유저 정보:', userRes.data);
+        console.log("유저 정보:", userRes.data);
       }, 200);
     } catch (err) {
-      console.error('에러:', err);
+      console.error("에러:", err);
     }
   };
 
@@ -37,13 +37,13 @@ const Login: React.FC = () => {
       </div>
       <div className="flex flex-col items-center justify-center w-full h-[calc(100vh-100px)]">
         <button
-          onClick={() => handleLogin('google')}
+          onClick={() => handleLogin("google")}
           className="w-[80%] max-w-xs py-3 mb-4 rounded-lg bg-white shadow font-GanwonEduAll_Bold text-[#333] border border-gray-200 text-lg cursor-pointer hover:bg-[#f0f0f0] hover:shadow-md transition"
         >
           구글로 계속하기
         </button>
         <button
-          onClick={() => handleLogin('kakao')}
+          onClick={() => handleLogin("kakao")}
           className="w-[80%] max-w-xs py-3 rounded-lg bg-[#FEE500] shadow font-GanwonEduAll_Bold text-[#3C1E1E] border border-gray-200 text-lg cursor-pointer hover:bg-[#e6cc00] hover:shadow-md transition"
         >
           카카오로 계속하기

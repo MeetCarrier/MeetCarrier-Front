@@ -1,18 +1,18 @@
-import navbg from '../../../assets/img/nav_bg.webp';
-import navbg2 from '../../../assets/img/nav_bg2.webp';
-import { useState, useEffect, useRef } from 'react';
-import plus_icon from '../../../assets/img/icons/ChatIcon/ic_plus.svg';
-import arrow_icon from '../../../assets/img/icons/ChatIcon/ic_arrow.svg';
-import face_icon from '../../../assets/img/icons/ChatIcon/ic_face.svg';
-import questionmark_icon from '../../../assets/img/icons/ChatIcon/ic_questionmark.svg';
+import navbg from "../../../assets/img/nav_bg.webp";
+import navbg2 from "../../../assets/img/nav_bg2.webp";
+import { useState, useEffect, useRef } from "react";
+import plus_icon from "../../../assets/img/icons/ChatIcon/ic_plus.svg";
+import arrow_icon from "../../../assets/img/icons/ChatIcon/ic_arrow.svg";
+import face_icon from "../../../assets/img/icons/ChatIcon/ic_face.svg";
+import questionmark_icon from "../../../assets/img/icons/ChatIcon/ic_questionmark.svg";
 
-import album_icon from '../../../assets/img/icons/ChatIcon/ic_album.svg';
-import invite_icon from '../../../assets/img/icons/ChatIcon/ic_invite.svg';
-import end_icon from '../../../assets/img/icons/ChatIcon/ic_end.svg';
-import report_icon from '../../../assets/img/icons/ChatIcon/ic_report.svg';
-import survey_icon from '../../../assets/img/icons/ChatIcon/ic_survey.svg';
-import imageCompression from 'browser-image-compression';
-import axios from 'axios';
+import album_icon from "../../../assets/img/icons/ChatIcon/ic_album.svg";
+import invite_icon from "../../../assets/img/icons/ChatIcon/ic_invite.svg";
+import end_icon from "../../../assets/img/icons/ChatIcon/ic_end.svg";
+import report_icon from "../../../assets/img/icons/ChatIcon/ic_report.svg";
+import survey_icon from "../../../assets/img/icons/ChatIcon/ic_survey.svg";
+import imageCompression from "browser-image-compression";
+import axios from "axios";
 
 type ChatBarProps = {
   onEmojiToggle?: () => void;
@@ -21,41 +21,44 @@ type ChatBarProps = {
 };
 
 function ChatBar({ onEmojiToggle, emojiOpen, onSendMessage }: ChatBarProps) {
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const uploadImageAndSendMessage = async (file: File) => {
     const formData = new FormData();
-    formData.append('multipartFile', file);
+    formData.append("multipartFile", file);
 
     for (const [key, value] of formData.entries()) {
       console.log(`[FormData] ${key}:`, value);
     }
 
     try {
-      console.log('이미지 서버 업로드 시작');
-      const response = await axios.post('https://www.mannamdeliveries.link/file/chat', formData);
-      console.log('이미지 서버 업로드 성공:', response.data);
+      console.log("이미지 서버 업로드 시작");
+      const response = await axios.post(
+        "https://www.mannamdeliveries.link/api/file/chat",
+        formData
+      );
+      console.log("이미지 서버 업로드 성공:", response.data);
       const imageUrl = response.data;
 
       if (onSendMessage) {
-        onSendMessage('', imageUrl);
+        onSendMessage("", imageUrl);
       }
     } catch (error) {
-      console.error('이미지 서버 업로드 실패:', error);
-      alert('이미지 업로드에 실패했습니다.');
+      console.error("이미지 서버 업로드 실패:", error);
+      alert("이미지 업로드에 실패했습니다.");
     }
   };
 
   const handleSendMessage = () => {
     if (message.trim() && onSendMessage) {
       onSendMessage(message);
-      setMessage('');
+      setMessage("");
     }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       if (message.trim()) {
         handleSendMessage();
@@ -68,11 +71,11 @@ function ChatBar({ onEmojiToggle, emojiOpen, onSendMessage }: ChatBarProps) {
     if (!file) return;
 
     // 파일 타입 검사: 이미지 파일인지 확인
-    if (!file.type.startsWith('image/')) {
-      alert('이미지 파일만 선택할 수 있습니다.');
+    if (!file.type.startsWith("image/")) {
+      alert("이미지 파일만 선택할 수 있습니다.");
       // 파일 입력 초기화
       if (e.target) {
-        e.target.value = '';
+        e.target.value = "";
       }
       return;
     }
@@ -83,18 +86,17 @@ function ChatBar({ onEmojiToggle, emojiOpen, onSendMessage }: ChatBarProps) {
         maxWidthOrHeight: 800,
         useWebWorker: true,
         initialQuality: 0.7,
-        alwaysKeepResolution: false
+        alwaysKeepResolution: false,
       };
 
-      console.log('이미지 압축 시작');
+      console.log("이미지 압축 시작");
       const compressedFile = await imageCompression(file, options);
-      console.log('이미지 압축 완료');
-      
-      uploadImageAndSendMessage(compressedFile);
+      console.log("이미지 압축 완료");
 
+      uploadImageAndSendMessage(compressedFile);
     } catch (error) {
-      console.error('이미지 처리 중 오류 발생:', error);
-      alert('이미지 처리에 실패했습니다.');
+      console.error("이미지 처리 중 오류 발생:", error);
+      alert("이미지 처리에 실패했습니다.");
     } finally {
       // 파일 입력 초기화 (이미지 파일이 아닐 경우에도 초기화하도록 위로 이동)
       // if (e.target) {
@@ -114,11 +116,15 @@ function ChatBar({ onEmojiToggle, emojiOpen, onSendMessage }: ChatBarProps) {
       >
         <div className="grid grid-cols-4 gap-y-4 px-6 pt-4">
           {[
-            { icon: album_icon, label: '앨범', onClick: () => fileInputRef.current?.click() },
-            { icon: invite_icon, label: '대면초대장' },
-            { icon: end_icon, label: '만남종료' },
-            { icon: report_icon, label: '신고' },
-            { icon: survey_icon, label: '비대면설문지' },
+            {
+              icon: album_icon,
+              label: "앨범",
+              onClick: () => fileInputRef.current?.click(),
+            },
+            { icon: invite_icon, label: "대면초대장" },
+            { icon: end_icon, label: "만남종료" },
+            { icon: report_icon, label: "신고" },
+            { icon: survey_icon, label: "비대면설문지" },
           ].map(({ icon, label, onClick }, index) => (
             <div key={index} className="flex flex-col items-center">
               <div
@@ -139,7 +145,10 @@ function ChatBar({ onEmojiToggle, emojiOpen, onSendMessage }: ChatBarProps) {
         style={{ backgroundImage: `url(${navbg})` }}
       >
         <div className="flex items-center w-full gap-2">
-          <button className="w-9 h-9 rounded-full bg-[#A34027] flex items-center justify-center flex-shrink-0" onClick={onEmojiToggle}>
+          <button
+            className="w-9 h-9 rounded-full bg-[#A34027] flex items-center justify-center flex-shrink-0"
+            onClick={onEmojiToggle}
+          >
             <img src={plus_icon} alt="plus" className="w-5 h-5" />
           </button>
 
@@ -160,10 +169,12 @@ function ChatBar({ onEmojiToggle, emojiOpen, onSendMessage }: ChatBarProps) {
           <button className="w-9 h-9 rounded-full bg-[#A34027] flex items-center justify-center flex-shrink-0">
             <img src={questionmark_icon} alt="?" className="w-5 h-5" />
           </button>
-        
+
           <button
             onClick={handleSendMessage}
-            className={`w-9 h-9 rounded-full bg-[#A34027] flex items-center justify-center flex-shrink-0 ${message.trim() ? '' : 'opacity-50 cursor-not-allowed'}`}
+            className={`w-9 h-9 rounded-full bg-[#A34027] flex items-center justify-center flex-shrink-0 ${
+              message.trim() ? "" : "opacity-50 cursor-not-allowed"
+            }`}
             disabled={!message.trim()}
           >
             <img src={arrow_icon} alt="send" className="w-5 h-5" />

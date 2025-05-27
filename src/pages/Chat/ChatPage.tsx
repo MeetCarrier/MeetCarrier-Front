@@ -1,14 +1,14 @@
-import { useState, useEffect, useRef } from 'react';
-import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { UserState } from '../Utils/userSlice';
-import axios from 'axios';
-import ChatBar from './components/ChatBar';
-import SockJS from 'sockjs-client';
-import { Client } from '@stomp/stompjs';
-import sampleProfile from '../../assets/img/sample/sample_profile.svg';
+import { useState, useEffect, useRef } from "react";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { UserState } from "../Utils/userSlice";
+import axios from "axios";
+import ChatBar from "./components/ChatBar";
+import SockJS from "sockjs-client";
+import { Client } from "@stomp/stompjs";
+import sampleProfile from "../../assets/img/sample/sample_profile.svg";
 
-import back_arrow from '../../assets/img/icons/HobbyIcon/back_arrow.svg';
-import search_icon from '../../assets/img/icons/ChatIcon/search.svg';
+import back_arrow from "../../assets/img/icons/HobbyIcon/back_arrow.svg";
+import search_icon from "../../assets/img/icons/ChatIcon/search.svg";
 
 interface ChatMessage {
   messageType: string;
@@ -40,7 +40,7 @@ function ChatPage() {
 
   useEffect(() => {
     if (!state?.roomId) {
-      console.error('방 정보가 없습니다.');
+      console.error("방 정보가 없습니다.");
       navigate(-1);
       return;
     }
@@ -48,46 +48,48 @@ function ChatPage() {
     // 채팅 기록 조회
     const fetchChatHistory = async () => {
       try {
-        console.log('채팅 기록 조회 시작:', state.roomId);
+        console.log("채팅 기록 조회 시작:", state.roomId);
         const response = await axios.get(
-          `https://www.mannamdeliveries.link/chat/${state.roomId}`
+          `https://www.mannamdeliveries.link/api/chat/${state.roomId}`
         );
-        console.log('채팅 기록 조회 결과:', response.data);
+        console.log("채팅 기록 조회 결과:", response.data);
         setMessages(response.data);
       } catch (error) {
-        console.error('채팅 기록 조회 실패:', error);
+        console.error("채팅 기록 조회 실패:", error);
       }
     };
 
     // WebSocket 연결 설정
-    console.log('WebSocket 연결 시작');
-    const socket = new SockJS('https://www.mannamdeliveries.link/connection');
+    console.log("WebSocket 연결 시작");
+    const socket = new SockJS(
+      "https://www.mannamdeliveries.link/api/connection"
+    );
     const stompClient = new Client({
       webSocketFactory: () => socket,
       onConnect: () => {
-        console.log('WebSocket 연결 성공');
+        console.log("WebSocket 연결 성공");
         // 채팅방 구독
         stompClient.subscribe(`/topic/room/${state.roomId}`, (message) => {
           const newMessage: ChatMessage = JSON.parse(message.body);
 
           // 내 메시지는 이미 로컬에서 띄웠으므로 무시
           if (newMessage.sender === state.user1Id) {
-            console.log('[무시된 내 메시지]', newMessage);
+            console.log("[무시된 내 메시지]", newMessage);
             return;
           }
 
-          console.log('[수신 메시지]', newMessage);
+          console.log("[수신 메시지]", newMessage);
           setMessages((prev) => [...prev, newMessage]);
         });
       },
       onDisconnect: () => {
-        console.log('WebSocket 연결 해제');
+        console.log("WebSocket 연결 해제");
       },
       onStompError: (frame) => {
-        console.error('STOMP 에러 발생:', frame);
+        console.error("STOMP 에러 발생:", frame);
       },
       onWebSocketError: (event) => {
-        console.error('WebSocket 에러 발생:', event);
+        console.error("WebSocket 에러 발생:", event);
       },
     });
 
@@ -98,7 +100,7 @@ function ChatPage() {
 
     // 컴포넌트 언마운트 시 연결 해제
     return () => {
-      console.log('컴포넌트 언마운트 - WebSocket 연결 해제');
+      console.log("컴포넌트 언마운트 - WebSocket 연결 해제");
       if (stompClientRef.current) {
         stompClientRef.current.deactivate();
       }
@@ -156,7 +158,7 @@ function ChatPage() {
       // 서버에 보낼 메시지 (규격 준수)
       const outgoingMessage = {
         roomId: state.roomId,
-        type: imageUrl ? 'IMAGE' : 'TEXT',
+        type: imageUrl ? "IMAGE" : "TEXT",
         message: message,
         userId: state.user1Id,
         imageUrl: imageUrl || null,
@@ -169,7 +171,7 @@ function ChatPage() {
         now.getTime() - 9 * 60 * 60 * 1000
       ).toISOString();
       const localMessage: ChatMessage = {
-        messageType: imageUrl ? 'IMAGE' : 'TEXT',
+        messageType: imageUrl ? "IMAGE" : "TEXT",
         message: message,
         imageUrl: imageUrl || null,
         sender: state.user1Id,
@@ -177,16 +179,16 @@ function ChatPage() {
       };
 
       // 1. 화면에 즉시 표시
-      console.log('[보낸 메시지]', outgoingMessage);
+      console.log("[보낸 메시지]", outgoingMessage);
       setMessages((prev) => [...prev, localMessage]);
 
       // 2. 서버에 전송
       stompClientRef.current.publish({
-        destination: '/app/chat/send',
+        destination: "/app/chat/send",
         body: JSON.stringify(outgoingMessage),
       });
     } else {
-      console.warn('WebSocket이 연결되어 있지 않습니다.');
+      console.warn("WebSocket이 연결되어 있지 않습니다.");
     }
   };
 
@@ -195,15 +197,15 @@ function ChatPage() {
     if (stompClientRef.current && stompClientRef.current.connected) {
       const leaveData = {
         roomId: state.roomId,
-        type: 'LEAVE',
+        type: "LEAVE",
       };
-      console.log('채팅방 퇴장 요청:', leaveData);
+      console.log("채팅방 퇴장 요청:", leaveData);
       stompClientRef.current.publish({
-        destination: '/app/chat/leave',
+        destination: "/app/chat/leave",
         body: JSON.stringify(leaveData),
       });
     }
-    navigate('/ChatList');
+    navigate("/ChatList");
   };
 
   const handleBackClick = () => {
@@ -212,7 +214,7 @@ function ChatPage() {
 
   // 스크롤을 항상 최신 메시지로 이동
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   // 날짜 포맷팅 함수 추가
@@ -222,14 +224,14 @@ function ChatPage() {
     yesterday.setDate(yesterday.getDate() - 1);
 
     if (date.toDateString() === today.toDateString()) {
-      return '오늘';
+      return "오늘";
     } else if (date.toDateString() === yesterday.toDateString()) {
-      return '어제';
+      return "어제";
     } else {
-      return date.toLocaleDateString('ko-KR', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
+      return date.toLocaleDateString("ko-KR", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
       });
     }
   };
@@ -244,7 +246,7 @@ function ChatPage() {
           onClick={handleBackClick}
         />
         <p className="text-[20px] font-MuseumClassic_L italic">
-          {state?.user2Nickname || '상대방'}
+          {state?.user2Nickname || "상대방"}
         </p>
         <img
           src={search_icon}
@@ -264,7 +266,7 @@ function ChatPage() {
         className="flex flex-col w-full overflow-y-auto p-4 z-0"
         style={{
           height: `calc(100% - 240px - ${emojiHeight}px)`,
-          transition: 'height 0.3s ease',
+          transition: "height 0.3s ease",
         }}
       >
         {messages.map((msg, index) => {
@@ -286,8 +288,10 @@ function ChatPage() {
           );
 
           // 날짜 구분선 표시 여부 확인
-          const showDateDivider = index === 0 ||
-            new Date(messages[index - 1].sentAt).toDateString() !== messageDate.toDateString();
+          const showDateDivider =
+            index === 0 ||
+            new Date(messages[index - 1].sentAt).toDateString() !==
+              messageDate.toDateString();
 
           return (
             <>
@@ -300,8 +304,9 @@ function ChatPage() {
               )}
               <div
                 key={index}
-                className={`flex ${isMine ? 'justify-end' : 'justify-start'
-                  } mb-1`}
+                className={`flex ${
+                  isMine ? "justify-end" : "justify-start"
+                } mb-1`}
               >
                 {/* 왼쪽 프로필 (처음 메시지일 때만) */}
                 {!isMine && !isPrevSameSender ? (
@@ -320,14 +325,17 @@ function ChatPage() {
                 <div className={`max-w-[70%] flex flex-col`}>
                   {/* 닉네임은 첫 메시지일 때만 */}
                   {!isMine && !isPrevSameSender && (
-                    <span className="text-sm text-gray-700 mb-1">{nickname}</span>
+                    <span className="text-sm text-gray-700 mb-1">
+                      {nickname}
+                    </span>
                   )}
 
                   <div
-                    className={`px-3 py-2 rounded-xl whitespace-pre-wrap ${isMine
-                        ? 'bg-[#BD4B2C] text-[#F2F2F2] rounded-br-none self-end'
-                        : 'bg-[#FFFFFF] text-[#333333] rounded-bl-none'
-                      }`}
+                    className={`px-3 py-2 rounded-xl whitespace-pre-wrap ${
+                      isMine
+                        ? "bg-[#BD4B2C] text-[#F2F2F2] rounded-br-none self-end"
+                        : "bg-[#FFFFFF] text-[#333333] rounded-bl-none"
+                    }`}
                   >
                     {msg.imageUrl ? (
                       <img
@@ -342,12 +350,13 @@ function ChatPage() {
 
                   {isNextDifferentSender && (
                     <span
-                      className={`text-xs text-gray-400 mt-1 ${isMine ? 'text-right pr-1' : 'text-left pl-1'
-                        }`}
+                      className={`text-xs text-gray-400 mt-1 ${
+                        isMine ? "text-right pr-1" : "text-left pl-1"
+                      }`}
                     >
-                      {koreanTime.toLocaleTimeString('ko-KR', {
-                        hour: '2-digit',
-                        minute: '2-digit',
+                      {koreanTime.toLocaleTimeString("ko-KR", {
+                        hour: "2-digit",
+                        minute: "2-digit",
                         hour12: true,
                       })}
                     </span>

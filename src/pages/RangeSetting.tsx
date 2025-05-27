@@ -1,19 +1,19 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import { RootState } from '../Utils/store';
-import { UserState } from '../Utils/userSlice';
-import { motion } from 'motion/react';
-import axios from 'axios';
-import NavBar from '../components/NavBar';
-import check_icon from '../assets/img/icons/HobbyIcon/check.svg';
-import back_arrow from '../assets/img/icons/HobbyIcon/back_arrow.svg';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { RootState } from "../Utils/store";
+import { UserState } from "../Utils/userSlice";
+import { motion } from "motion/react";
+import axios from "axios";
+import NavBar from "../components/NavBar";
+import check_icon from "../assets/img/icons/HobbyIcon/check.svg";
+import back_arrow from "../assets/img/icons/HobbyIcon/back_arrow.svg";
 
 function RangeSetting() {
   const navigate = useNavigate();
 
   const handleBackClick = () => {
-    navigate('/main?modal=true');
+    navigate("/main?modal=true");
   };
 
   const [isOn, setIsOn] = useState(true);
@@ -35,7 +35,7 @@ function RangeSetting() {
   const handleSubmit = async () => {
     try {
       await axios.patch(
-        'https://www.mannamdeliveries.link/user',
+        "https://www.mannamdeliveries.link/api/user",
         {
           maxMatchingDistance: distance,
           maxAgeGap: age,
@@ -43,15 +43,15 @@ function RangeSetting() {
         },
         {
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           withCredentials: true,
         }
       );
-      alert('저장 완료!');
+      alert("저장 완료!");
     } catch (error) {
-      console.error('저장 실패:', error);
-      alert('저장에 실패했어요.');
+      console.error("저장 실패:", error);
+      alert("저장에 실패했어요.");
     }
   };
 
@@ -111,7 +111,7 @@ function RangeSetting() {
                 background: `linear-gradient(to right, #BD4B2C 0%, #BD4B2C ${
                   (distance - 10) * 5
                 }%, #e5e7eb ${(distance - 10) * 5}%, #e5e7eb 100%)`,
-                borderRadius: '9999px',
+                borderRadius: "9999px",
               }}
             />
           </div>
@@ -151,7 +151,7 @@ function RangeSetting() {
                 background: `linear-gradient(to right, #BD4B2C 0%, #BD4B2C ${
                   (age - 0) * 10
                 }%, #e5e7eb ${(age - 0) * 10}%, #e5e7eb 100%)`,
-                borderRadius: '9999px',
+                borderRadius: "9999px",
               }}
             />
           </div>
@@ -169,7 +169,7 @@ function RangeSetting() {
             <div
               onClick={() => setIsOn((prev) => !prev)}
               className={`w-12 h-5.5 flex items-center rounded-full cursor-pointer px-1 transition-colors duration-300 ${
-                isOn ? 'bg-[#BD4B2C]' : 'bg-gray-300'
+                isOn ? "bg-[#BD4B2C]" : "bg-gray-300"
               }`}
             >
               <motion.div
@@ -178,9 +178,9 @@ function RangeSetting() {
                   x: isOn ? 22 : 0,
                 }}
                 transition={{
-                  type: 'tween',
+                  type: "tween",
                   duration: 0.1,
-                  ease: 'easeInOut',
+                  ease: "easeInOut",
                 }}
               />
             </div>

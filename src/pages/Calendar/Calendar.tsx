@@ -1,13 +1,13 @@
-import NavBar from '../../components/NavBar';
-import calendar_icon from '../../assets/img/icons/Calendar/ic_calendar.svg';
-import comming_dage from '../../assets/img/calendar/comming_date.svg';
-import dairy_button from '../../assets/img/calendar/dairy.svg';
-import today_check from '../../assets/img/calendar/today_check.svg';
-import calendar_base from '../../assets/img/calendar/Calendar_base.png';
-import { useNavigate } from 'react-router-dom';
-import { useState, useEffect, useRef } from 'react';
-import { useAppDispatch } from '../../Utils/hooks';
-import { formatDate } from '../../Utils/formatDate';
+import NavBar from "../../components/NavBar";
+import calendar_icon from "../../assets/img/icons/Calendar/ic_calendar.svg";
+import comming_dage from "../../assets/img/calendar/comming_date.svg";
+import dairy_button from "../../assets/img/calendar/dairy.svg";
+import today_check from "../../assets/img/calendar/today_check.svg";
+import calendar_base from "../../assets/img/calendar/Calendar_base.png";
+import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { useAppDispatch } from "../../Utils/hooks";
+import { formatDate } from "../../Utils/formatDate";
 import {
   setReadOnlyText,
   setIsReadOnly,
@@ -16,11 +16,11 @@ import {
   setIsEditingToday,
   setJournalId,
   setDateLabel,
-} from '../../Utils/diarySlice';
-import axios from 'axios';
+} from "../../Utils/diarySlice";
+import axios from "axios";
 
 // 나중에 스탬프 생기면 수정해야 함.
-import stamp_sample from '../../assets/img/icons/Stamp/stamp_1_activate.svg';
+import stamp_sample from "../../assets/img/icons/Stamp/stamp_1_activate.svg";
 
 const today = new Date();
 
@@ -41,7 +41,7 @@ function CalendarGrid({
   month: number;
   journals: Journals[];
 }) {
-  const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+  const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
   const currentYear = today.getFullYear();
   const currentMonth = today.getMonth();
   const currentDate = today.getDate();
@@ -73,12 +73,12 @@ function CalendarGrid({
       dispatch(setIsEditingToday(false));
     }
 
-    navigate('/Diary');
+    navigate("/Diary");
   };
 
   const cells = Array.from({ length: 42 }, (_, i) => {
     const date = i - startDay + 1;
-    return date > 0 && date <= totalDays ? date : '';
+    return date > 0 && date <= totalDays ? date : "";
   });
 
   return (
@@ -93,7 +93,7 @@ function CalendarGrid({
         {weekdays.map((day, i) => (
           <div
             key={i}
-            className={`${i === 0 || i === 6 ? 'text-red-500' : 'text-[#333]'}`}
+            className={`${i === 0 || i === 6 ? "text-red-500" : "text-[#333]"}`}
           >
             {day}
           </div>
@@ -164,16 +164,16 @@ function Calendar() {
         console.log(year, monthFix);
 
         const res = await axios.get(
-          `https://www.mannamdeliveries.link/journals/${year}/${monthFix}`,
+          `https://www.mannamdeliveries.link/api/journals/${year}/${monthFix}`,
           {
             withCredentials: true,
           }
         );
 
-        console.log('이번 달 일기 목록:', res.data);
+        console.log("이번 달 일기 목록:", res.data);
         setJournals(res.data);
       } catch (err) {
-        console.error('일기 목록 조회 실패:', err);
+        console.error("일기 목록 조회 실패:", err);
       }
     };
 
@@ -205,13 +205,13 @@ function Calendar() {
       dispatch(setIsReadOnly(false));
       dispatch(setIsEditingToday(true));
     } else {
-      dispatch(setText(''));
+      dispatch(setText(""));
       dispatch(setSelectedStamp(null));
       dispatch(setIsReadOnly(false));
       dispatch(setIsEditingToday(false));
     }
 
-    navigate('/Diary');
+    navigate("/Diary");
   };
 
   const toggleSelector = () => setShowSelector(!showSelector);
@@ -229,8 +229,8 @@ function Calendar() {
         setShowMonthList(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   return (

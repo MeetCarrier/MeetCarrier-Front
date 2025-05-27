@@ -1,28 +1,28 @@
-import { useState, useEffect, useRef } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import btn1 from '../assets/img/button/btn1.webp';
-import btn2 from '../assets/img/button/btn2.webp';
-import bell_default from '../assets/img/icons/NavIcon/bell_default.svg';
+import { useState, useEffect, useRef } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import axios from "axios";
+import btn1 from "../assets/img/button/btn1.webp";
+import btn2 from "../assets/img/button/btn2.webp";
+import bell_default from "../assets/img/icons/NavIcon/bell_default.svg";
 
-import NavBar from '../components/NavBar';
-import Modal from '../components/Modal';
-import MainModal from '../Modal/MainModal';
-import { useDispatch } from 'react-redux';
-import { AppDispatch } from '../Utils/store';
-import { fetchUser } from '../Utils/userSlice';
-import { useSelector } from 'react-redux';
-import { RootState } from '../Utils/store';
-import { UserState } from '../Utils/userSlice';
-import { startMatchingClient, type MatchingClient } from '../Utils/Matching';
-import { MatchingContent, type MatchingStatus } from '../Utils/MatchingContent';
+import NavBar from "../components/NavBar";
+import Modal from "../components/Modal";
+import MainModal from "../Modal/MainModal";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../Utils/store";
+import { fetchUser } from "../Utils/userSlice";
+import { useSelector } from "react-redux";
+import { RootState } from "../Utils/store";
+import { UserState } from "../Utils/userSlice";
+import { startMatchingClient, type MatchingClient } from "../Utils/Matching";
+import { MatchingContent, type MatchingStatus } from "../Utils/MatchingContent";
 
 function Main() {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const isModalOpen = searchParams.get('modal') === 'true';
-  const [status, setStatus] = useState<MatchingStatus>('default');
+  const isModalOpen = searchParams.get("modal") === "true";
+  const [status, setStatus] = useState<MatchingStatus>("default");
   const matchingClientRef = useRef<MatchingClient | null>(null);
   const [isSocketConnected, setIsSocketConnected] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -36,42 +36,42 @@ function Main() {
     const fetchData = async () => {
       try {
         await dispatch(fetchUser()).unwrap();
-        console.log('로그인 성공');
+        console.log("로그인 성공");
 
         if (!navigator.geolocation) {
-          console.error('위치 정보 지원 안됨');
+          console.error("위치 정보 지원 안됨");
           return;
         }
 
         navigator.geolocation.getCurrentPosition(
           async (position) => {
             const { latitude, longitude } = position.coords;
-            console.log('위치:', { latitude, longitude });
+            console.log("위치:", { latitude, longitude });
             setLocationAllowed(true);
 
             try {
               await axios.patch(
-                'https://www.mannamdeliveries.link/user',
+                "https://www.mannamdeliveries.link/api/user",
                 { latitude: latitude, longitude: longitude },
                 {
                   headers: {
-                    'Content-Type': 'application/json',
+                    "Content-Type": "application/json",
                   },
                   withCredentials: true,
                 }
               );
-              console.log('위치 전송 완료');
+              console.log("위치 전송 완료");
             } catch (error) {
-              console.error('위치 전송 실패', error);
+              console.error("위치 전송 실패", error);
             }
           },
           (error) => {
-            console.error('위치 정보 실패', error.message);
+            console.error("위치 정보 실패", error.message);
           }
         );
       } catch (error) {
-        console.warn('유저 정보 불러오기 실패 → 로그인 페이지로 이동', error);
-        navigate('/Login');
+        console.warn("유저 정보 불러오기 실패 → 로그인 페이지로 이동", error);
+        navigate("/Login");
       }
     };
 
@@ -81,31 +81,31 @@ function Main() {
   // 자가 평가 점수가 없다면?(매칭 정보 설정을 안한 상태라면) -> 매칭 시작 전에 한번 물어보기
   // 매칭 시작
   const handleStartMatching = () => {
-    setStatus('matching');
+    setStatus("matching");
 
     timeoutRef.current = setTimeout(() => {
-      console.log('매칭 시간 초과');
-      setStatus('fail');
+      console.log("매칭 시간 초과");
+      setStatus("fail");
     }, 360000);
 
     const client = startMatchingClient({
       onSuccess: (data) => {
-        console.log('매칭 성공', data);
+        console.log("매칭 성공", data);
         if (timeoutRef.current) {
           clearTimeout(timeoutRef.current);
           timeoutRef.current = null;
         }
         setTimeout(() => {
-          setStatus('success');
+          setStatus("success");
         }, 5000);
       },
       onFail: (data) => {
-        console.log('매칭 실패', data);
+        console.log("매칭 실패", data);
         if (timeoutRef.current) {
           clearTimeout(timeoutRef.current);
           timeoutRef.current = null;
         }
-        setStatus('fail');
+        setStatus("fail");
       },
       onConnected: () => {
         setIsSocketConnected(true); // 연결 완료 시점
@@ -118,12 +118,12 @@ function Main() {
   const handleButton1ClickByStatus: Record<MatchingStatus, () => void> = {
     default: () => {
       if (!locationAllowed) {
-        alert('위치 권한이 허용되어야 매칭을 시작할 수 있습니다.');
+        alert("위치 권한이 허용되어야 매칭을 시작할 수 있습니다.");
         return;
       }
 
-      if (!user?.personalities || user.personalities.trim() === '') {
-        alert('자가 평가 테스트를 먼저 완료해주세요.');
+      if (!user?.personalities || user.personalities.trim() === "") {
+        alert("자가 평가 테스트를 먼저 완료해주세요.");
         return;
       }
       handleStartMatching();
@@ -131,7 +131,7 @@ function Main() {
     matching: () => {
       // 소켓 연결 중 해제
       if (!isSocketConnected) {
-        console.log('아직 연결되지 않았습니다.');
+        console.log("아직 연결되지 않았습니다.");
         return;
       }
 
@@ -142,10 +142,10 @@ function Main() {
         clearTimeout(timeoutRef.current);
         timeoutRef.current = null;
       }
-      setStatus('default');
+      setStatus("default");
     },
     success: () => {
-      setStatus('fail');
+      setStatus("fail");
     },
     fail: () => {
       handleStartMatching();
@@ -154,13 +154,13 @@ function Main() {
 
   const handleButton2ClickByStatus: Record<MatchingStatus, () => void> = {
     default: () => {
-      navigate('/main?modal=true');
+      navigate("/main?modal=true");
     },
     matching: () => {
-      navigate('/main?modal=true');
+      navigate("/main?modal=true");
     },
     success: () => {
-      navigate('/main?modal=true');
+      navigate("/main?modal=true");
     },
     fail: () => {
       matchingClientRef.current?.disconnect();
@@ -170,7 +170,7 @@ function Main() {
         clearTimeout(timeoutRef.current);
         timeoutRef.current = null;
       }
-      setStatus('default');
+      setStatus("default");
     },
   };
 
@@ -221,7 +221,7 @@ function Main() {
         />
       </div>
 
-      <Modal isOpen={isModalOpen} onClose={() => navigate('/main')}>
+      <Modal isOpen={isModalOpen} onClose={() => navigate("/main")}>
         <MainModal />
       </Modal>
     </>

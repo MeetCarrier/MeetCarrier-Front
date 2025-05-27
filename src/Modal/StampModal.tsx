@@ -1,7 +1,7 @@
-import { FC } from 'react';
-import axios from 'axios';
-import { useAppSelector } from '../Utils/hooks';
-import { useNavigate } from 'react-router-dom';
+import { FC } from "react";
+import axios from "axios";
+import { useAppSelector } from "../Utils/hooks";
+import { useNavigate } from "react-router-dom";
 
 const StampModal: FC = () => {
   const navigate = useNavigate();
@@ -18,7 +18,7 @@ const StampModal: FC = () => {
     try {
       if (isEditingToday) {
         await axios.patch(
-          `https://www.mannamdeliveries.link/journals/${journalId}`,
+          `https://www.mannamdeliveries.link/api/journals/${journalId}`,
           {
             content: text,
             stamp: selectedStamp,
@@ -27,7 +27,7 @@ const StampModal: FC = () => {
         );
       } else {
         await axios.post(
-          'https://www.mannamdeliveries.link/journals/register',
+          "https://www.mannamdeliveries.link/api/journals/register",
           {
             content: text,
             stamp: selectedStamp,
@@ -36,11 +36,11 @@ const StampModal: FC = () => {
         );
       }
 
-      alert('저장 완료!');
-      navigate('/Calendar');
+      alert("저장 완료!");
+      navigate("/Calendar");
     } catch (error) {
-      console.error('저장 실패', error);
-      alert('저장에 실패했어요.');
+      console.error("저장 실패", error);
+      alert("저장에 실패했어요.");
     }
   };
 
@@ -56,7 +56,7 @@ const StampModal: FC = () => {
       <div className="flex items-center justify-end">
         <button
           className="mr-3 cursor-pointer"
-          onClick={() => navigate('/Stamp')}
+          onClick={() => navigate("/Stamp")}
         >
           취소
         </button>

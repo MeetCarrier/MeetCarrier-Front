@@ -33,10 +33,11 @@ function ChatListPage() {
     const fetchMatches = async () => {
       try {
         console.log("[매치 불러오기] API 호출 시작...");
-        const res = await fetch("https://www.mannamdeliveries.link/matches/1");
+        const res = await fetch(
+          "https://www.mannamdeliveries.link/api/matches/1"
+        );
 
         console.log(`[매치 불러오기] 응답 상태 코드: ${res.status}`);
-
 
         if (!res.ok) {
           throw new Error(`API 호출 실패: ${res.status}`);
@@ -50,7 +51,7 @@ function ChatListPage() {
         setMatchList(data);
       } catch (e) {
         console.error("[매치 불러오기] 실패:", e);
-      
+
         // 더미 데이터 출력
         const dummyData: MatchData[] = [
           {
@@ -64,7 +65,7 @@ function ChatListPage() {
             user1ImageUrl: undefined,
             user2Id: 2,
             user2Nickname: "사용자2",
-            user2ImageUrl: undefined
+            user2ImageUrl: undefined,
           },
           {
             id: 2,
@@ -77,8 +78,8 @@ function ChatListPage() {
             user1ImageUrl: undefined,
             user2Id: 3,
             user2Nickname: "사용자3",
-            user2ImageUrl: undefined
-          }
+            user2ImageUrl: undefined,
+          },
         ];
 
         console.log("[매치 불러오기] 더미 데이터 사용:", dummyData);
@@ -89,11 +90,17 @@ function ChatListPage() {
     fetchMatches();
   }, [dispatch]);
 
-  const chattingList = matchList.filter((m) => m.status === "Chatting" && m.agreed === true);
-  const surveyList = matchList.filter((m) => m.status === "Surveying" || (m.status === "Chatting" && m.agreed === false));
+  const chattingList = matchList.filter(
+    (m) => m.status === "Chatting" && m.agreed === true
+  );
+  const surveyList = matchList.filter(
+    (m) =>
+      m.status === "Surveying" ||
+      (m.status === "Chatting" && m.agreed === false)
+  );
 
   const handleChatClick = (match: MatchData) => {
-    console.log('채팅방 입장:', match.id);
+    console.log("채팅방 입장:", match.id);
     navigate(`/chat/${match.id}`, {
       state: {
         roomId: match.id,
@@ -101,12 +108,12 @@ function ChatListPage() {
         user1Nickname: match.user1Nickname,
         user2Id: match.user2Id,
         user2Nickname: match.user2Nickname,
-      }
+      },
     });
   };
 
   const handleSurveyClick = (match: MatchData) => {
-    console.log('설문방 입장:', match.id);
+    console.log("설문방 입장:", match.id);
     navigate(`/survey/${match.id}`, {
       state: {
         roomId: match.id,
@@ -117,8 +124,8 @@ function ChatListPage() {
         user2Nickname: match.user2Nickname,
         matchedAt: match.matchedAt,
         agreed: match.agreed,
-        id: match.id
-      }
+        id: match.id,
+      },
     });
   };
 
@@ -154,7 +161,8 @@ function ChatListPage() {
                 />
               </div>
             ))}
-          </>)}
+          </>
+        )}
 
         {surveyList.length > 0 && (
           <>
@@ -174,8 +182,8 @@ function ChatListPage() {
                 />
               </div>
             ))}
-          </>)}
-
+          </>
+        )}
       </div>
     </>
   );
