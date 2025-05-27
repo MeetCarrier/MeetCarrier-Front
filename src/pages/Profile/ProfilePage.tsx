@@ -52,7 +52,13 @@ function ProfilePage() {
 
   const handleLogout = async () => {
     try {
-      await axios.post("/api/user/logout", {});
+      await axios.post(
+        "https://www.mannamdeliveries.link/api/user/logout",
+        {},
+        {
+          withCredentials: true,
+        }
+      );
       navigate("/login");
     } catch (error) {
       console.error("로그아웃 중 오류가 발생했습니다:", error);
