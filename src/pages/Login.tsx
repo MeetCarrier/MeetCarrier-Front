@@ -11,7 +11,7 @@ const Login: React.FC = () => {
   const handleTestLogin = async () => {
     try {
       const loginRes = await axios.post(
-        'https://www.mannamdeliveries.link/auth/test/login',
+        'https://www.mannamdeliveries.link/api/auth/test/login',
         null,
         { withCredentials: true }
       );
@@ -19,7 +19,7 @@ const Login: React.FC = () => {
 
       setTimeout(async () => {
         const userRes = await axios.get(
-          'https://www.mannamdeliveries.link/user',
+          'https://www.mannamdeliveries.link/api/user',
           { withCredentials: true }
         );
         console.log('유저 정보:', userRes.data);

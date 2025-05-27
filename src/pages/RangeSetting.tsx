@@ -35,7 +35,7 @@ function RangeSetting() {
   const handleSubmit = async () => {
     try {
       await axios.patch(
-        'https://www.mannamdeliveries.link/user',
+        'https://www.mannamdeliveries.link/api/user',
         {
           maxMatchingDistance: distance,
           maxAgeGap: age,

@@ -164,7 +164,7 @@ function Calendar() {
         console.log(year, monthFix);
 
         const res = await axios.get(
-          `https://www.mannamdeliveries.link/journals/${year}/${monthFix}`,
+          `https://www.mannamdeliveries.link/api/journals/${year}/${monthFix}`,
           {
             withCredentials: true,
           }

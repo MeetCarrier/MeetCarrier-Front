@@ -41,7 +41,7 @@ function Hobby() {
   const handleSubmit = async () => {
     try {
       await axios.patch(
-        'https://www.mannamdeliveries.link/user',
+        'https://www.mannamdeliveries.link/api/user',
         { interests: selectedTags.join(',') },
         {
           headers: {

@@ -18,7 +18,7 @@ const StampModal: FC = () => {
     try {
       if (isEditingToday) {
         await axios.patch(
-          `https://www.mannamdeliveries.link/journals/${journalId}`,
+          `https://www.mannamdeliveries.link/api/journals/${journalId}`,
           {
             content: text,
             stamp: selectedStamp,
@@ -27,7 +27,7 @@ const StampModal: FC = () => {
         );
       } else {
         await axios.post(
-          'https://www.mannamdeliveries.link/journals/register',
+          'https://www.mannamdeliveries.link/api/journals/register',
           {
             content: text,
             stamp: selectedStamp,

@@ -57,7 +57,7 @@ function SurveyQ() {
     const selectedQuestionStr = selectedQuestion;
     try {
       await axios.patch(
-        'https://www.mannamdeliveries.link/user',
+        'https://www.mannamdeliveries.link/api/user',
         { question: selectedQuestionStr, questionList: questionStr },
         {
           headers: {

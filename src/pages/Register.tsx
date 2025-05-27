@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 interface Region {
   name: string;
@@ -11,19 +11,19 @@ const Register: React.FC = () => {
   const navigate = useNavigate();
   const [regions, setRegions] = useState<Region[]>([]);
   const [formData, setFormData] = useState({
-    nickname: "",
-    gender: "Male",
-    region: "",
-    personalities: "",
-    interests: "",
-    age: "",
+    nickname: '',
+    gender: 'Male',
+    region: '',
+    personalities: '',
+    interests: '',
+    age: '',
   });
 
   useEffect(() => {
-    fetch("/regions.json")
+    fetch('/regions.json')
       .then((res) => res.json())
       .then((data) => setRegions(data))
-      .catch((err) => console.error("지역 정보 로딩 실패:", err));
+      .catch((err) => console.error('지역 정보 로딩 실패:', err));
   }, []);
 
   const handleChange = (
@@ -36,20 +36,20 @@ const Register: React.FC = () => {
     e.preventDefault();
     try {
       await axios.post(
-        "https://www.mannamdeliveries.link/oauth/signup/detail",
+        'https://www.mannamdeliveries.link/api/oauth/signup/detail',
         formData,
         {
           withCredentials: true,
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
         }
       );
-      alert("회원가입 완료!");
-      navigate("/main");
+      alert('회원가입 완료!');
+      navigate('/main');
     } catch (error) {
       console.error(error);
-      alert("회원가입에 실패했습니다.");
+      alert('회원가입에 실패했습니다.');
     }
   };
 

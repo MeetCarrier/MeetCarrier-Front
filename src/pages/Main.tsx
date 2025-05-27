@@ -51,7 +51,7 @@ function Main() {
 
             try {
               await axios.patch(
-                'https://www.mannamdeliveries.link/user',
+                'https://www.mannamdeliveries.link/api/user',
                 { latitude: latitude, longitude: longitude },
                 {
                   headers: {

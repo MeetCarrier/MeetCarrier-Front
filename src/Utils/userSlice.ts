@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
 export const fetchUser = createAsyncThunk('user/fetchUser', async () => {
-  const res = await axios.get('https://www.mannamdeliveries.link/user', {
+  const res = await axios.get('https://www.mannamdeliveries.link/api/user', {
     withCredentials: true,
   });
   return res.data;
