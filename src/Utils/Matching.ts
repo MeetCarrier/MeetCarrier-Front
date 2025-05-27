@@ -28,7 +28,7 @@ export function startMatchingClient({
   onFail,
   onConnected,
 }: StartMatchingOptions): MatchingClient {
-  const socket = new SockJS("https://www.mannamdeliveries.link/connection");
+  const socket = new SockJS('https://www.mannamdeliveries.link/api/connection');
   const client = Stomp.over(socket);
 
   client.connect({}, () => {
