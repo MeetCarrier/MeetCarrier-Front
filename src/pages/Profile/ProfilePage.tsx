@@ -10,6 +10,8 @@ import arrowIcon from "../../assets/img/icons/HobbyIcon/back_arrow.svg";
 import stampImage from "../../assets/img/stamp.svg";
 import defaultProfileImg from "../../assets/img/sample/sample_profile.svg";
 
+import PsychTestList from "./PsychTestList";
+
 function ProfilePage() {
   const dispatch = useDispatch<AppDispatch>();
   const user = useSelector(
@@ -103,6 +105,8 @@ function ProfilePage() {
             />
           </div>
         </div>
+
+        <PsychTestList />
 
         {/* 상단 제목 */}
         <div className="absolute top-[50px] text-[#333333] left-0 right-0 px-6 text-center">
