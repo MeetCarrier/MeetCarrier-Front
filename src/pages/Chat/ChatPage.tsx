@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { UserState } from "../Utils/userSlice";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import ChatBar from "./components/ChatBar";
 import SockJS from "sockjs-client";
@@ -29,7 +28,6 @@ interface LocationState {
 function ChatPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { roomId } = useParams();
   const state = location.state as LocationState;
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [emojiOpen, setEmojiOpen] = useState(false);

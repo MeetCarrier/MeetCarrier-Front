@@ -1,7 +1,8 @@
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useRef, useEffect, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import SwiperCore from "swiper";
+// @ts-ignore
 import "swiper/css";
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
@@ -41,8 +42,7 @@ function SurveyPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const state = location.state as LocationState;
-  const { user1Id, user1Nickname, user2Id, user2Nickname, roomId } =
-    state || {};
+  const { user1Id, user1Nickname, user2Nickname, roomId } = useParams();
 
   const [currentStep, setCurrentStep] = useState(0);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -66,7 +66,7 @@ function SurveyPage() {
   const swiperRef = useRef<SwiperCore | null>(null);
   const stompClientRef = useRef<Client | null>(null);
 
-  const myId = user1Id;
+  const myId = Number(user1Id);
 
   // chatRoomId가 변경될 때마다 localStorage에 저장
   useEffect(() => {
@@ -198,7 +198,7 @@ function SurveyPage() {
 
         // 기존 답변을 임시 저장소에 복사
         const existingAnswers = response.data
-          .filter((a: Answer) => a.userId === myId)
+          .filter((a: Answer) => Number(a.userId) === myId)
           .reduce((acc: { [key: number]: string }, curr: Answer) => {
             acc[curr.questionId] = curr.content;
             return acc;
@@ -368,7 +368,7 @@ function SurveyPage() {
                     sessionId: state.roomId,
                     leaverId: myId,
                     leaverNickname:
-                      myId === user1Id ? user1Nickname : user2Nickname,
+                      myId === Number(user1Id) ? user1Nickname : user2Nickname,
                   }),
                 });
               }
@@ -403,12 +403,11 @@ function SurveyPage() {
             );
             const { matchedAt } = state;
 
-            const myAnswer = allAnswers.find((a) => a.userId === myId);
-            const otherAnswer = allAnswers.find((a) => a.userId !== myId);
+            const myAnswer = allAnswers.find((a) => Number(a.userId) === myId);
+            const otherAnswer = allAnswers.find((a) => Number(a.userId) !== myId);
 
-            const myNickname = myId === user1Id ? user1Nickname : user2Nickname;
-            const otherNickname =
-              myId === user1Id ? user2Nickname : user1Nickname;
+            const myNickname = myId === Number(user1Id) ? user1Nickname : user2Nickname;
+            const otherNickname = myId === Number(user1Id) ? user2Nickname : user1Nickname;
 
             const showOther = !isEditing;
             const currentAnswer =

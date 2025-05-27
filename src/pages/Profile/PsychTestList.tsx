@@ -1,4 +1,3 @@
-import React from "react";
 import arrowIcon from "../../assets/img/icons/HobbyIcon/back_arrow.svg";
 
 const tests = [{ title: "자가평가 테스트", onClick: () => {} }];

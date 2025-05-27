@@ -1,5 +1,4 @@
 import React from "react";
-import stamp from "../../../assets/img/stamp.svg"; // 발자국 스탬프
 import activeFoot from "../../../assets/img/survey/footprint_red.svg";
 import inactiveFoot from "../../../assets/img/survey/footprint_gray.svg";
 
