@@ -8,13 +8,10 @@ import back_arrow from '../../assets/img/icons/HobbyIcon/back_arrow.svg';
 // import axios from 'axios';
 
 function Dairy() {
-  const text = useAppSelector((state) =>
-    state.diary.isReadOnly ? state.diary.readOnlyText : state.diary.text
-  );
-  const isReadOnly = useAppSelector((state) => state.diary.isReadOnly);
+  const text = useAppSelector((state) => state.diary.text);
   const dateLabel = useAppSelector((state) => state.diary.dateLabel);
   const dispatch = useAppDispatch();
-  const maxLength = 100;
+  const maxLength = 500;
 
   const navigate = useNavigate();
 
@@ -36,6 +33,15 @@ function Dairy() {
     }
   };
 
+  const placeholderText = `
+  꾸준히 칭찬 일기를 쓰면 자신의 긍정적인 면에 집중하게 되어 있는 그대로 긍정하는 자기 긍정감이 커져요
+
+
+(예시)
+“더 자고 싶었지만 꾹 참고 일어나서 지각 안 했어!”
+“오늘은 하루 종일 나를 위해 푹 쉬었어, 내일부터 힘내자!”
+  `.trim();
+
   return (
     <>
       <NavBar />
@@ -52,7 +58,7 @@ function Dairy() {
         </p>
         <img
           src={questionmark_icon}
-          alt="bell_default"
+          alt="questionmark_icon"
           className="absolute top-1/2 -translate-y-1/2 right-6 w-[20px] h-[20px]"
         />
       </div>
@@ -76,20 +82,15 @@ function Dairy() {
           <textarea
             value={text}
             onInput={handleInput}
-            placeholder="입력해주세요..."
-            disabled={isReadOnly}
+            placeholder={placeholderText}
             className="w-full flex-1 p-3 rounded-t-[10px] resize-none text-[14px] bg-white focus:outline-none"
           />
           <div className="text-right text-[12px] text-[#333333]/50 rounded-b-[10px] bg-white p-3 mb-4">
-            {text.length} / 100
+            {text.length} / 500
           </div>
 
           {/* 버튼 */}
-          <button
-            className="relative w-full mb-3"
-            onClick={handleBtnClick}
-            disabled={isReadOnly}
-          >
+          <button className="relative w-full mb-3" onClick={handleBtnClick}>
             <img src={btn1} alt="버튼1" className="w-full" />
             <span className="absolute inset-0 flex items-center justify-center font-GanwonEduAll_Bold cursor-pointer">
               다음

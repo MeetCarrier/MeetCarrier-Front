@@ -1,26 +1,22 @@
-import NavBar from "../../components/NavBar";
-import calendar_icon from "../../assets/img/icons/Calendar/ic_calendar.svg";
-import comming_dage from "../../assets/img/calendar/comming_date.svg";
-import dairy_button from "../../assets/img/calendar/dairy.svg";
-import today_check from "../../assets/img/calendar/today_check.svg";
-import calendar_base from "../../assets/img/calendar/Calendar_base.png";
-import { useNavigate } from "react-router-dom";
-import { useState, useEffect, useRef } from "react";
-import { useAppDispatch } from "../../Utils/hooks";
-import { formatDate } from "../../Utils/FormatDate";
+import NavBar from '../../components/NavBar';
+import calendar_icon from '../../assets/img/icons/Calendar/ic_calendar.svg';
+import comming_dage from '../../assets/img/calendar/comming_date.svg';
+import dairy_button from '../../assets/img/calendar/dairy.svg';
+import today_check from '../../assets/img/calendar/today_check.svg';
+import calendar_base from '../../assets/img/calendar/Calendar_base.png';
+import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { useAppDispatch } from '../../Utils/hooks';
+import { formatDate } from '../../Utils/FormatDate';
 import {
-  setReadOnlyText,
-  setIsReadOnly,
   setText,
   setSelectedStamp,
   setIsEditingToday,
   setJournalId,
   setDateLabel,
-} from "../../Utils/diarySlice";
-import axios from "axios";
-
-// 나중에 스탬프 생기면 수정해야 함.
-import stamp_sample from "../../assets/img/icons/Stamp/stamp_1_activate.svg";
+} from '../../Utils/diarySlice';
+import { stampMap } from '../../Utils/StampMap';
+import axios from 'axios';
 
 const today = new Date();
 
@@ -41,7 +37,7 @@ function CalendarGrid({
   month: number;
   journals: Journals[];
 }) {
-  const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
+  const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
   const currentYear = today.getFullYear();
   const currentMonth = today.getMonth();
   const currentDate = today.getDate();
@@ -61,24 +57,22 @@ function CalendarGrid({
       created.getMonth() === currentMonth &&
       created.getDate() === currentDate;
 
+    dispatch(setJournalId(journal.id));
+    dispatch(setText(journal.content));
+    dispatch(setSelectedStamp(parseInt(journal.stamp)));
+
     if (isToday) {
-      dispatch(setJournalId(journal.id));
-      dispatch(setText(journal.content));
-      dispatch(setSelectedStamp(parseInt(journal.stamp)));
-      dispatch(setIsReadOnly(false)); // 수정 가능
       dispatch(setIsEditingToday(true));
     } else {
-      dispatch(setReadOnlyText(journal.content));
-      dispatch(setIsReadOnly(true)); // 읽기 전용
       dispatch(setIsEditingToday(false));
     }
 
-    navigate("/Diary");
+    navigate('/ViewDiary');
   };
 
   const cells = Array.from({ length: 42 }, (_, i) => {
     const date = i - startDay + 1;
-    return date > 0 && date <= totalDays ? date : "";
+    return date > 0 && date <= totalDays ? date : '';
   });
 
   return (
@@ -93,7 +87,7 @@ function CalendarGrid({
         {weekdays.map((day, i) => (
           <div
             key={i}
-            className={`${i === 0 || i === 6 ? "text-red-500" : "text-[#333]"}`}
+            className={`${i === 0 || i === 6 ? 'text-red-500' : 'text-[#333]'}`}
           >
             {day}
           </div>
@@ -131,7 +125,9 @@ function CalendarGrid({
                     )}
                   {journalForDay && (
                     <img
-                      src={stamp_sample}
+                      src={
+                        stampMap[parseInt(journalForDay.stamp) ?? 1]?.activate
+                      }
                       alt="스탬프"
                       className="absolute top-1/2 left-1/2 h-[60%] -translate-x-1/2 -translate-y-1/4 cursor-pointer"
                       onClick={() => handleStampClick(journalForDay)}
@@ -170,10 +166,10 @@ function Calendar() {
           }
         );
 
-        console.log("이번 달 일기 목록:", res.data);
+        console.log('이번 달 일기 목록:', res.data);
         setJournals(res.data);
       } catch (err) {
-        console.error("일기 목록 조회 실패:", err);
+        console.error('일기 목록 조회 실패:', err);
       }
     };
 
@@ -202,16 +198,14 @@ function Calendar() {
       dispatch(setJournalId(todayJournal.id));
       dispatch(setText(todayJournal.content));
       dispatch(setSelectedStamp(parseInt(todayJournal.stamp)));
-      dispatch(setIsReadOnly(false));
       dispatch(setIsEditingToday(true));
+      navigate('/ViewDiary');
     } else {
-      dispatch(setText(""));
+      dispatch(setText(''));
       dispatch(setSelectedStamp(null));
-      dispatch(setIsReadOnly(false));
       dispatch(setIsEditingToday(false));
+      navigate('/Diary');
     }
-
-    navigate("/Diary");
   };
 
   const toggleSelector = () => setShowSelector(!showSelector);
@@ -229,8 +223,8 @@ function Calendar() {
         setShowMonthList(false);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   return (

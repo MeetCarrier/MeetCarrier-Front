@@ -11,6 +11,7 @@ import Register from "./pages/Register";
 import ChatPage from "./pages/Chat/ChatPage";
 import Calendar from "./pages/Calendar/Calendar";
 import Dairy from "./pages/Calendar/Diary";
+import ViewDiary from "./pages/Calendar/ViewDiary";
 import Stamp from "./pages/Calendar/Stamp";
 import Profile from "./pages/Profile/ProfilePage";
 import NotFoundPage from "./pages/NotFoundPage";
@@ -38,6 +39,7 @@ function App() {
             <Route path="chat/:chatId" element={<ChatPage />} />
             <Route path="Calendar" element={<Calendar />} />
             <Route path="Diary" element={<Dairy />} />
+            <Route path="ViewDiary" element={<ViewDiary />} />
             <Route path="Stamp" element={<Stamp />} />
             <Route path="Profile" element={<Profile />} />
             <Route path="*" element={<NotFoundPage />} />
