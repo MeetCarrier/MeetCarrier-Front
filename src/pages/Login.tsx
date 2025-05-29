@@ -1,6 +1,9 @@
 import React from "react";
 import axios from "axios";
 import NavBar from "../components/NavBar";
+import { useNavigate } from "react-router-dom";
+
+const navigate = useNavigate();
 
 const Login: React.FC = () => {
   const handleLogin = (provider: "google" | "kakao") => {
@@ -23,6 +26,7 @@ const Login: React.FC = () => {
           { withCredentials: true }
         );
         console.log("유저 정보:", userRes.data);
+        navigate("/main");
       }, 200);
     } catch (err) {
       console.error("에러:", err);
