@@ -105,51 +105,6 @@ function ChatPage() {
     };
   }, [state?.roomId, navigate]);
 
-  // useEffect(() => {
-  //   if (!state?.roomId) {
-  //     console.error('방 정보가 없습니다.');
-  //     navigate(-1);
-  //     return;
-  //   }
-
-  //   // 더미 메시지 데이터 설정
-  //   const dummyMessages: ChatMessage[] = [
-  //     {
-  //       messageType: 'TEXT',
-  //       message: '안녕하세요!',
-  //       imageUrl: null,
-  //       sender: state.user1Id,
-  //       sentAt: new Date().toISOString(),
-  //     },
-  //     {
-  //       messageType: 'TEXT',
-  //       message: '반가워요~',
-  //       imageUrl: null,
-  //       sender: state.user2Id,
-  //       sentAt: new Date().toISOString(),
-  //     },
-  //     {
-  //       messageType: 'TEXT',
-  //       message: '반가워요~',
-  //       imageUrl: null,
-  //       sender: state.user2Id,
-  //       sentAt: new Date().toISOString(),
-  //     },
-  //     {
-  //       messageType: 'TEXT',
-  //       message: '오늘 날씨 좋죠?',
-  //       imageUrl: null,
-  //       sender: state.user1Id,
-  //       sentAt: new Date().toISOString(),
-  //     },
-  //   ];
-  //   setMessages(dummyMessages);
-
-  //   return () => {
-  //     console.log('더미 테스트 - cleanup 호출');
-  //   };
-  // }, [state?.roomId, navigate]);
-
   // 메시지 전송 함수
   const sendMessage = (message: string, imageUrl?: string) => {
     if (stompClientRef.current && stompClientRef.current.connected) {
@@ -182,7 +137,7 @@ function ChatPage() {
 
       // 2. 서버에 전송
       stompClientRef.current.publish({
-        destination: "/app/chat/send",
+        destination: "/app/api/chat/send",
         body: JSON.stringify(outgoingMessage),
       });
     } else {
@@ -199,7 +154,7 @@ function ChatPage() {
       };
       console.log("채팅방 퇴장 요청:", leaveData);
       stompClientRef.current.publish({
-        destination: "/app/chat/leave",
+        destination: "/app/api/chat/leave",
         body: JSON.stringify(leaveData),
       });
     }

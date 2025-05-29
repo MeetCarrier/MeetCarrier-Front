@@ -375,7 +375,7 @@ function SurveyPage() {
             onClick={() => {
               if (stompClientRef.current && stompClientRef.current.connected) {
                 stompClientRef.current.publish({
-                  destination: "/app/survey/leave",
+                  destination: "/app/api/survey/leave",
                   body: JSON.stringify({
                     sessionId: state.roomId,
                     leaverId: myId,
