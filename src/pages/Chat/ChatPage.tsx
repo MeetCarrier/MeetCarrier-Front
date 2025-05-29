@@ -235,7 +235,6 @@ function ChatPage() {
           const opponentNickname = isUser1
             ? state.user2Nickname
             : state.user1Nickname;
-          const opponentProfile = isUser1 ? state.user2Id : state.user1Id; // 프로필 이미지가 있다면 여기에 적용
           const nickname = isMine ? user?.nickname || "나" : opponentNickname;
           const isPrevSameSender =
             index > 0 && messages[index - 1].sender === msg.sender;

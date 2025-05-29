@@ -39,16 +39,17 @@ interface LocationState {
   user1Nickname: string;
   user2Id: number;
   user2Nickname: string;
-  matchedAt: string;
+  matchedAt?: string;
   agreed: boolean;
   id: number;
+  sessionId?: string | number;
 }
 
 function SurveyPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const state = location.state as LocationState;
-  const { user1Id, user1Nickname, user2Nickname, roomId } = useParams();
+  const state = location.state as LocationState | undefined;
+  const { sessionId } = useParams();
 
   const [currentStep, setCurrentStep] = useState(0);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -61,11 +62,13 @@ function SurveyPage() {
   const [showCompleteModal, setShowCompleteModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [chatRoomId, setChatRoomId] = useState<number | null>(() => {
-    const saved = localStorage.getItem(`chatRoomId_${roomId}`);
+    const sid = state?.sessionId || sessionId;
+    const saved = localStorage.getItem(`chatRoomId_${sid}`);
     return saved ? parseInt(saved) : null;
   });
   const [isSubmitted, setIsSubmitted] = useState(() => {
-    const saved = localStorage.getItem(`isSubmitted_${roomId}`);
+    const sid = state?.sessionId || sessionId;
+    const saved = localStorage.getItem(`isSubmitted_${sid}`);
     return saved === "true";
   });
 
@@ -79,21 +82,32 @@ function SurveyPage() {
   ) as UserState | null;
   const myId = user?.userId;
 
+  // sessionId 우선 사용
+  const realSessionId = state?.sessionId || sessionId;
+
   // chatRoomId가 변경될 때마다 localStorage에 저장
   useEffect(() => {
-    if (chatRoomId) {
-      localStorage.setItem(`chatRoomId_${roomId}`, chatRoomId.toString());
+    if (chatRoomId && realSessionId) {
+      localStorage.setItem(
+        `chatRoomId_${realSessionId}`,
+        chatRoomId.toString()
+      );
     }
-  }, [chatRoomId, roomId]);
+  }, [chatRoomId, realSessionId]);
 
   // isSubmitted가 변경될 때마다 localStorage에 저장
   useEffect(() => {
-    localStorage.setItem(`isSubmitted_${roomId}`, isSubmitted.toString());
-  }, [isSubmitted, roomId]);
+    if (realSessionId)
+      localStorage.setItem(
+        `isSubmitted_${realSessionId}`,
+        isSubmitted.toString()
+      );
+  }, [isSubmitted, realSessionId]);
 
   useEffect(() => {
     // 로컬 스토리지에 저장된 임시 답변 불러오기
-    const savedAnswers = localStorage.getItem(`tempAnswers_${roomId}`);
+    if (!realSessionId) return;
+    const savedAnswers = localStorage.getItem(`tempAnswers_${realSessionId}`);
     if (savedAnswers) {
       try {
         const parsed = JSON.parse(savedAnswers);
@@ -102,10 +116,10 @@ function SurveyPage() {
         console.error("임시 답변 불러오기 실패", e);
       }
     }
-  }, [roomId]);
+  }, [realSessionId]);
 
   useEffect(() => {
-    if (!state?.roomId) {
+    if (!realSessionId) {
       console.error("방 정보가 없습니다.");
       navigate("/ChatList");
       return;
@@ -122,11 +136,11 @@ function SurveyPage() {
         console.log("WebSocket 연결 성공");
         // 설문 완료 알림 구독
         stompClient.subscribe(
-          `/topic/survey/${state.roomId}/complete`,
+          `/topic/survey/${realSessionId}/complete`,
           async (message) => {
             const data = JSON.parse(message.body);
             console.log("[✔️ 설문 제출 알림 수신]", {
-              destination: `/topic/survey/${state.roomId}/complete`,
+              destination: `/topic/survey/${realSessionId}/complete`,
               data,
             });
 
@@ -142,12 +156,13 @@ function SurveyPage() {
               setShowCompleteModal(true);
 
               // location state 업데이트
-              navigate(`/survey/${state.roomId}`, {
+              navigate(`/survey/${realSessionId}`, {
                 state: {
                   ...state,
                   status: "Chatting",
                   agreed: updatedMatch.agreed,
                   matchedAt: updatedMatch.matchedAt,
+                  sessionId: realSessionId,
                 },
                 replace: true,
               });
@@ -159,11 +174,11 @@ function SurveyPage() {
 
         // 설문 퇴장 알림 구독
         stompClient.subscribe(
-          `/topic/survey/${state.roomId}/leave`,
+          `/topic/survey/${realSessionId}/leave`,
           (message) => {
             const data = JSON.parse(message.body);
             console.log("[❌ 설문 퇴장 알림 수신]", {
-              destination: `/topic/survey/${state.roomId}/leave`,
+              destination: `/topic/survey/${realSessionId}/leave`,
               data,
             });
             alert(`${data.leaverNickname}님이 설문을 나갔습니다.`);
@@ -190,7 +205,7 @@ function SurveyPage() {
       try {
         console.log("질문 목록 조회 시작");
         const response = await axios.get(
-          `https://www.mannamdeliveries.link/api/survey/${state.roomId}/questions`
+          `https://www.mannamdeliveries.link/api/survey/${realSessionId}/questions`
         );
         console.log("질문 목록 조회 결과:", response.data);
         setQuestions(response.data);
@@ -204,7 +219,7 @@ function SurveyPage() {
       try {
         console.log("답변 목록 조회 시작");
         const response = await axios.get(
-          `https://www.mannamdeliveries.link/api/survey/${state.roomId}/answers`
+          `https://www.mannamdeliveries.link/api/survey/${realSessionId}/answers`
         );
         console.log("답변 목록 조회 결과:", response.data);
         setAnswers(response.data);
@@ -230,7 +245,7 @@ function SurveyPage() {
         stompClientRef.current.deactivate();
       }
     };
-  }, [state?.roomId, navigate, myId]);
+  }, [realSessionId, navigate, myId]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -283,10 +298,11 @@ function SurveyPage() {
     setTempAnswers(updatedAnswers);
 
     // 로컬스토리지에 저장 (질문별로 분리 저장 or 통째로 저장 가능 — 여기선 통째로 저장)
-    localStorage.setItem(
-      `tempAnswers_${roomId}`,
-      JSON.stringify(updatedAnswers)
-    );
+    if (realSessionId)
+      localStorage.setItem(
+        `tempAnswers_${realSessionId}`,
+        JSON.stringify(updatedAnswers)
+      );
 
     setIsEditing(false);
   };
@@ -305,7 +321,7 @@ function SurveyPage() {
       console.log("제출할 답변:", answersToSubmit);
 
       await axios.post(
-        `https://www.mannamdeliveries.link/api/survey/${state.roomId}/answers/${myId}`,
+        `https://www.mannamdeliveries.link/api/survey/${realSessionId}/answers/${myId}`,
         answersToSubmit
       );
 
@@ -331,7 +347,7 @@ function SurveyPage() {
   const handleJoinChat = async () => {
     try {
       const response = await axios.post(
-        `https://www.mannamdeliveries.link/api/room/${state.id}/${myId}/enter`
+        `https://www.mannamdeliveries.link/api/room/${state?.id}/${myId}/enter`
       );
       const newRoomId = response.data.roomId;
       setChatRoomId(newRoomId);
@@ -347,9 +363,9 @@ function SurveyPage() {
     }
   };
 
-  const isUser1 = myId === Number(user1Id);
-  const myNickname = isUser1 ? user1Nickname : user2Nickname;
-  const otherNickname = isUser1 ? user2Nickname : user1Nickname;
+  const isUser1 = myId === Number(state?.user1Id);
+  const myNickname = isUser1 ? state?.user1Nickname : state?.user2Nickname;
+  const otherNickname = isUser1 ? state?.user2Nickname : state?.user1Nickname;
 
   return (
     <>
@@ -387,10 +403,12 @@ function SurveyPage() {
                 stompClientRef.current.publish({
                   destination: "/app/api/survey/leave",
                   body: JSON.stringify({
-                    sessionId: state.roomId,
+                    sessionId: realSessionId,
                     leaverId: myId,
                     leaverNickname:
-                      myId === Number(user1Id) ? user1Nickname : user2Nickname,
+                      myId === Number(state?.user1Id)
+                        ? state?.user1Nickname
+                        : state?.user2Nickname,
                   }),
                 });
               }
@@ -434,7 +452,6 @@ function SurveyPage() {
             const allAnswers = answers.filter(
               (a) => a.questionId === question.questionId
             );
-            const { matchedAt } = state;
 
             const myAnswer = allAnswers.find((a) => Number(a.userId) === myId);
             const otherAnswer = allAnswers.find(
@@ -471,7 +488,9 @@ function SurveyPage() {
                       )}
                   </div>
                   <p className="text-xs text-gray-400">
-                    {new Date(matchedAt).toLocaleDateString("ko-KR")}
+                    {state && state.matchedAt
+                      ? new Date(state.matchedAt).toLocaleDateString("ko-KR")
+                      : ""}
                   </p>
                 </div>
 
@@ -597,7 +616,7 @@ function SurveyPage() {
       </Modal>
 
       {/* 채팅방 참가 버튼 */}
-      {state.status === "Chatting" && !state.agreed && !showCompleteModal && (
+      {state?.status === "Chatting" && !state.agreed && !showCompleteModal && (
         <div className="fixed bottom-30 left-0 right-0 flex justify-center">
           <button
             className="px-6 py-3 bg-[#C67B5A] text-white text-sm font-GanwonEduAll_Bold rounded-full shadow-lg"

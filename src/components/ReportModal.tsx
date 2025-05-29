@@ -6,7 +6,7 @@ import uncheckBoxIcon from "../assets/img/icons/Report/uncheck_box.svg";
 interface ReportModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit?: (reasons: string[], content: string) => void;
+  onSubmit: (reasons: string[], content: string) => void;
   reportType: ReportType;
 }
 
@@ -62,6 +62,7 @@ const ReportModal = ({
 
       if (!res.ok) throw new Error(`신고 실패: ${res.status}`);
       alert("신고가 접수되었습니다.");
+      onSubmit(selectedReasons, description);
       onClose();
     } catch (error) {
       console.error("신고 중 오류 발생:", error);

@@ -75,7 +75,6 @@ function ChatListPage() {
   );
 
   const handleChatClick = (match: MatchData) => {
-    const isUser1 = myId === match.user1Id;
     navigate(`/chat/${match.roomId}`, {
       state: {
         roomId: match.roomId,
@@ -122,13 +121,10 @@ function ChatListPage() {
               채팅 목록
             </h2>
             {chattingList.map((chat) => {
-              const isUser1 = myId === chat.user1Id;
-              const opponentNickname = isUser1
-                ? chat.user2Nickname
-                : chat.user1Nickname;
-              const opponentImage = isUser1
-                ? chat.user2ImageUrl
-                : chat.user1ImageUrl;
+              const opponentNickname =
+                chat.user1Id === myId ? chat.user2Nickname : chat.user1Nickname;
+              const opponentImage =
+                chat.user1Id === myId ? chat.user2ImageUrl : chat.user1ImageUrl;
               return (
                 <div
                   key={chat.id}
@@ -152,13 +148,14 @@ function ChatListPage() {
               설문 목록
             </h2>
             {surveyList.map((survey) => {
-              const isUser1 = myId === survey.user1Id;
-              const opponentNickname = isUser1
-                ? survey.user2Nickname
-                : survey.user1Nickname;
-              const opponentImage = isUser1
-                ? survey.user2ImageUrl
-                : survey.user1ImageUrl;
+              const opponentNickname =
+                survey.user1Id === myId
+                  ? survey.user2Nickname
+                  : survey.user1Nickname;
+              const opponentImage =
+                survey.user1Id === myId
+                  ? survey.user2ImageUrl
+                  : survey.user1ImageUrl;
               return (
                 <div
                   key={survey.id}

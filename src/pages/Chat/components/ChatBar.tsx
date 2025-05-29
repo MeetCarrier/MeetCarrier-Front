@@ -3,7 +3,6 @@ import navbg2 from "../../../assets/img/nav_bg2.webp";
 import { useState, useRef } from "react";
 
 import ReportModal from "../../../components/ReportModal";
-import ReportType from "../../../components/ReportModal";
 
 import plus_icon from "../../../assets/img/icons/ChatIcon/ic_plus.svg";
 import arrow_icon from "../../../assets/img/icons/ChatIcon/ic_arrow.svg";
