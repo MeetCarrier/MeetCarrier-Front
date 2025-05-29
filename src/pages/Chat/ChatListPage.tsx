@@ -13,13 +13,17 @@ type MatchData = {
   matchedAt: string;
   status: string;
   agreed: boolean;
-  relatedId: number;
+
+  sessionId: number;
+  roomId: number;
+
   user1Id: number;
   user1Nickname: string;
-  user1ImageUrl: string | undefined;
+  user1ImageUrl: string | null;
+
   user2Id: number;
   user2Nickname: string;
-  user2ImageUrl: string | undefined;
+  user2ImageUrl: string | null;
 };
 
 function ChatListPage() {
@@ -51,39 +55,6 @@ function ChatListPage() {
         setMatchList(data);
       } catch (e) {
         console.error("[매치 불러오기] 실패:", e);
-
-        // 더미 데이터 출력
-        const dummyData: MatchData[] = [
-          {
-            id: 1,
-            matchedAt: "2024-03-20T10:00:00",
-            status: "Chatting",
-            agreed: true,
-            relatedId: 1,
-            user1Id: 1,
-            user1Nickname: "사용자1",
-            user1ImageUrl: undefined,
-            user2Id: 2,
-            user2Nickname: "사용자2",
-            user2ImageUrl: undefined,
-          },
-          {
-            id: 2,
-            matchedAt: "2024-03-20T11:00:00",
-            status: "Surveying",
-            agreed: true,
-            relatedId: 2,
-            user1Id: 1,
-            user1Nickname: "사용자1",
-            user1ImageUrl: undefined,
-            user2Id: 3,
-            user2Nickname: "사용자3",
-            user2ImageUrl: undefined,
-          },
-        ];
-
-        console.log("[매치 불러오기] 더미 데이터 사용:", dummyData);
-        setMatchList(dummyData);
       }
     };
 
@@ -101,9 +72,9 @@ function ChatListPage() {
 
   const handleChatClick = (match: MatchData) => {
     console.log("채팅방 입장:", match.id);
-    navigate(`/chat/${match.id}`, {
+    navigate(`/chat/${match.roomId}`, {
       state: {
-        roomId: match.id,
+        roomId: match.roomId,
         user1Id: match.user1Id,
         user1Nickname: match.user1Nickname,
         user2Id: match.user2Id,
@@ -114,9 +85,9 @@ function ChatListPage() {
 
   const handleSurveyClick = (match: MatchData) => {
     console.log("설문방 입장:", match.id);
-    navigate(`/survey/${match.id}`, {
+    navigate(`/survey/session/${match.sessionId}`, {
       state: {
-        roomId: match.id,
+        sessionId: match.sessionId,
         status: match.status,
         user1Id: match.user1Id,
         user1Nickname: match.user1Nickname,
@@ -124,7 +95,6 @@ function ChatListPage() {
         user2Nickname: match.user2Nickname,
         matchedAt: match.matchedAt,
         agreed: match.agreed,
-        id: match.id,
       },
     });
   };
@@ -155,7 +125,7 @@ function ChatListPage() {
                 className="cursor-pointer"
               >
                 <ItemCard
-                  profileImageUrl={chat.user2ImageUrl}
+                  profileImageUrl={chat.user2ImageUrl ?? undefined}
                   username={chat.user2Nickname}
                   time={chat.matchedAt}
                 />
@@ -176,7 +146,7 @@ function ChatListPage() {
                 className="cursor-pointer"
               >
                 <ItemCard
-                  profileImageUrl={survey.user2ImageUrl}
+                  profileImageUrl={survey.user2ImageUrl ?? undefined}
                   username={survey.user2Nickname}
                   time={survey.matchedAt}
                 />
