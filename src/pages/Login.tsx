@@ -31,7 +31,7 @@ const Login: React.FC = () => {
 
   return (
     <>
-      <NavBar />
+      {/* <NavBar /> */}
       <div className="absolute top-[50px] text-[#333333] left-0 right-0 px-6 text-center">
         <p className="text-[20px] font-MuseumClassic_L italic">만남 </p>
       </div>
