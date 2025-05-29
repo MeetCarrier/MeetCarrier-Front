@@ -13,6 +13,7 @@ import Calendar from "./pages/Calendar/Calendar";
 import Dairy from "./pages/Calendar/Diary";
 import Stamp from "./pages/Calendar/Stamp";
 import Profile from "./pages/Profile/ProfilePage";
+import NotFoundPage from "./pages/NotFoundPage";
 
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Provider } from "react-redux";
@@ -39,6 +40,7 @@ function App() {
             <Route path="Diary" element={<Dairy />} />
             <Route path="Stamp" element={<Stamp />} />
             <Route path="Profile" element={<Profile />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>
       </BrowserRouter>
