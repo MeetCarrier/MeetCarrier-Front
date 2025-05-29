@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "../../Utils/store";
-import { fetchUser } from "../../Utils/userSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../../Utils/store";
+import { fetchUser, UserState } from "../../Utils/userSlice";
 
 import NavBar from "../../components/NavBar";
 import ItemCard from "./components/ItemCard";
@@ -30,6 +30,10 @@ function ChatListPage() {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const [matchList, setMatchList] = useState<MatchData[]>([]);
+  const user = useSelector(
+    (state: RootState) => state.user
+  ) as UserState | null;
+  const myId = user?.userId;
 
   useEffect(() => {
     dispatch(fetchUser());
@@ -71,7 +75,7 @@ function ChatListPage() {
   );
 
   const handleChatClick = (match: MatchData) => {
-    console.log("채팅방 입장:", match.roomId);
+    const isUser1 = myId === match.user1Id;
     navigate(`/chat/${match.roomId}`, {
       state: {
         roomId: match.roomId,
@@ -84,7 +88,6 @@ function ChatListPage() {
   };
 
   const handleSurveyClick = (match: MatchData) => {
-    console.log("설문방 입장:", match.id);
     navigate(`/survey/${match.sessionId}`, {
       state: {
         sessionId: match.sessionId,
@@ -118,19 +121,28 @@ function ChatListPage() {
             <h2 className="text-xl font-GanwonEduAll_Bold text-center mb-2">
               채팅 목록
             </h2>
-            {chattingList.map((chat) => (
-              <div
-                key={chat.id}
-                onClick={() => handleChatClick(chat)}
-                className="cursor-pointer"
-              >
-                <ItemCard
-                  profileImageUrl={chat.user2ImageUrl ?? undefined}
-                  username={chat.user2Nickname}
-                  time={chat.matchedAt}
-                />
-              </div>
-            ))}
+            {chattingList.map((chat) => {
+              const isUser1 = myId === chat.user1Id;
+              const opponentNickname = isUser1
+                ? chat.user2Nickname
+                : chat.user1Nickname;
+              const opponentImage = isUser1
+                ? chat.user2ImageUrl
+                : chat.user1ImageUrl;
+              return (
+                <div
+                  key={chat.id}
+                  onClick={() => handleChatClick(chat)}
+                  className="cursor-pointer"
+                >
+                  <ItemCard
+                    profileImageUrl={opponentImage ?? undefined}
+                    username={opponentNickname}
+                    time={chat.matchedAt}
+                  />
+                </div>
+              );
+            })}
           </>
         )}
 
@@ -139,19 +151,28 @@ function ChatListPage() {
             <h2 className="text-xl font-GanwonEduAll_Bold text-center mt-6 mb-2">
               설문 목록
             </h2>
-            {surveyList.map((survey) => (
-              <div
-                key={survey.id}
-                onClick={() => handleSurveyClick(survey)}
-                className="cursor-pointer"
-              >
-                <ItemCard
-                  profileImageUrl={survey.user2ImageUrl ?? undefined}
-                  username={survey.user2Nickname}
-                  time={survey.matchedAt}
-                />
-              </div>
-            ))}
+            {surveyList.map((survey) => {
+              const isUser1 = myId === survey.user1Id;
+              const opponentNickname = isUser1
+                ? survey.user2Nickname
+                : survey.user1Nickname;
+              const opponentImage = isUser1
+                ? survey.user2ImageUrl
+                : survey.user1ImageUrl;
+              return (
+                <div
+                  key={survey.id}
+                  onClick={() => handleSurveyClick(survey)}
+                  className="cursor-pointer"
+                >
+                  <ItemCard
+                    profileImageUrl={opponentImage ?? undefined}
+                    username={opponentNickname}
+                    time={survey.matchedAt}
+                  />
+                </div>
+              );
+            })}
           </>
         )}
       </div>

@@ -7,6 +7,9 @@ import "swiper/css";
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
 import axios from "axios";
+import { useSelector } from "react-redux";
+import { RootState } from "../../Utils/store";
+import { UserState } from "../../Utils/userSlice";
 
 import back_arrow from "../../assets/img/icons/HobbyIcon/back_arrow.svg";
 import NavBar from "../../components/NavBar";
@@ -71,7 +74,10 @@ function SurveyPage() {
   const stompClientRef = useRef<Client | null>(null);
   const menuButtonRef = useRef<HTMLImageElement>(null);
 
-  const myId = Number(user1Id);
+  const user = useSelector(
+    (state: RootState) => state.user
+  ) as UserState | null;
+  const myId = user?.userId;
 
   // chatRoomId가 변경될 때마다 localStorage에 저장
   useEffect(() => {
@@ -341,6 +347,10 @@ function SurveyPage() {
     }
   };
 
+  const isUser1 = myId === Number(user1Id);
+  const myNickname = isUser1 ? user1Nickname : user2Nickname;
+  const otherNickname = isUser1 ? user2Nickname : user1Nickname;
+
   return (
     <>
       <NavBar />
@@ -430,11 +440,6 @@ function SurveyPage() {
             const otherAnswer = allAnswers.find(
               (a) => Number(a.userId) !== myId
             );
-
-            const myNickname =
-              myId === Number(user1Id) ? user1Nickname : user2Nickname;
-            const otherNickname =
-              myId === Number(user1Id) ? user2Nickname : user1Nickname;
 
             const showOther = !isEditing;
             const currentAnswer =

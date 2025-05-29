@@ -5,6 +5,9 @@ import ChatBar from "./components/ChatBar";
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
 import sampleProfile from "../../assets/img/sample/sample_profile.svg";
+import { useSelector } from "react-redux";
+import { RootState } from "../../Utils/store";
+import { UserState } from "../../Utils/userSlice";
 
 import back_arrow from "../../assets/img/icons/HobbyIcon/back_arrow.svg";
 import search_icon from "../../assets/img/icons/ChatIcon/search.svg";
@@ -33,6 +36,10 @@ function ChatPage() {
   const [emojiOpen, setEmojiOpen] = useState(false);
   const stompClientRef = useRef<Client | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const user = useSelector(
+    (state: RootState) => state.user
+  ) as UserState | null;
+  const myId = user?.userId;
 
   const emojiHeight = emojiOpen ? 200 : 0;
 
@@ -223,7 +230,13 @@ function ChatPage() {
         }}
       >
         {messages.map((msg, index) => {
-          const isMine = msg.sender === state.user1Id;
+          const isMine = msg.sender === myId;
+          const isUser1 = myId === state.user1Id;
+          const opponentNickname = isUser1
+            ? state.user2Nickname
+            : state.user1Nickname;
+          const opponentProfile = isUser1 ? state.user2Id : state.user1Id; // 프로필 이미지가 있다면 여기에 적용
+          const nickname = isMine ? user?.nickname || "나" : opponentNickname;
           const isPrevSameSender =
             index > 0 && messages[index - 1].sender === msg.sender;
           const isNextDifferentSender =
@@ -232,7 +245,6 @@ function ChatPage() {
 
           const profileUrl =
             !isMine && msg.imageUrl ? msg.imageUrl : sampleProfile;
-          const nickname = isMine ? state.user1Nickname : state.user2Nickname;
 
           // UTC 시간을 한국 시간으로 변환
           const messageDate = new Date(msg.sentAt);
