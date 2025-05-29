@@ -14,6 +14,8 @@ import FootPrintCheck from "./components/FootPrintCheck";
 import menuIcon from "../../assets/img/icons/HobbyIcon/menu.svg";
 import checkIcon from "../../assets/img/icons/HobbyIcon/check.svg";
 import Modal from "../../components/Modal";
+import exitIcon from "../../assets/img/icons/Survey/exit.svg";
+import reportIcon from "../../assets/img/icons/Survey/report.svg";
 
 interface Question {
   questionId: number;
@@ -120,7 +122,7 @@ function SurveyPage() {
             try {
               // 최신 매치 상태 조회
               const response = await axios.get(
-                `https://www.mannamdeliveries.link/api/matches/${state.roomId}`
+                `https://www.mannamdeliveries.link/api/matches`
               );
               const updatedMatch = response.data;
 
@@ -356,10 +358,11 @@ function SurveyPage() {
       {isMenuOpen && (
         <div
           ref={menuRef}
-          className="absolute top-[90px] right-6 bg-white shadow-md rounded border z-50"
+          className="absolute top-[50px] right-6 bg-white shadow-md rounded-xl border z-50 flex flex-col w-32 py-2"
+          style={{ minWidth: "120px" }}
         >
           <button
-            className="px-4 py-2 text-sm text-red-600 hover:bg-gray-100 w-full text-left font-GanwonEduAll_Light"
+            className="flex items-center gap-2 px-4 py-2 text-sm text-[#333] hover:bg-gray-100 w-full text-left font-GanwonEduAll_Light"
             onClick={() => {
               if (stompClientRef.current && stompClientRef.current.connected) {
                 stompClientRef.current.publish({
@@ -376,7 +379,18 @@ function SurveyPage() {
               navigate("/ChatList");
             }}
           >
-            설문 나가기
+            <img src={exitIcon} alt="만남 종료" className="w-5 h-5 mr-1" />
+            <span>만남 종료</span>
+          </button>
+          <button
+            className="flex items-center gap-2 px-4 py-2 text-sm text-[#BD4B2C] hover:bg-gray-100 w-full text-left font-GanwonEduAll_Light"
+            onClick={() => {
+              setIsMenuOpen(false);
+              alert("신고 기능은 추후 구현 예정입니다.");
+            }}
+          >
+            <img src={reportIcon} alt="신고" className="w-5 h-5 mr-1" />
+            <span>신고</span>
           </button>
         </div>
       )}
@@ -404,10 +418,14 @@ function SurveyPage() {
             const { matchedAt } = state;
 
             const myAnswer = allAnswers.find((a) => Number(a.userId) === myId);
-            const otherAnswer = allAnswers.find((a) => Number(a.userId) !== myId);
+            const otherAnswer = allAnswers.find(
+              (a) => Number(a.userId) !== myId
+            );
 
-            const myNickname = myId === Number(user1Id) ? user1Nickname : user2Nickname;
-            const otherNickname = myId === Number(user1Id) ? user2Nickname : user1Nickname;
+            const myNickname =
+              myId === Number(user1Id) ? user1Nickname : user2Nickname;
+            const otherNickname =
+              myId === Number(user1Id) ? user2Nickname : user1Nickname;
 
             const showOther = !isEditing;
             const currentAnswer =

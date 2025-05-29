@@ -34,7 +34,7 @@ function ChatListPage() {
       try {
         console.log("[매치 불러오기] API 호출 시작...");
         const res = await fetch(
-          "https://www.mannamdeliveries.link/api/matches/1"
+          "https://www.mannamdeliveries.link/api/matches"
         );
 
         console.log(`[매치 불러오기] 응답 상태 코드: ${res.status}`);
