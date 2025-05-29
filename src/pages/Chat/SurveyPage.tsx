@@ -318,7 +318,14 @@ function SurveyPage() {
         })
       );
 
-      console.log("제출할 답변:", answersToSubmit);
+      console.log("[설문 제출]", {
+        url: `https://www.mannamdeliveries.link/api/survey/${realSessionId}/answers/${myId}`,
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: answersToSubmit,
+      });
 
       await axios.post(
         `https://www.mannamdeliveries.link/api/survey/${realSessionId}/answers/${myId}`,

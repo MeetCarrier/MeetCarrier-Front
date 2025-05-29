@@ -133,12 +133,18 @@ function ChatPage() {
         messageType: imageUrl ? "IMAGE" : "TEXT",
         message: message,
         imageUrl: imageUrl || null,
-        sender: state.user1Id,
+        sender: myId!,
         sentAt: utcSentAt,
       };
 
       // 1. 화면에 즉시 표시
-      console.log("[보낸 메시지]", outgoingMessage);
+      console.log("[보낸 메시지]", {
+        headers: {
+          destination: "/app/api/chat/send",
+          contentType: "application/json",
+        },
+        body: outgoingMessage,
+      });
       setMessages((prev) => [...prev, localMessage]);
 
       // 2. 서버에 전송
@@ -205,7 +211,7 @@ function ChatPage() {
           onClick={handleBackClick}
         />
         <p className="text-[20px] font-MuseumClassic_L italic">
-          {state?.user2Nickname || "상대방"}
+          {myId === state.user1Id ? state.user2Nickname : state.user1Nickname}
         </p>
         <img
           src={search_icon}
@@ -230,13 +236,13 @@ function ChatPage() {
       >
         {messages.map((msg, index) => {
           const isMine = msg.sender === myId;
-          // userId로 내 정보/상대 정보 구분
+          // myId로 내 정보/상대 정보 구분
           let myNickname = "나";
           let opponentNickname = "상대방";
-          if (user?.userId === state.user1Id) {
+          if (myId === state.user1Id) {
             myNickname = state.user1Nickname;
             opponentNickname = state.user2Nickname;
-          } else if (user?.userId === state.user2Id) {
+          } else if (myId === state.user2Id) {
             myNickname = state.user2Nickname;
             opponentNickname = state.user1Nickname;
           }
