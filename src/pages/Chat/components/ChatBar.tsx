@@ -1,6 +1,7 @@
 import navbg from "../../../assets/img/nav_bg.webp";
 import navbg2 from "../../../assets/img/nav_bg2.webp";
 import { useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 
 import ReportModal from "../../../components/ReportModal";
 
@@ -26,6 +27,7 @@ function ChatBar({ onEmojiToggle, emojiOpen, onSendMessage }: ChatBarProps) {
   const [message, setMessage] = useState("");
   const [showReportModal, setShowReportModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
 
   const uploadImageAndSendMessage = async (file: File) => {
     const formData = new FormData();

@@ -2,9 +2,9 @@ import React from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-const navigate = useNavigate();
-
 const Login: React.FC = () => {
+  const navigate = useNavigate();
+
   const handleLogin = (provider: "google" | "kakao") => {
     const baseUrl = "https://www.mannamdeliveries.link/oauth2/authorization";
     window.location.href = `${baseUrl}/${provider}`;
