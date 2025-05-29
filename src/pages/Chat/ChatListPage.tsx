@@ -71,7 +71,7 @@ function ChatListPage() {
   );
 
   const handleChatClick = (match: MatchData) => {
-    console.log("채팅방 입장:", match.id);
+    console.log("채팅방 입장:", match.roomId);
     navigate(`/chat/${match.roomId}`, {
       state: {
         roomId: match.roomId,
@@ -85,7 +85,7 @@ function ChatListPage() {
 
   const handleSurveyClick = (match: MatchData) => {
     console.log("설문방 입장:", match.id);
-    navigate(`/survey/session/${match.sessionId}`, {
+    navigate(`/survey/${match.sessionId}`, {
       state: {
         sessionId: match.sessionId,
         status: match.status,
