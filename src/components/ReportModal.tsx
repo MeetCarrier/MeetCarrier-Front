@@ -6,8 +6,11 @@ import uncheckBoxIcon from "../assets/img/icons/Report/uncheck_box.svg";
 interface ReportModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (reasons: string[], content: string) => void;
+  onSubmit?: (reasons: string[], content: string) => void;
+  reportType: ReportType;
 }
+
+type ReportType = "User" | "Bug" | "Chatbot" | "Question";
 
 const REPORT_REASONS = [
   "부적절한 프로필 사진, 닉네임 사용",
@@ -19,7 +22,12 @@ const REPORT_REASONS = [
   "그 외 다른 것",
 ];
 
-const ReportModal = ({ isOpen, onClose, onSubmit }: ReportModalProps) => {
+const ReportModal = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  reportType,
+}: ReportModalProps) => {
   const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
   const [description, setDescription] = useState("");
 
@@ -31,9 +39,34 @@ const ReportModal = ({ isOpen, onClose, onSubmit }: ReportModalProps) => {
     );
   };
 
-  const handleSubmit = () => {
-    onSubmit(selectedReasons, description);
-    onClose();
+  const handleSubmit = async () => {
+    const reportContent = selectedReasons.join("/"); // 간단 사유 요약
+    const reportDescription = description;
+
+    try {
+      const res = await fetch(
+        "https://www.mannamdeliveries.link/api/reports/register",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            reportType, // 상위 컴포넌트에서 전달받은 값
+            reportContent,
+            reportDescription,
+            reportImages: [], // 현재 이미지 업로드 기능 없으니 빈 배열로 전송
+          }),
+        }
+      );
+
+      if (!res.ok) throw new Error(`신고 실패: ${res.status}`);
+      alert("신고가 접수되었습니다.");
+      onClose();
+    } catch (error) {
+      console.error("신고 중 오류 발생:", error);
+      alert("신고 처리에 실패했습니다.");
+    }
   };
 
   return (

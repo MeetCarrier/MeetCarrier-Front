@@ -1,11 +1,14 @@
 import navbg from "../../../assets/img/nav_bg.webp";
 import navbg2 from "../../../assets/img/nav_bg2.webp";
 import { useState, useRef } from "react";
+
+import ReportModal from "../../../components/ReportModal";
+import ReportType from "../../../components/ReportModal";
+
 import plus_icon from "../../../assets/img/icons/ChatIcon/ic_plus.svg";
 import arrow_icon from "../../../assets/img/icons/ChatIcon/ic_arrow.svg";
 import face_icon from "../../../assets/img/icons/ChatIcon/ic_face.svg";
 import questionmark_icon from "../../../assets/img/icons/ChatIcon/ic_questionmark.svg";
-
 import album_icon from "../../../assets/img/icons/ChatIcon/ic_album.svg";
 import invite_icon from "../../../assets/img/icons/ChatIcon/ic_invite.svg";
 import end_icon from "../../../assets/img/icons/ChatIcon/ic_end.svg";
@@ -22,6 +25,7 @@ type ChatBarProps = {
 
 function ChatBar({ onEmojiToggle, emojiOpen, onSendMessage }: ChatBarProps) {
   const [message, setMessage] = useState("");
+  const [showReportModal, setShowReportModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const uploadImageAndSendMessage = async (file: File) => {
@@ -123,7 +127,11 @@ function ChatBar({ onEmojiToggle, emojiOpen, onSendMessage }: ChatBarProps) {
             },
             { icon: invite_icon, label: "대면초대장" },
             { icon: end_icon, label: "만남종료" },
-            { icon: report_icon, label: "신고" },
+            {
+              icon: report_icon,
+              label: "신고",
+              onClick: () => setShowReportModal(true),
+            },
             { icon: survey_icon, label: "비대면설문지" },
           ].map(({ icon, label, onClick }, index) => (
             <div key={index} className="flex flex-col items-center">
@@ -188,6 +196,19 @@ function ChatBar({ onEmojiToggle, emojiOpen, onSendMessage }: ChatBarProps) {
         onChange={handleImageUpload}
         accept="image/*"
         className="hidden"
+      />
+
+      <ReportModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        reportType="User"
+        onSubmit={(reasons, content) => {
+          alert(
+            `신고가 접수되었습니다.\n사유: ${reasons.join(
+              " / "
+            )}\n내용: ${content}`
+          );
+        }}
       />
     </>
   );

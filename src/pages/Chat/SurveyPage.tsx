@@ -607,8 +607,8 @@ function SurveyPage() {
       <ReportModal
         isOpen={showReportModal}
         onClose={() => setShowReportModal(false)}
+        reportType="Question"
         onSubmit={(reasons, content) => {
-          // TODO: 신고 처리 로직 (API 연동 등)
           alert(
             "신고가 접수되었습니다.\n사유: " +
               reasons.join(", ") +
