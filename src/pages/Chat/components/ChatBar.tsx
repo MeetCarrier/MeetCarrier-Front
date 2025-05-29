@@ -49,6 +49,9 @@ function ChatBar({ onEmojiToggle, emojiOpen, onSendMessage }: ChatBarProps) {
       }
     } catch (error) {
       console.error("이미지 서버 업로드 실패:", error);
+      if (axios.isAxiosError(error)) {
+        console.error("서버 응답 내용:", error.response?.data); // 여기를 확인!
+      }
       alert("이미지 업로드에 실패했습니다.");
     }
   };
@@ -94,7 +97,7 @@ function ChatBar({ onEmojiToggle, emojiOpen, onSendMessage }: ChatBarProps) {
 
       console.log("이미지 압축 시작");
       const compressedFile = await imageCompression(file, options);
-      console.log("이미지 압축 완료");
+      console.log("압축된 파일 타입:", compressedFile.type);
 
       uploadImageAndSendMessage(compressedFile);
     } catch (error) {
