@@ -16,6 +16,7 @@ import checkIcon from "../../assets/img/icons/HobbyIcon/check.svg";
 import Modal from "../../components/Modal";
 import exitIcon from "../../assets/img/icons/Survey/exit.svg";
 import reportIcon from "../../assets/img/icons/Survey/report.svg";
+import ReportModal from "../../components/ReportModal";
 
 interface Question {
   questionId: number;
@@ -55,6 +56,7 @@ function SurveyPage() {
   const [tempAnswers, setTempAnswers] = useState<{ [key: number]: string }>({});
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [showCompleteModal, setShowCompleteModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
   const [chatRoomId, setChatRoomId] = useState<number | null>(() => {
     const saved = localStorage.getItem(`chatRoomId_${roomId}`);
     return saved ? parseInt(saved) : null;
@@ -67,6 +69,7 @@ function SurveyPage() {
   const menuRef = useRef<HTMLDivElement>(null);
   const swiperRef = useRef<SwiperCore | null>(null);
   const stompClientRef = useRef<Client | null>(null);
+  const menuButtonRef = useRef<HTMLImageElement>(null);
 
   const myId = Number(user1Id);
 
@@ -104,7 +107,9 @@ function SurveyPage() {
 
     // WebSocket 연결 설정
     console.log("WebSocket 연결 시작");
-    const socket = new SockJS("https://www.mannamdeliveries.link/connection");
+    const socket = new SockJS(
+      "https://www.mannamdeliveries.link/api/connection"
+    );
     const stompClient = new Client({
       webSocketFactory: () => socket,
       onConnect: () => {
@@ -223,7 +228,10 @@ function SurveyPage() {
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+      const isClickInsideMenu = menuRef.current?.contains(e.target as Node);
+      const isClickOnButton = menuButtonRef.current?.contains(e.target as Node);
+
+      if (!isClickInsideMenu && !isClickOnButton) {
         setIsMenuOpen(false);
       }
     };
@@ -346,6 +354,7 @@ function SurveyPage() {
         />
         <p className="text-[20px] font-MuseumClassic_L italic">질문 센터</p>
         <img
+          ref={menuButtonRef}
           src={isEditing ? checkIcon : menuIcon}
           alt={isEditing ? "저장" : "메뉴"}
           className="absolute top-1/2 -translate-y-1/2 right-6 w-[20px] h-[20px] cursor-pointer"
@@ -358,7 +367,7 @@ function SurveyPage() {
       {isMenuOpen && (
         <div
           ref={menuRef}
-          className="absolute top-[50px] right-6 bg-white shadow-md rounded-xl border z-50 flex flex-col w-32 py-2"
+          className="absolute top-[90px] right-6 bg-white shadow-md rounded-xl  z-50 flex flex-col w-32 py-2"
           style={{ minWidth: "120px" }}
         >
           <button
@@ -386,7 +395,7 @@ function SurveyPage() {
             className="flex items-center gap-2 px-4 py-2 text-sm text-[#BD4B2C] hover:bg-gray-100 w-full text-left font-GanwonEduAll_Light"
             onClick={() => {
               setIsMenuOpen(false);
-              alert("신고 기능은 추후 구현 예정입니다.");
+              setShowReportModal(true);
             }}
           >
             <img src={reportIcon} alt="신고" className="w-5 h-5 mr-1" />
@@ -593,6 +602,21 @@ function SurveyPage() {
           </button>
         </div>
       )}
+
+      {/* 신고 모달 */}
+      <ReportModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        onSubmit={(reasons, content) => {
+          // TODO: 신고 처리 로직 (API 연동 등)
+          alert(
+            "신고가 접수되었습니다.\n사유: " +
+              reasons.join(", ") +
+              "\n내용: " +
+              content
+          );
+        }}
+      />
     </>
   );
 }

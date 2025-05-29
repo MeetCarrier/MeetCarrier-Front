@@ -1,5 +1,7 @@
 import { useState } from "react";
 import Modal from "./Modal";
+import checkBoxIcon from "../assets/img/icons/Report/check_box.svg";
+import uncheckBoxIcon from "../assets/img/icons/Report/uncheck_box.svg";
 
 interface ReportModalProps {
   isOpen: boolean;
@@ -44,12 +46,19 @@ const ReportModal = ({ isOpen, onClose, onSubmit }: ReportModalProps) => {
 
         <div className="space-y-2 max-h-[160px] overflow-y-auto">
           {REPORT_REASONS.map((reason) => (
-            <label key={reason} className="flex items-start gap-2 text-sm">
-              <input
-                type="checkbox"
-                className="mt-1"
-                checked={selectedReasons.includes(reason)}
-                onChange={() => toggleReason(reason)}
+            <label
+              key={reason}
+              className="flex items-center gap-2 text-sm cursor-pointer font-GanwonEduAll_Light select-none"
+              onClick={() => toggleReason(reason)}
+            >
+              <img
+                src={
+                  selectedReasons.includes(reason)
+                    ? checkBoxIcon
+                    : uncheckBoxIcon
+                }
+                alt={selectedReasons.includes(reason) ? "체크됨" : "미체크"}
+                className="w-5 h-5 mt-0.5"
               />
               <span>{reason}</span>
             </label>
@@ -58,13 +67,13 @@ const ReportModal = ({ isOpen, onClose, onSubmit }: ReportModalProps) => {
 
         <textarea
           placeholder="자세한 내용을 입력해주세요."
-          className="w-full border rounded p-2 text-sm resize-none"
+          className="w-full border rounded p-2 text-sm resize-none font-GanwonEduAll_Light"
           rows={3}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
 
-        <div className="flex justify-end gap-2 pt-2">
+        <div className="flex justify-end gap-2 pt-2 font-GanwonEduAll_Light">
           <button
             onClick={onClose}
             className="text-sm text-gray-600 hover:text-black px-3 py-1"
