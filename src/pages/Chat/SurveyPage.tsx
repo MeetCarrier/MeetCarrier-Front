@@ -363,9 +363,16 @@ function SurveyPage() {
     }
   };
 
-  const isUser1 = myId === Number(state?.user1Id);
-  const myNickname = isUser1 ? state?.user1Nickname : state?.user2Nickname;
-  const otherNickname = isUser1 ? state?.user2Nickname : state?.user1Nickname;
+  // userId로 내 정보/상대 정보 구분
+  let myNickname = "나";
+  let otherNickname = "상대방";
+  if (user?.userId === state?.user1Id) {
+    myNickname = state?.user1Nickname || myNickname;
+    otherNickname = state?.user2Nickname || otherNickname;
+  } else if (user?.userId === state?.user2Id) {
+    myNickname = state?.user2Nickname || myNickname;
+    otherNickname = state?.user1Nickname || otherNickname;
+  }
 
   return (
     <>

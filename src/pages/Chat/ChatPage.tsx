@@ -78,12 +78,11 @@ function ChatPage() {
           const newMessage: ChatMessage = JSON.parse(message.body);
 
           // 내 메시지는 이미 로컬에서 띄웠으므로 무시
-          if (newMessage.sender === state.user1Id) {
+          if (newMessage.sender === myId) {
             console.log("[무시된 내 메시지]", newMessage);
             return;
           }
 
-          console.log("[수신 메시지]", newMessage);
           setMessages((prev) => [...prev, newMessage]);
         });
       },
@@ -120,7 +119,7 @@ function ChatPage() {
         roomId: state.roomId,
         type: imageUrl ? "IMAGE" : "TEXT",
         message: message,
-        userId: state.user1Id,
+        userId: myId,
         imageUrl: imageUrl || null,
       };
 
@@ -231,11 +230,17 @@ function ChatPage() {
       >
         {messages.map((msg, index) => {
           const isMine = msg.sender === myId;
-          const isUser1 = myId === state.user1Id;
-          const opponentNickname = isUser1
-            ? state.user2Nickname
-            : state.user1Nickname;
-          const nickname = isMine ? user?.nickname || "나" : opponentNickname;
+          // userId로 내 정보/상대 정보 구분
+          let myNickname = "나";
+          let opponentNickname = "상대방";
+          if (user?.userId === state.user1Id) {
+            myNickname = state.user1Nickname;
+            opponentNickname = state.user2Nickname;
+          } else if (user?.userId === state.user2Id) {
+            myNickname = state.user2Nickname;
+            opponentNickname = state.user1Nickname;
+          }
+          const nickname = isMine ? myNickname : opponentNickname;
           const isPrevSameSender =
             index > 0 && messages[index - 1].sender === msg.sender;
           const isNextDifferentSender =
