@@ -6,12 +6,8 @@ import StampModal from '../../Modal/StampModal';
 import NavBar from '../../components/NavBar';
 import btn3 from '../../assets/img/button/btn3.webp';
 import btn4 from '../../assets/img/button/btn4.webp';
-import stamp_1_activate from '../../assets/img/icons/Stamp/stamp_1_activate.svg';
-import stamp_1_deactivate from '../../assets/img/icons/Stamp/stamp_1_deactivate.svg';
 
-// 스탬프 많아지면?
-// const stamps = import.meta.glob('../../assets/stamps/*.webp', { eager: true });
-// const stampImages = Object.values(stamps);
+import { stampMap } from '../../Utils/StampMap';
 
 function Stamp() {
   const selected = useAppSelector((state) => state.diary.selectedStamp);
@@ -50,21 +46,26 @@ function Stamp() {
           </div>
           <div className="w-full flex-1 min-h-0 overflow-y-auto p-3 mb-3">
             <div className="grid grid-cols-4 gap-3">
-              {stamps.map((_, index) => (
-                <button
-                  key={index}
-                  className="aspect-square w-full"
-                  onClick={() => dispatch(setSelectedStamp(index))}
-                >
-                  <img
-                    src={
-                      selected === index ? stamp_1_activate : stamp_1_deactivate
-                    }
-                    alt={`스탬프 ${index}`}
-                    className="w-full h-full object-contain"
-                  />
-                </button>
-              ))}
+              {stamps.map((_, index) => {
+                const stampNum = index + 1;
+                const isActive = selected === stampNum;
+                const stampSrc =
+                  stampMap[stampNum]?.[isActive ? 'activate' : 'deactivate'];
+
+                return (
+                  <button
+                    key={index}
+                    className="aspect-square w-full"
+                    onClick={() => dispatch(setSelectedStamp(stampNum))}
+                  >
+                    <img
+                      src={stampSrc}
+                      alt={`스탬프 ${stampNum}`}
+                      className="w-full h-full object-contain"
+                    />
+                  </button>
+                );
+              })}
             </div>
           </div>
           {/* 버튼 */}
