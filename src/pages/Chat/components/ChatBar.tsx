@@ -52,7 +52,9 @@ function ChatBar({ onEmojiToggle, emojiOpen, onSendMessage }: ChatBarProps) {
     } catch (error) {
       console.error("이미지 서버 업로드 실패:", error);
       if (axios.isAxiosError(error)) {
-        console.error("서버 응답 내용:", error.response?.data); // 여기를 확인!
+        console.error("서버 응답 내용:", error.response?.data);
+        console.error("서버 응답 상태:", error.response?.status);
+        console.error("서버 응답 헤더:", error.response?.headers);
       }
       alert("이미지 업로드에 실패했습니다.");
     }

@@ -105,7 +105,6 @@ function SurveyPage() {
   }, [isSubmitted, realSessionId]);
 
   useEffect(() => {
-    // 로컬 스토리지에 저장된 임시 답변 불러오기
     if (!realSessionId) return;
     const savedAnswers = localStorage.getItem(`tempAnswers_${realSessionId}`);
     if (savedAnswers) {
@@ -147,7 +146,8 @@ function SurveyPage() {
             try {
               // 최신 매치 상태 조회
               const response = await axios.get(
-                `https://www.mannamdeliveries.link/api/matches`
+                `https://www.mannamdeliveries.link/api/matches`,
+                { withCredentials: true }
               );
               const updatedMatch = response.data;
 
@@ -205,7 +205,8 @@ function SurveyPage() {
       try {
         console.log("질문 목록 조회 시작");
         const response = await axios.get(
-          `https://www.mannamdeliveries.link/api/survey/${realSessionId}/questions`
+          `https://www.mannamdeliveries.link/api/survey/${realSessionId}/questions`,
+          { withCredentials: true }
         );
         console.log("질문 목록 조회 결과:", response.data);
         setQuestions(response.data);
@@ -219,7 +220,8 @@ function SurveyPage() {
       try {
         console.log("답변 목록 조회 시작");
         const response = await axios.get(
-          `https://www.mannamdeliveries.link/api/survey/${realSessionId}/answers`
+          `https://www.mannamdeliveries.link/api/survey/${realSessionId}/answers`,
+          { withCredentials: true }
         );
         console.log("답변 목록 조회 결과:", response.data);
         setAnswers(response.data);
@@ -319,7 +321,7 @@ function SurveyPage() {
       );
 
       console.log("[설문 제출]", {
-        url: `https://www.mannamdeliveries.link/api/survey/${realSessionId}/answers/${myId}`,
+        url: `https://www.mannamdeliveries.link/api/survey/${realSessionId}/${myId}/answers`,
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -328,13 +330,18 @@ function SurveyPage() {
       });
 
       await axios.post(
-        `https://www.mannamdeliveries.link/api/survey/${realSessionId}/answers/${myId}`,
-        answersToSubmit
+        `https://www.mannamdeliveries.link/api/survey/${realSessionId}/${myId}/answers`,
+        answersToSubmit,
+        { withCredentials: true }
       );
 
       console.log("설문 제출 성공");
       setShowSubmitModal(false);
-      setIsSubmitted(true); // ✅ 제출 완료로 표시
+      setIsSubmitted(true); // ✅ 제출 완료로 표시.
+
+      if (realSessionId) {
+        localStorage.removeItem(`tempAnswers_${realSessionId}`);
+      }
     } catch (error) {
       console.error("설문 제출 실패:", error);
       alert("설문 제출에 실패했습니다.");
@@ -354,7 +361,9 @@ function SurveyPage() {
   const handleJoinChat = async () => {
     try {
       const response = await axios.post(
-        `https://www.mannamdeliveries.link/api/room/${state?.id}/${myId}/enter`
+        `https://www.mannamdeliveries.link/api/room/${state?.id}/${myId}/enter`,
+        null,
+        { withCredentials: true }
       );
       const newRoomId = response.data.roomId;
       setChatRoomId(newRoomId);

@@ -42,7 +42,13 @@ function ChatListPage() {
       try {
         console.log("[매치 불러오기] API 호출 시작...");
         const res = await fetch(
-          "https://www.mannamdeliveries.link/api/matches"
+          "https://www.mannamdeliveries.link/api/matches",
+          {
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
         );
 
         console.log(`[매치 불러오기] 응답 상태 코드: ${res.status}`);
@@ -51,11 +57,8 @@ function ChatListPage() {
           throw new Error(`API 호출 실패: ${res.status}`);
         }
 
-        const rawText = await res.text();
-        console.log("[서버 응답 원문]", rawText);
-        const data = JSON.parse(rawText);
+        const data = await res.json();
         console.log("[매치 불러오기] 성공:", data);
-
         setMatchList(data);
       } catch (e) {
         console.error("[매치 불러오기] 실패:", e);

@@ -51,6 +51,7 @@ const ReportModal = ({
           headers: {
             "Content-Type": "application/json",
           },
+          credentials: "include",
           body: JSON.stringify({
             reportType, // 상위 컴포넌트에서 전달받은 값
             reportContent,

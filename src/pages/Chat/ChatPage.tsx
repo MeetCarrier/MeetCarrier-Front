@@ -55,7 +55,8 @@ function ChatPage() {
       try {
         console.log("채팅 기록 조회 시작:", state.roomId);
         const response = await axios.get(
-          `https://www.mannamdeliveries.link/api/chat/${state.roomId}`
+          `https://www.mannamdeliveries.link/api/chat/${state.roomId}`,
+          { withCredentials: true }
         );
         console.log("채팅 기록 조회 결과:", response.data);
         setMessages(response.data);
