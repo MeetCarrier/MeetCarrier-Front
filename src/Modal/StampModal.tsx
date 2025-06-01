@@ -1,7 +1,7 @@
-import { FC } from "react";
-import axios from "axios";
-import { useAppSelector } from "../Utils/hooks";
-import { useNavigate } from "react-router-dom";
+import { FC } from 'react';
+import axios from 'axios';
+import { useAppSelector } from '../Utils/hooks';
+import { useNavigate } from 'react-router-dom';
 
 const StampModal: FC = () => {
   const navigate = useNavigate();
@@ -27,7 +27,7 @@ const StampModal: FC = () => {
         );
       } else {
         await axios.post(
-          "https://www.mannamdeliveries.link/api/journals/register",
+          'https://www.mannamdeliveries.link/api/journals/register',
           {
             content: text,
             stamp: selectedStamp,
@@ -36,11 +36,11 @@ const StampModal: FC = () => {
         );
       }
 
-      alert("저장 완료!");
-      navigate("/Calendar");
+      alert('저장 완료!');
+      navigate('/Calendar');
     } catch (error) {
-      console.error("저장 실패", error);
-      alert("저장에 실패했어요.");
+      console.error('저장 실패', error);
+      alert('저장에 실패했어요.');
     }
   };
 
@@ -49,14 +49,14 @@ const StampModal: FC = () => {
       <h2 className="mb-3 text-[20px] font-GanwonEduAll_Bold">
         칭찬 일기를 등록하시겠어요?
       </h2>
-      <p className="text-xs mb-3">
+      <p className="text-xs font-GanwonEduAll_Light mb-3">
         오늘까진 수정할 수 있지만, 이후엔 수정이 불가능하고 삭제만 할 수 있어요.
       </p>
       <p></p>
       <div className="flex items-center justify-end">
         <button
           className="mr-3 cursor-pointer"
-          onClick={() => navigate("/Stamp")}
+          onClick={() => navigate('/Stamp')}
         >
           취소
         </button>

@@ -30,7 +30,7 @@ const DiaryDeleteModal: FC = () => {
       <h2 className="mb-3 text-[20px] font-GanwonEduAll_Bold">
         일기를 삭제하시겠어요?
       </h2>
-      <p className="text-xs mb-3">
+      <p className="text-xs font-GanwonEduAll_Light mb-3">
         삭제하면 되돌릴 수 없어요. 일기는 당일에만 등록할 수 있기에 날짜가
         지났다면, 다시 작성할 수 없어요.
       </p>
