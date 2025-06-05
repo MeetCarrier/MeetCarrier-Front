@@ -13,7 +13,11 @@ import icon_vector from '../assets/img/icons/MainPageIcon/vector_icon.svg';
 import icon_cloud from '../assets/img/icons/MainPageIcon/cloud_icon.svg';
 import icon_check from '../assets/img/icons/MainPageIcon/check_icon.svg';
 
-const MainModal: FC = () => {
+type MainModalProps = {
+  fromMatching?: boolean;
+};
+
+const MainModal: FC<MainModalProps> = ({ fromMatching = false }) => {
   const navigate = useNavigate();
 
   const handleHobbyClick = () => {
@@ -24,7 +28,7 @@ const MainModal: FC = () => {
     navigate('/SurveyQuestion');
   };
 
-  const handleRnageSettingClick = () => {
+  const handleRangeSettingClick = () => {
     navigate('/RangeSetting');
   };
 
@@ -85,12 +89,14 @@ const MainModal: FC = () => {
                 관심사
               </span>
             </div>
-            <span
-              className="text-gray-400 text-xl cursor-pointer"
-              onClick={handleHobbyClick}
-            >
-              ›
-            </span>
+            {!fromMatching && (
+              <span
+                className="text-gray-400 text-xl cursor-pointer"
+                onClick={handleHobbyClick}
+              >
+                ›
+              </span>
+            )}
           </div>
           <div>
             <span className="text-gray-500 mt-1 text-xs font-GanwonEduAll_Light line-clamp-1">
@@ -107,12 +113,14 @@ const MainModal: FC = () => {
                 친구에게 물어보고 싶은 질문
               </span>
             </div>
-            <span
-              className="text-gray-400 text-xl cursor-pointer"
-              onClick={handleSurveyQClick}
-            >
-              ›
-            </span>
+            {!fromMatching && (
+              <span
+                className="text-gray-400 text-xl cursor-pointer"
+                onClick={handleSurveyQClick}
+              >
+                ›
+              </span>
+            )}
           </div>
           <div>
             <span className="text-gray-500 mt-1 text-xs font-GanwonEduAll_Light line-clamp-1">
@@ -126,15 +134,17 @@ const MainModal: FC = () => {
             <div className="flex gap-2">
               <img src={icon_vector} alt="거리" className="w-4.5 h-4.5" />
               <span className="font-medium font-GanwonEduAll_Bold text-[#333333] text-sm">
-                거리
+                범위 설정
               </span>
             </div>
-            <span
-              className="text-gray-400 text-xl cursor-pointer"
-              onClick={handleRnageSettingClick}
-            >
-              ›
-            </span>
+            {!fromMatching && (
+              <span
+                className="text-gray-400 text-xl cursor-pointer"
+                onClick={handleRangeSettingClick}
+              >
+                ›
+              </span>
+            )}
           </div>
           <div className="flex justify-between items-center mt-1">
             <span className="text-gray-500 text-xs font-GanwonEduAll_Light">
@@ -174,9 +184,14 @@ const MainModal: FC = () => {
                 자기 평가 테스트
               </span>
             </div>
-            <span className="text-gray-400 text-xl" onClick={handleTestClick}>
-              ›
-            </span>
+            {!fromMatching && (
+              <span
+                className="text-gray-400 text-xl cursor-pointer"
+                onClick={handleTestClick}
+              >
+                ›
+              </span>
+            )}
           </div>
           <div>
             <span className="text-gray-500 text-xs font-GanwonEduAll_Light">

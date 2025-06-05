@@ -2,6 +2,7 @@ import { FC } from 'react';
 import axios from 'axios';
 import { useAppSelector } from '../Utils/hooks';
 import { useNavigate } from 'react-router-dom';
+import modalbtn_icon from '../assets/img/icons/ModalBtn/modalbtn_icon.svg';
 
 const StampModal: FC = () => {
   const navigate = useNavigate();
@@ -49,19 +50,25 @@ const StampModal: FC = () => {
       <h2 className="mb-3 text-[20px] font-GanwonEduAll_Bold">
         칭찬 일기를 등록하시겠어요?
       </h2>
-      <p className="text-xs font-GanwonEduAll_Light mb-3">
+      <p className="text-xs font-GanwonEduAll_Light mb-3 text-[#333333]/80">
         오늘까진 수정할 수 있지만, 이후엔 수정이 불가능하고 삭제만 할 수 있어요.
       </p>
       <p></p>
       <div className="flex items-center justify-end">
         <button
-          className="mr-3 cursor-pointer"
+          className="mr-3 font-GanwonEduAll_Light cursor-pointer"
           onClick={() => navigate('/Stamp')}
         >
           취소
         </button>
-        <button className="cursor-pointer" onClick={handleDiaryRegister}>
-          등록하기
+        <button
+          className="relative cursor-pointer"
+          onClick={handleDiaryRegister}
+        >
+          <img src={modalbtn_icon} alt="modalbtn" />
+          <span className="absolute inset-0 flex items-center justify-center font-GanwonEduAll_Light text-[#FAFAFA]">
+            등록하기
+          </span>
         </button>
       </div>
     </>
