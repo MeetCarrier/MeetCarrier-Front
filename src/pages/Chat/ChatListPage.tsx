@@ -117,7 +117,7 @@ function ChatListPage() {
         />
       </div>
 
-      <div className="flex flex-col w-full h-[calc(100%-200px)] overflow-y-auto px-4 z-0">
+      <div className="flex flex-col w-full h-[calc(100%-200px)] overflow-y-auto z-0">
         {chattingList.length > 0 && (
           <>
             <h2 className="text-xl font-GanwonEduAll_Bold text-center mb-2">

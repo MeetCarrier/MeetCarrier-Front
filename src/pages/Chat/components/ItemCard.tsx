@@ -48,7 +48,7 @@ const ItemCard: React.FC<ItemCardProps> = ({
   const actualImageUrl = profileImageUrl || sampleProfile;
 
   return (
-    <div className="flex justify-between items-center bg-white rounded-xl p-3 shadow mb-2">
+    <div className="flex justify-between items-center bg-white p-2 mb-2">
       {/* 왼쪽: 스탬프 + 프로필 */}
       <div className="flex items-center">
         <div className="relative w-12 h-12 mr-3">
@@ -60,7 +60,7 @@ const ItemCard: React.FC<ItemCardProps> = ({
           <img
             src={actualImageUrl}
             alt="profile"
-            className="absolute inset-1 w-10 h-10 object-cover rounded-md z-10"
+            className="absolute inset-1 w-10 h-10 object-cover z-10"
             onError={(e) => {
               e.currentTarget.onerror = null;
               e.currentTarget.src = sampleProfile;
