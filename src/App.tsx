@@ -1,34 +1,45 @@
-import MainPage from "./pages/Main";
-import Layout from "./components/Layout";
-import MeetCenter from "./pages/MeetCenter";
-import Hobby from "./pages/Hobby";
-import SurveyQ from "./pages/SurveyQ";
-import RangeSetting from "./pages/RangeSetting";
-import ChatListPage from "./pages/Chat/ChatListPage";
-import SurveyPage from "./pages/Chat/SurveyPage";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import ChatPage from "./pages/Chat/ChatPage";
-import Calendar from "./pages/Calendar/Calendar";
-import Dairy from "./pages/Calendar/Diary";
-import ViewDiary from "./pages/Calendar/ViewDiary";
-import Stamp from "./pages/Calendar/Stamp";
-import Profile from "./pages/Profile/ProfilePage";
-import SelfEvaluation from "./pages/SelfEvaluation";
-import Test from "./pages/Test/Test";
-import TestResult from "./pages/Test/TestResult";
-import NotFoundPage from "./pages/NotFoundPage";
+import MainPage from './pages/Main';
+import Layout from './components/Layout';
+import MeetCenter from './pages/MeetCenter';
+import Hobby from './pages/Hobby';
+import SurveyQ from './pages/SurveyQ';
+import RangeSetting from './pages/RangeSetting';
+import ChatListPage from './pages/Chat/ChatListPage';
+import SurveyPage from './pages/Chat/SurveyPage';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import ChatPage from './pages/Chat/ChatPage';
+import Calendar from './pages/Calendar/Calendar';
+import Dairy from './pages/Calendar/Diary';
+import ViewDiary from './pages/Calendar/ViewDiary';
+import Stamp from './pages/Calendar/Stamp';
+import Profile from './pages/Profile/ProfilePage';
+import SelfEvaluation from './pages/SelfEvaluation';
+import Test from './pages/Test/Test';
+import TestResult from './pages/Test/TestResult';
+// import NotFoundPage from './pages/NotFoundPage';
+import AlarmPage from './pages/AlarmPage';
 
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
-import { Provider } from "react-redux";
-import { store } from "./Utils/store";
+import MatchResultWatcher from './components/MatchResultWatcher';
+
+import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
+import { Provider } from 'react-redux';
+import { store } from './Utils/store';
 
 function App() {
   return (
     <Provider store={store}>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Layout />}>
+          <Route
+            path="/"
+            element={
+              <>
+                <MatchResultWatcher />
+                <Layout />
+              </>
+            }
+          >
             <Route index element={<Navigate to="/main" replace />} />
             <Route path="main" element={<MainPage />} />
             <Route path="Hobby" element={<Hobby />} />
@@ -48,6 +59,7 @@ function App() {
             <Route path="SelfEvaluation" element={<SelfEvaluation />} />
             <Route path="Test" element={<Test />} />
             <Route path="TestResult" element={<TestResult />} />
+            <Route path="Alarm" element={<AlarmPage />} />
             {/* <Route path="*" element={<NotFoundPage />} /> */}
           </Route>
         </Routes>
