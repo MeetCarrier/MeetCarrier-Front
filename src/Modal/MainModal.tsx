@@ -5,6 +5,8 @@ import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../Utils/store';
 import { UserState } from '../Utils/userSlice';
+import { useAppSelector } from '../Utils/hooks';
+import { formatDate } from '../Utils/FormatDate';
 
 import icon_like from '../assets/img/icons/MainPageIcon/like_icon.svg';
 import icon_vector from '../assets/img/icons/MainPageIcon/vector_icon.svg';
@@ -25,6 +27,17 @@ const MainModal: FC = () => {
   const handleRnageSettingClick = () => {
     navigate('/RangeSetting');
   };
+
+  const handleTestClick = () => {
+    navigate('/SelfEvaluation');
+  };
+
+  const selfTestList = useAppSelector((state) => state.selfTest.list);
+
+  const latestTestDate =
+    selfTestList.length > 0
+      ? formatDate(new Date(selfTestList[0].createdAt))
+      : null;
 
   const user = useSelector(
     (state: RootState) => state.user
@@ -161,11 +174,15 @@ const MainModal: FC = () => {
                 자기 평가 테스트
               </span>
             </div>
-            <span className="text-gray-400 text-xl">›</span>
+            <span className="text-gray-400 text-xl" onClick={handleTestClick}>
+              ›
+            </span>
           </div>
           <div>
             <span className="text-gray-500 text-xs font-GanwonEduAll_Light">
-              아직 '자기 평가 테스트'를 하지 않았어요!
+              {latestTestDate
+                ? `${latestTestDate}`
+                : "아직 '자기 평가 테스트'를 하지 않았어요!"}
             </span>
           </div>
         </li>

@@ -14,6 +14,9 @@ import Dairy from "./pages/Calendar/Diary";
 import ViewDiary from "./pages/Calendar/ViewDiary";
 import Stamp from "./pages/Calendar/Stamp";
 import Profile from "./pages/Profile/ProfilePage";
+import SelfEvaluation from "./pages/SelfEvaluation";
+import Test from "./pages/Test/Test";
+import TestResult from "./pages/Test/TestResult";
 import NotFoundPage from "./pages/NotFoundPage";
 
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
@@ -42,7 +45,10 @@ function App() {
             <Route path="ViewDiary" element={<ViewDiary />} />
             <Route path="Stamp" element={<Stamp />} />
             <Route path="Profile" element={<Profile />} />
-            <Route path="*" element={<NotFoundPage />} />
+            <Route path="SelfEvaluation" element={<SelfEvaluation />} />
+            <Route path="Test" element={<Test />} />
+            <Route path="TestResult" element={<TestResult />} />
+            {/* <Route path="*" element={<NotFoundPage />} /> */}
           </Route>
         </Routes>
       </BrowserRouter>
