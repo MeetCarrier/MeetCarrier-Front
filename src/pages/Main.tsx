@@ -1,10 +1,17 @@
-import { useState, useEffect, useRef } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useAppSelector } from '../Utils/hooks';
+import {
+  setStatus,
+  setSocketConnected,
+  setMatchingTimeoutId,
+  clearMatchingTimeout,
+} from '../Utils/matchingSlice';
+import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import btn1 from '../assets/img/button/btn1.webp';
 import btn2 from '../assets/img/button/btn2.webp';
 import bell_default from '../assets/img/icons/NavIcon/bell_default.svg';
-
+import bell_alarm from '../assets/img/icons/NavIcon/bell_alarm.svg';
 import NavBar from '../components/NavBar';
 import Modal from '../components/Modal';
 import MainModal from '../Modal/MainModal';
@@ -15,18 +22,26 @@ import { fetchSelfTestList } from '../Utils/selfTestSlice';
 import { useSelector } from 'react-redux';
 import { RootState } from '../Utils/store';
 import { UserState } from '../Utils/userSlice';
-import { startMatchingClient, type MatchingClient } from '../Utils/Matching';
+import { startMatchingClient } from '../Utils/Matching';
+import {
+  setMatchingClient,
+  getMatchingClient,
+  clearMatchingClient,
+} from '../Utils/matchingClientInstance';
 import { MatchingContent, type MatchingStatus } from '../Utils/MatchingContent';
 
 function Main() {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+  const [isAlarm, setIsAlarm] = useState(false);
   const [searchParams] = useSearchParams();
   const isModalOpen = searchParams.get('modal') === 'true';
-  const [status, setStatus] = useState<MatchingStatus>('default');
-  const matchingClientRef = useRef<MatchingClient | null>(null);
-  const [isSocketConnected, setIsSocketConnected] = useState(false);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const location = useLocation();
+  const fromMatching = location.state?.fromMatching === true;
+  const status = useAppSelector((state) => state.matching.status);
+  const isSocketConnected = useAppSelector(
+    (state) => state.matching.isSocketConnected
+  );
   const [locationAllowed, setLocationAllowed] = useState(false);
   const user = useSelector(
     (state: RootState) => state.user
@@ -80,40 +95,55 @@ function Main() {
     fetchData();
   }, [dispatch, navigate]);
 
+  useEffect(() => {
+    const checkUnreadAlarms = async () => {
+      try {
+        const res = await axios.get(
+          'https://www.mannamdeliveries.link/api/notification/has-unread',
+          { withCredentials: true }
+        );
+        setIsAlarm(res.data === true);
+        console.log('알림 유뮤', res.data);
+      } catch (err) {
+        console.error('알림 확인 실패:', err);
+      }
+    };
+
+    checkUnreadAlarms();
+  }, []);
+
   // 자가 평가 점수가 없다면?(매칭 정보 설정을 안한 상태라면) -> 매칭 시작 전에 한번 물어보기
   // 매칭 시작
   const handleStartMatching = () => {
-    setStatus('matching');
+    dispatch(setStatus('matching'));
 
-    timeoutRef.current = setTimeout(() => {
+    const timeoutId = window.setTimeout(() => {
       console.log('매칭 시간 초과');
-      setStatus('fail');
-    }, 360000);
+      dispatch(setStatus('fail'));
+      dispatch(clearMatchingTimeout());
+    }, 600000);
+
+    dispatch(setMatchingTimeoutId(timeoutId));
 
     const client = startMatchingClient({
       onSuccess: (data) => {
         console.log('매칭 성공', data);
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current);
-          timeoutRef.current = null;
-        }
-        setTimeout(() => {
-          setStatus('success');
-        }, 5000);
+        dispatch(clearMatchingTimeout());
+        dispatch(setStatus('success'));
+        // setTimeout(() => {
+        //   dispatch(setStatus('success'));
+        // }, 5000);
       },
       onFail: (data) => {
         console.log('매칭 실패', data);
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current);
-          timeoutRef.current = null;
-        }
-        setStatus('fail');
+        dispatch(clearMatchingTimeout());
+        dispatch(setStatus('fail'));
       },
       onConnected: () => {
-        setIsSocketConnected(true); // 연결 완료 시점
+        dispatch(setSocketConnected(true)); // 연결 완료 시점
       },
     });
-    matchingClientRef.current = client;
+    setMatchingClient(client);
   };
 
   // 수정해야 함.
@@ -131,23 +161,22 @@ function Main() {
       handleStartMatching();
     },
     matching: () => {
+      const client = getMatchingClient();
       // 소켓 연결 중 해제
       if (!isSocketConnected) {
         console.log('아직 연결되지 않았습니다.');
         return;
       }
-
-      matchingClientRef.current?.disconnect();
-      matchingClientRef.current = null; // 연결 종료 후 초기화
-      setIsSocketConnected(false);
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-        timeoutRef.current = null;
+      if (client) {
+        client.disconnect();
+        clearMatchingClient();
       }
-      setStatus('default');
+      dispatch(clearMatchingTimeout());
+      dispatch(setStatus('default'));
+      dispatch(setSocketConnected(false));
     },
     success: () => {
-      setStatus('fail');
+      dispatch(setStatus('fail'));
     },
     fail: () => {
       handleStartMatching();
@@ -159,21 +188,25 @@ function Main() {
       navigate('/main?modal=true');
     },
     matching: () => {
-      navigate('/main?modal=true');
+      navigate('/main?modal=true', { state: { fromMatching: true } });
     },
     success: () => {
       navigate('/main?modal=true');
     },
     fail: () => {
-      matchingClientRef.current?.disconnect();
-      matchingClientRef.current = null; // 연결 종료 후 초기화
-      setIsSocketConnected(false);
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-        timeoutRef.current = null;
+      const client = getMatchingClient();
+      if (client) {
+        client.disconnect();
+        clearMatchingClient();
       }
-      setStatus('default');
+      dispatch(clearMatchingTimeout());
+      dispatch(setStatus('default'));
+      dispatch(setSocketConnected(false));
     },
+  };
+
+  const handlebellClick = () => {
+    navigate('/Alarm');
   };
 
   return (
@@ -217,14 +250,15 @@ function Main() {
       <div className="absolute top-[50px] text-[#333333] left-0 right-0 px-6 text-center">
         <p className="text-[20px] font-MuseumClassic_L italic">만남 배달부</p>
         <img
-          src={bell_default}
+          src={isAlarm ? bell_alarm : bell_default}
           alt="bell_default"
-          className="absolute top-1/2 -translate-y-1/2 right-6 w-[20px] h-[20px]"
+          className="absolute top-1/2 -translate-y-1/2 right-6 w-[20px] h-[20px] cursor-pointer"
+          onClick={handlebellClick}
         />
       </div>
 
       <Modal isOpen={isModalOpen} onClose={() => navigate('/main')}>
-        <MainModal />
+        <MainModal fromMatching={fromMatching} />
       </Modal>
     </>
   );
