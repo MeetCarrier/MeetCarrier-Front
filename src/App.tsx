@@ -17,7 +17,10 @@ import Profile from "./pages/Profile/ProfilePage";
 import SelfEvaluation from "./pages/SelfEvaluation";
 import Test from "./pages/Test/Test";
 import TestResult from "./pages/Test/TestResult";
-import NotFoundPage from "./pages/NotFoundPage";
+// import NotFoundPage from './pages/NotFoundPage';
+import AlarmPage from "./pages/AlarmPage";
+
+import MatchResultWatcher from "./components/MatchResultWatcher";
 
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Provider } from "react-redux";
@@ -28,7 +31,15 @@ function App() {
     <Provider store={store}>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Layout />}>
+          <Route
+            path="/"
+            element={
+              <>
+                <MatchResultWatcher />
+                <Layout />
+              </>
+            }
+          >
             <Route index element={<Navigate to="/main" replace />} />
             <Route path="main" element={<MainPage />} />
             <Route path="Hobby" element={<Hobby />} />
@@ -48,6 +59,7 @@ function App() {
             <Route path="SelfEvaluation" element={<SelfEvaluation />} />
             <Route path="Test" element={<Test />} />
             <Route path="TestResult" element={<TestResult />} />
+            <Route path="Alarm" element={<AlarmPage />} />
             {/* <Route path="*" element={<NotFoundPage />} /> */}
           </Route>
         </Routes>

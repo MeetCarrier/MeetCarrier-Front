@@ -1,7 +1,10 @@
 import { configureStore } from "@reduxjs/toolkit";
 import userReducer from "./userSlice";
+import diaryReducer from "./diarySlice";
+import testReducer from "./testSlice";
 import selfTestReducer from "./selfTestSlice";
 import surveyReducer from "./surveySlice";
+import matchingReducer from "./matchingSlice";
 import { UserState } from "./userSlice";
 import { SelfTestState } from "./selfTestSlice";
 import { SurveyState } from "./surveySlice";
@@ -9,6 +12,7 @@ import { SurveyState } from "./surveySlice";
 export const store = configureStore({
   reducer: {
     user: userReducer,
+    matching: matchingReducer,
     diary: diaryReducer,
     test: testReducer,
     selfTest: selfTestReducer,
