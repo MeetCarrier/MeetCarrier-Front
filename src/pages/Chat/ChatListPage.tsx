@@ -92,6 +92,7 @@ function ChatListPage() {
   const handleSurveyClick = (match: MatchData) => {
     navigate(`/survey/${match.sessionId}`, {
       state: {
+        id: match.id,
         sessionId: match.sessionId,
         status: match.status,
         user1Id: match.user1Id,

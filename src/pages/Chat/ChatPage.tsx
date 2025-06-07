@@ -5,9 +5,10 @@ import ChatBar from "./components/ChatBar";
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
 import sampleProfile from "../../assets/img/sample/sample_profile.svg";
-import { useSelector } from "react-redux";
-import { RootState } from "../../Utils/store";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState, AppDispatch } from "../../Utils/store";
 import { UserState } from "../../Utils/userSlice";
+import { fetchUser } from "../../Utils/userSlice";
 
 import back_arrow from "../../assets/img/icons/HobbyIcon/back_arrow.svg";
 import search_icon from "../../assets/img/icons/ChatIcon/search.svg";
@@ -31,6 +32,7 @@ interface LocationState {
 function ChatPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch<AppDispatch>();
   const state = location.state as LocationState;
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [emojiOpen, setEmojiOpen] = useState(false);
@@ -44,6 +46,9 @@ function ChatPage() {
   const emojiHeight = emojiOpen ? 200 : 0;
 
   useEffect(() => {
+    // 사용자 정보 가져오기
+    dispatch(fetchUser());
+
     if (!state?.roomId) {
       console.error("방 정보가 없습니다.");
       navigate(-1);
@@ -110,7 +115,7 @@ function ChatPage() {
         stompClientRef.current.deactivate();
       }
     };
-  }, [state?.roomId, navigate]);
+  }, [state?.roomId, navigate, dispatch]);
 
   // 메시지 전송 함수
   const sendMessage = (message: string, imageUrl?: string) => {

@@ -2,8 +2,7 @@ import { useEffect } from "react";
 import NavBar from "../../components/NavBar";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "../../Utils/store";
-import { fetchUser } from "../../Utils/userSlice";
-import { UserState } from "../../Utils/userSlice";
+import { fetchUser, UserState, resetUser } from "../../Utils/userSlice";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
@@ -59,6 +58,21 @@ function ProfilePage() {
           withCredentials: true,
         }
       );
+
+      // localStorage에서 설문 관련 데이터 삭제
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (
+          key &&
+          (key.startsWith("survey_") || key.startsWith("chatRoomId_"))
+        ) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach((key) => localStorage.removeItem(key));
+
+      dispatch(resetUser());
       navigate("/login");
     } catch (error) {
       console.error("로그아웃 중 오류가 발생했습니다:", error);
