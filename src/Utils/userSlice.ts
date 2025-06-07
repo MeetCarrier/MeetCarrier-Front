@@ -32,12 +32,16 @@ const initialState: UserState | null = null;
 const userSlice = createSlice({
   name: "user",
   initialState,
-  reducers: {},
+  reducers: {
+    resetUser: () => null,
+  },
   extraReducers: (builder) => {
     builder.addCase(fetchUser.fulfilled, (_, action) => {
       return action.payload;
     });
   },
 });
+
+export const { resetUser } = userSlice.actions;
 
 export default userSlice.reducer;

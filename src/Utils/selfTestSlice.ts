@@ -1,6 +1,6 @@
 // store/selfTestSlice.ts
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import axios from 'axios';
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import axios from "axios";
 
 export interface SelfTestResult {
   depressionScore: number;
@@ -10,18 +10,17 @@ export interface SelfTestResult {
 }
 
 export const fetchSelfTestList = createAsyncThunk(
-  'selfTest/fetchSelfTestList',
+  "selfTest/fetchSelfTestList",
   async () => {
     const res = await axios.get<SelfTestResult[]>(
-      'https://www.mannamdeliveries.link/api/test',
+      "https://www.mannamdeliveries.link/api/test",
       { withCredentials: true }
     );
-
     return res.data; // 전체 리스트 반환
   }
 );
 
-interface SelfTestState {
+export interface SelfTestState {
   list: SelfTestResult[];
 }
 
@@ -30,7 +29,7 @@ const initialState: SelfTestState = {
 };
 
 const selfTestSlice = createSlice({
-  name: 'selfTest',
+  name: "selfTest",
   initialState,
   reducers: {},
   extraReducers: (builder) => {

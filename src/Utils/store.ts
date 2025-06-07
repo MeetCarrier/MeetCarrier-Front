@@ -1,8 +1,10 @@
-import { configureStore } from '@reduxjs/toolkit';
-import userReducer from './userSlice';
-import diaryReducer from './diarySlice';
-import testReducer from './testSlice';
-import selfTestReducer from './selfTestSlice';
+import { configureStore } from "@reduxjs/toolkit";
+import userReducer from "./userSlice";
+import selfTestReducer from "./selfTestSlice";
+import surveyReducer from "./surveySlice";
+import { UserState } from "./userSlice";
+import { SelfTestState } from "./selfTestSlice";
+import { SurveyState } from "./surveySlice";
 
 export const store = configureStore({
   reducer: {
@@ -10,6 +12,7 @@ export const store = configureStore({
     diary: diaryReducer,
     test: testReducer,
     selfTest: selfTestReducer,
+    survey: surveyReducer,
   },
 });
 
