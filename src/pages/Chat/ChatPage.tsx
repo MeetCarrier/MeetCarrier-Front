@@ -27,6 +27,12 @@ interface LocationState {
   user1Nickname: string;
   user2Id: number;
   user2Nickname: string;
+  matchId: number;
+  pendingMessage?: {
+    type: string;
+    message: string;
+    userId: number;
+  };
 }
 
 function ChatPage() {
@@ -93,6 +99,12 @@ function ChatPage() {
 
           setMessages((prev) => [...prev, newMessage]);
         });
+
+        // WebSocket 연결이 완료된 후 pendingMessage가 있다면 전송
+        if (state.pendingMessage) {
+          console.log("[대기 중인 메시지 전송]", state.pendingMessage);
+          sendMessage(state.pendingMessage.message);
+        }
       },
       onDisconnect: () => {
         console.log("WebSocket 연결 해제");
@@ -249,6 +261,37 @@ function ChatPage() {
         senderName={myId === state.user1Id ? state.user1Nickname : state.user2Nickname}
         recipientName={myId === state.user1Id ? state.user2Nickname : state.user1Nickname}
         senderProfile={user?.imgUrl || sampleProfile}
+        onInviteClick={() => {
+          navigate('/invite-write', {
+            state: {
+              senderName: myId === state.user1Id ? state.user1Nickname : state.user2Nickname,
+              recipientName: myId === state.user1Id ? state.user2Nickname : state.user1Nickname,
+              senderProfile: user?.imgUrl || sampleProfile,
+              matchId: state.matchId,
+              receiverId: myId === state.user1Id ? state.user2Id : state.user1Id,
+              roomId: state.roomId
+            }
+          });
+        }}
+        onSurveyClick={() => {
+          navigate(`/survey/${state.matchId}`, {
+            state: {
+              id: state.matchId,
+              sessionId: state.matchId,
+              status: 'Surveying',
+              user1Id: state.user1Id,
+              user1Nickname: state.user1Nickname,
+              user2Id: state.user2Id,
+              user2Nickname: state.user2Nickname,
+              matchedAt: new Date().toISOString(), // 현재 시간으로 임시 설정
+              agreed: false,
+            }
+          });
+        }}
+        matchId={state.matchId}
+        onEndMeeting={() => {
+          navigate('/ChatList');
+        }}
       />
 
       <div

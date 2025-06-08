@@ -117,7 +117,8 @@ const ReportModal = ({
           </button>
           <button
             onClick={handleSubmit}
-            className="bg-[#D1582C] text-white text-sm px-4 py-1.5 rounded"
+            className={`text-sm px-4 py-1.5 rounded ${selectedReasons.length > 0 ? 'bg-[#D1582C] text-white' : 'bg-[#F1C4B5] text-[#714E45]'}`}
+            disabled={selectedReasons.length === 0}
           >
             신고
           </button>

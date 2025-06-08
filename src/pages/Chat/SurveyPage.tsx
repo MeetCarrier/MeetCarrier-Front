@@ -148,7 +148,7 @@ function SurveyPage() {
 
     if (!realSessionId) {
       console.error("방 정보가 없습니다.");
-      navigate("/ChatList");
+      navigate(-1);
       return;
     }
 
@@ -569,7 +569,7 @@ function SurveyPage() {
 
             return (
               <SwiperSlide key={question.questionId}>
-                <p className="mt-18 text-md font-GanwonEduAll_Bold mb-1 text-[#333]">
+                <p className="mt-6 text-md font-GanwonEduAll_Bold mb-1 text-[#333]">
                   {question.content}
                 </p>
 
@@ -601,7 +601,7 @@ function SurveyPage() {
 
                 {/* 내 답변 */}
                 <div
-                  className={`bg-white rounded p-4 shadow-sm border border-gray-200 mb-3 min-h-[200px] ${
+                  className={`bg-white rounded p-4 shadow-sm border border-gray-200 mb-3 min-h-[150px] overflow-y-auto ${
                     !surveyState?.isSubmitted ? "cursor-pointer" : ""
                   }`}
                   onClick={() => {
@@ -639,13 +639,13 @@ function SurveyPage() {
 
                 {/* 상대방 답변 (수정 중이면 숨김) */}
                 {showOther && (
-                  <div className="bg-white rounded p-4 shadow-sm border border-gray-200 mb-3 min-h-[200px]">
+                  <div className="bg-white rounded p-4 shadow-sm border border-gray-200 mb-3 min-h-[150px] overflow-y-auto">
                     <div className="flex justify-between items-center mb-1">
                       <p className="text-sm font-semibold text-gray-800">
                         {otherNickname}
                       </p>
                     </div>
-                    <p className="text-xs text-gray-600">
+                    <p className="text-xs text-gray-600 whitespace-pre-line">
                       {otherAnswer?.content ?? "아직 작성하지 않았어요."}
                     </p>
                   </div>
@@ -686,7 +686,7 @@ function SurveyPage() {
               취소
             </button>
             <button
-              className="px-4 py-2 bg-[#C67B5A] text-white text-sm rounded"
+              className="px-4 py-2 bg-[#C67B5A] text-white text-sm rounded whitespace-pre-line"
               onClick={handleSubmit}
             >
               제출하기

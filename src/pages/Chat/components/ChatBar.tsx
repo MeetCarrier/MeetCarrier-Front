@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 
 import ReportModal from "../../../components/ReportModal";
 import InviteLetterModal from "../Invite/InviteLetterModal";
+import EndModal from "../../../components/EndModal";
 
 import plus_icon from "../../../assets/img/icons/ChatIcon/ic_plus.svg";
 import arrow_icon from "../../../assets/img/icons/ChatIcon/ic_arrow.svg";
@@ -17,19 +18,24 @@ import survey_icon from "../../../assets/img/icons/ChatIcon/ic_survey.svg";
 import imageCompression from "browser-image-compression";
 import axios from "axios";
 
-type ChatBarProps = {
-  onEmojiToggle?: () => void;
-  emojiOpen?: boolean;
-  onSendMessage?: (message: string, imageUrl?: string) => void;
-  senderName?: string;
-  recipientName?: string;
-  senderProfile?: string;
-};
+interface ChatBarProps {
+  emojiOpen: boolean;
+  onEmojiToggle: () => void;
+  onSendMessage: (message: string, imageUrl?: string) => void;
+  senderName: string;
+  recipientName: string;
+  senderProfile: string;
+  onInviteClick: () => void;
+  onSurveyClick: () => void;
+  matchId: number;
+  onEndMeeting: () => void;
+}
 
-function ChatBar({ onEmojiToggle, emojiOpen, onSendMessage, senderName = "나", recipientName = "상대방", senderProfile }: ChatBarProps) {
+function ChatBar({ onEmojiToggle, emojiOpen, onSendMessage, senderName = "나", recipientName = "상대방", senderProfile, onInviteClick, onSurveyClick, matchId, onEndMeeting }: ChatBarProps) {
   const [message, setMessage] = useState("");
   const [showReportModal, setShowReportModal] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [showEndModal, setShowEndModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const uploadImageAndSendMessage = async (file: File) => {
@@ -146,13 +152,17 @@ function ChatBar({ onEmojiToggle, emojiOpen, onSendMessage, senderName = "나", 
               label: "대면초대장",
               onClick: () => setShowInviteModal(true)
             },
-            { icon: end_icon, label: "만남종료" },
+            { 
+              icon: end_icon, 
+              label: "만남종료", 
+              onClick: () => setShowEndModal(true)
+            },
             {
               icon: report_icon,
               label: "신고",
               onClick: () => setShowReportModal(true),
             },
-            { icon: survey_icon, label: "비대면설문지" },
+            { icon: survey_icon, label: "비대면설문지", onClick: onSurveyClick },
           ].map(({ icon, label, onClick }, index) => (
             <div key={index} className="flex flex-col items-center">
               <div
@@ -238,9 +248,29 @@ function ChatBar({ onEmojiToggle, emojiOpen, onSendMessage, senderName = "나", 
         recipientName={recipientName}
         senderProfile={senderProfile}
         onSubmit={() => {
-          // TODO: 초대장 전송 로직 구현
-          alert("초대장이 전송되었습니다.");
+          onInviteClick();
           setShowInviteModal(false);
+        }}
+      />
+
+      <EndModal
+        isOpen={showEndModal}
+        onClose={() => setShowEndModal(false)}
+        onSubmit={async (reason) => {
+          console.log("만남 종료 사유: ", reason);
+          try {
+            await axios.post(
+              `https://www.mannamdeliveries.link/api/matches/${matchId}/end`,
+              { reason },
+              { withCredentials: true }
+            );
+            alert("만남 종료 사유가 전송되었습니다.");
+            onEndMeeting();
+          } catch (error) {
+            console.error("만남 종료 요청 실패:", error);
+            alert("만남 종료 요청에 실패했습니다.");
+          }
+          setShowEndModal(false);
         }}
       />
     </>

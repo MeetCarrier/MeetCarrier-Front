@@ -85,6 +85,7 @@ function ChatListPage() {
         user1Nickname: match.user1Nickname,
         user2Id: match.user2Id,
         user2Nickname: match.user2Nickname,
+        matchId: match.id
       },
     });
   };
