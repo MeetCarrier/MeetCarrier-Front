@@ -5,9 +5,6 @@ import testReducer from "./testSlice";
 import selfTestReducer from "./selfTestSlice";
 import surveyReducer from "./surveySlice";
 import matchingReducer from "./matchingSlice";
-import { UserState } from "./userSlice";
-import { SelfTestState } from "./selfTestSlice";
-import { SurveyState } from "./surveySlice";
 
 export const store = configureStore({
   reducer: {
