@@ -3,6 +3,7 @@ import navbg2 from "../../../assets/img/nav_bg2.webp";
 import { useState, useRef } from "react";
 
 import ReportModal from "../../../components/ReportModal";
+import InviteLetterModal from "../Invite/InviteLetterModal";
 
 import plus_icon from "../../../assets/img/icons/ChatIcon/ic_plus.svg";
 import arrow_icon from "../../../assets/img/icons/ChatIcon/ic_arrow.svg";
@@ -20,26 +21,32 @@ type ChatBarProps = {
   onEmojiToggle?: () => void;
   emojiOpen?: boolean;
   onSendMessage?: (message: string, imageUrl?: string) => void;
+  senderName?: string;
+  recipientName?: string;
+  senderProfile?: string;
 };
 
-function ChatBar({ onEmojiToggle, emojiOpen, onSendMessage }: ChatBarProps) {
+function ChatBar({ onEmojiToggle, emojiOpen, onSendMessage, senderName = "나", recipientName = "상대방", senderProfile }: ChatBarProps) {
   const [message, setMessage] = useState("");
   const [showReportModal, setShowReportModal] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const uploadImageAndSendMessage = async (file: File) => {
     const formData = new FormData();
     formData.append("multipartFile", file);
 
-    for (const [key, value] of formData.entries()) {
-      console.log(`[FormData] ${key}:`, value);
-    }
-
     try {
       console.log("이미지 서버 업로드 시작");
       const response = await axios.post(
         "https://www.mannamdeliveries.link/api/file/chat",
-        formData
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+          withCredentials: true
+        }
       );
       console.log("이미지 서버 업로드 성공:", response.data);
       const imageUrl = response.data;
@@ -81,7 +88,6 @@ function ChatBar({ onEmojiToggle, emojiOpen, onSendMessage }: ChatBarProps) {
     // 파일 타입 검사: 이미지 파일인지 확인
     if (!file.type.startsWith("image/")) {
       alert("이미지 파일만 선택할 수 있습니다.");
-      // 파일 입력 초기화
       if (e.target) {
         e.target.value = "";
       }
@@ -90,26 +96,32 @@ function ChatBar({ onEmojiToggle, emojiOpen, onSendMessage }: ChatBarProps) {
 
     try {
       const options = {
-        maxSizeMB: 0.5,
-        maxWidthOrHeight: 800,
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1920,
         useWebWorker: true,
-        initialQuality: 0.7,
-        alwaysKeepResolution: false,
+        initialQuality: 0.8,
+        alwaysKeepResolution: true,
+        fileType: file.type
       };
 
       console.log("이미지 압축 시작");
       const compressedFile = await imageCompression(file, options);
       console.log("압축된 파일 타입:", compressedFile.type);
 
-      uploadImageAndSendMessage(compressedFile);
+      // 압축된 파일을 새로운 File 객체로 변환
+      const finalFile = new File([compressedFile], file.name, {
+        type: file.type,
+        lastModified: Date.now(),
+      });
+
+      uploadImageAndSendMessage(finalFile);
     } catch (error) {
       console.error("이미지 처리 중 오류 발생:", error);
       alert("이미지 처리에 실패했습니다.");
     } finally {
-      // 파일 입력 초기화 (이미지 파일이 아닐 경우에도 초기화하도록 위로 이동)
-      // if (e.target) {
-      //   e.target.value = '';
-      // }
+      if (e.target) {
+        e.target.value = "";
+      }
     }
   };
 
@@ -129,7 +141,11 @@ function ChatBar({ onEmojiToggle, emojiOpen, onSendMessage }: ChatBarProps) {
               label: "앨범",
               onClick: () => fileInputRef.current?.click(),
             },
-            { icon: invite_icon, label: "대면초대장" },
+            { 
+              icon: invite_icon, 
+              label: "대면초대장",
+              onClick: () => setShowInviteModal(true)
+            },
             { icon: end_icon, label: "만남종료" },
             {
               icon: report_icon,
@@ -212,6 +228,19 @@ function ChatBar({ onEmojiToggle, emojiOpen, onSendMessage }: ChatBarProps) {
               " / "
             )}\n내용: ${content}`
           );
+        }}
+      />
+
+      <InviteLetterModal
+        isOpen={showInviteModal}
+        onClose={() => setShowInviteModal(false)}
+        senderName={senderName}
+        recipientName={recipientName}
+        senderProfile={senderProfile}
+        onSubmit={() => {
+          // TODO: 초대장 전송 로직 구현
+          alert("초대장이 전송되었습니다.");
+          setShowInviteModal(false);
         }}
       />
     </>

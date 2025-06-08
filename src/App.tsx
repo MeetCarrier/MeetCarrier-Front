@@ -19,6 +19,7 @@ import Test from "./pages/Test/Test";
 import TestResult from "./pages/Test/TestResult";
 // import NotFoundPage from './pages/NotFoundPage';
 import AlarmPage from "./pages/AlarmPage";
+import InviteWritePage from "./pages/Chat/Invite/InviteWritePage";
 
 import MatchResultWatcher from "./components/MatchResultWatcher";
 
@@ -51,6 +52,7 @@ function App() {
             <Route path="Login" element={<Login />} />
             <Route path="register" element={<Register />} />
             <Route path="chat/:chatId" element={<ChatPage />} />
+            <Route path="invite-write" element={<InviteWritePage />} />
             <Route path="Calendar" element={<Calendar />} />
             <Route path="Diary" element={<Dairy />} />
             <Route path="ViewDiary" element={<ViewDiary />} />

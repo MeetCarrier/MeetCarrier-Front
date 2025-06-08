@@ -1,10 +1,10 @@
 import { FC } from 'react';
 
-import img1 from '../assets/img/survey/1.svg';
-import img2 from '../assets/img/survey/2.svg';
-import img3 from '../assets/img/survey/3.svg';
-import img4 from '../assets/img/survey/4.svg';
-import img5 from '../assets/img/survey/5.svg';
+import img1 from '../assets/img/icons/Survey/1.svg';
+import img2 from '../assets/img/icons/Survey/2.svg';
+import img3 from '../assets/img/icons/Survey/3.svg';
+import img4 from '../assets/img/icons/Survey/4.svg';
+import img5 from '../assets/img/icons/Survey/5.svg';
 
 const countImageMap: Record<number, string> = {
   1: img1,

@@ -1,6 +1,6 @@
 import React from "react";
-import activeFoot from "../../../assets/img/survey/footprint_red.svg";
-import inactiveFoot from "../../../assets/img/survey/footprint_gray.svg";
+import activeFoot from "../../../assets/img/icons/Survey/footprint_red.svg";
+import inactiveFoot from "../../../assets/img/icons/Survey/footprint_gray.svg";
 
 interface FootPrintCheckProps {
   currentStep: number; // 1부터 시작

@@ -125,7 +125,7 @@ function ChatPage() {
         roomId: state.roomId,
         type: imageUrl ? "IMAGE" : "TEXT",
         message: message,
-        userId: myId,
+        //userId: myId,
         imageUrl: imageUrl || null,
       };
 
@@ -231,6 +231,9 @@ function ChatPage() {
         emojiOpen={emojiOpen}
         onEmojiToggle={() => setEmojiOpen((prev) => !prev)}
         onSendMessage={sendMessage}
+        senderName={myId === state.user1Id ? state.user1Nickname : state.user2Nickname}
+        recipientName={myId === state.user1Id ? state.user2Nickname : state.user1Nickname}
+        senderProfile={user?.imgUrl || sampleProfile}
       />
 
       <div
