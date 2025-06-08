@@ -81,7 +81,9 @@ function ChatPage() {
         console.log("WebSocket 연결 성공");
         // 채팅방 구독
         stompClient.subscribe(`/topic/room/${state.roomId}`, (message) => {
+          console.log("[수신된 메시지]", message);
           const newMessage: ChatMessage = JSON.parse(message.body);
+          console.log("[파싱된 메시지]", newMessage);
 
           // 내 메시지는 이미 로컬에서 띄웠으므로 무시
           if (newMessage.sender === myId) {
@@ -100,6 +102,9 @@ function ChatPage() {
       },
       onWebSocketError: (event) => {
         console.error("WebSocket 에러 발생:", event);
+      },
+      debug: function (str) {
+        console.log("STOMP Debug:", str);
       },
     });
 
@@ -120,12 +125,14 @@ function ChatPage() {
   // 메시지 전송 함수
   const sendMessage = (message: string, imageUrl?: string) => {
     if (stompClientRef.current && stompClientRef.current.connected) {
+      console.log("[WebSocket 연결 상태]", stompClientRef.current.connected);
+      
       // 서버에 보낼 메시지 (규격 준수)
       const outgoingMessage = {
         roomId: state.roomId,
         type: imageUrl ? "IMAGE" : "TEXT",
         message: message,
-        //userId: myId,
+        userId: myId,
         imageUrl: imageUrl || null,
       };
 
@@ -144,22 +151,30 @@ function ChatPage() {
       };
 
       // 1. 화면에 즉시 표시
-      console.log("[보낸 메시지]", {
+      console.log("[보낼 메시지]", {
         headers: {
           destination: "/app/api/chat/send",
           contentType: "application/json",
         },
         body: outgoingMessage,
       });
-      setMessages((prev) => [...prev, localMessage]);
 
-      // 2. 서버에 전송
-      stompClientRef.current.publish({
-        destination: "/app/api/chat/send",
-        body: JSON.stringify(outgoingMessage),
-      });
+      try {
+        // 2. 서버에 전송
+        stompClientRef.current.publish({
+          destination: "/app/api/chat/send",
+          body: JSON.stringify(outgoingMessage),
+          headers: {
+            'content-type': 'application/json'
+          }
+        });
+        console.log("[메시지 전송 성공]");
+        setMessages((prev) => [...prev, localMessage]);
+      } catch (error) {
+        console.error("[메시지 전송 실패]", error);
+      }
     } else {
-      console.warn("WebSocket이 연결되어 있지 않습니다.");
+      console.warn("[WebSocket 연결 없음] 연결 상태:", stompClientRef.current?.connected);
     }
   };
 
