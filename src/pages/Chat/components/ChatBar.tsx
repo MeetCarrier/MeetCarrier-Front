@@ -28,10 +28,25 @@ interface ChatBarProps {
   onInviteClick: () => void;
   onSurveyClick: () => void;
   matchId: number;
+  receiverId: number;
+  roomId: number;
   onEndMeeting: () => void;
 }
 
-function ChatBar({ onEmojiToggle, emojiOpen, onSendMessage, senderName = "나", recipientName = "상대방", senderProfile, onInviteClick, onSurveyClick, matchId, onEndMeeting }: ChatBarProps) {
+function ChatBar({
+  onEmojiToggle,
+  emojiOpen,
+  onSendMessage,
+  senderName = "나",
+  recipientName = "상대방",
+  senderProfile,
+  onInviteClick,
+  onSurveyClick,
+  matchId,
+  receiverId,
+  roomId,
+  onEndMeeting,
+}: ChatBarProps) {
   const [message, setMessage] = useState("");
   const [showReportModal, setShowReportModal] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -49,9 +64,9 @@ function ChatBar({ onEmojiToggle, emojiOpen, onSendMessage, senderName = "나", 
         formData,
         {
           headers: {
-            'Content-Type': 'multipart/form-data',
+            "Content-Type": "multipart/form-data",
           },
-          withCredentials: true
+          withCredentials: true,
         }
       );
       console.log("이미지 서버 업로드 성공:", response.data);
@@ -107,7 +122,7 @@ function ChatBar({ onEmojiToggle, emojiOpen, onSendMessage, senderName = "나", 
         useWebWorker: true,
         initialQuality: 0.8,
         alwaysKeepResolution: true,
-        fileType: file.type
+        fileType: file.type,
       };
 
       console.log("이미지 압축 시작");
@@ -147,22 +162,26 @@ function ChatBar({ onEmojiToggle, emojiOpen, onSendMessage, senderName = "나", 
               label: "앨범",
               onClick: () => fileInputRef.current?.click(),
             },
-            { 
-              icon: invite_icon, 
+            {
+              icon: invite_icon,
               label: "대면초대장",
-              onClick: () => setShowInviteModal(true)
+              onClick: () => setShowInviteModal(true),
             },
-            { 
-              icon: end_icon, 
-              label: "만남종료", 
-              onClick: () => setShowEndModal(true)
+            {
+              icon: end_icon,
+              label: "만남종료",
+              onClick: () => setShowEndModal(true),
             },
             {
               icon: report_icon,
               label: "신고",
               onClick: () => setShowReportModal(true),
             },
-            { icon: survey_icon, label: "비대면설문지", onClick: onSurveyClick },
+            {
+              icon: survey_icon,
+              label: "비대면설문지",
+              onClick: onSurveyClick,
+            },
           ].map(({ icon, label, onClick }, index) => (
             <div key={index} className="flex flex-col items-center">
               <div
@@ -247,6 +266,9 @@ function ChatBar({ onEmojiToggle, emojiOpen, onSendMessage, senderName = "나", 
         senderName={senderName}
         recipientName={recipientName}
         senderProfile={senderProfile}
+        matchId={matchId}
+        receiverId={receiverId}
+        roomId={roomId}
         onSubmit={() => {
           onInviteClick();
           setShowInviteModal(false);

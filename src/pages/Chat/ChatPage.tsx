@@ -61,6 +61,17 @@ function ChatPage() {
       return;
     }
 
+    // location.state 내용 출력
+    console.log("[채팅방 진입] location.state:", {
+      roomId: state.roomId,
+      user1Id: state.user1Id,
+      user1Nickname: state.user1Nickname,
+      user2Id: state.user2Id,
+      user2Nickname: state.user2Nickname,
+      matchId: state.matchId,
+      pendingMessage: state.pendingMessage,
+    });
+
     // 채팅 기록 조회
     const fetchChatHistory = async () => {
       try {
@@ -138,7 +149,7 @@ function ChatPage() {
   const sendMessage = (message: string, imageUrl?: string) => {
     if (stompClientRef.current && stompClientRef.current.connected) {
       console.log("[WebSocket 연결 상태]", stompClientRef.current.connected);
-      
+
       // 서버에 보낼 메시지 (규격 준수)
       const outgoingMessage = {
         roomId: state.roomId,
@@ -177,8 +188,8 @@ function ChatPage() {
           destination: "/app/api/chat/send",
           body: JSON.stringify(outgoingMessage),
           headers: {
-            'content-type': 'application/json'
-          }
+            "content-type": "application/json",
+          },
         });
         console.log("[메시지 전송 성공]");
         setMessages((prev) => [...prev, localMessage]);
@@ -186,7 +197,10 @@ function ChatPage() {
         console.error("[메시지 전송 실패]", error);
       }
     } else {
-      console.warn("[WebSocket 연결 없음] 연결 상태:", stompClientRef.current?.connected);
+      console.warn(
+        "[WebSocket 연결 없음] 연결 상태:",
+        stompClientRef.current?.connected
+      );
     }
   };
 
@@ -258,19 +272,33 @@ function ChatPage() {
         emojiOpen={emojiOpen}
         onEmojiToggle={() => setEmojiOpen((prev) => !prev)}
         onSendMessage={sendMessage}
-        senderName={myId === state.user1Id ? state.user1Nickname : state.user2Nickname}
-        recipientName={myId === state.user1Id ? state.user2Nickname : state.user1Nickname}
+        senderName={
+          myId === state.user1Id ? state.user1Nickname : state.user2Nickname
+        }
+        recipientName={
+          myId === state.user1Id ? state.user2Nickname : state.user1Nickname
+        }
         senderProfile={user?.imgUrl || sampleProfile}
+        matchId={state.matchId}
+        receiverId={myId === state.user1Id ? state.user2Id : state.user1Id}
+        roomId={state.roomId}
         onInviteClick={() => {
-          navigate('/invite-write', {
+          navigate("/invite-write", {
             state: {
-              senderName: myId === state.user1Id ? state.user1Nickname : state.user2Nickname,
-              recipientName: myId === state.user1Id ? state.user2Nickname : state.user1Nickname,
+              senderName:
+                myId === state.user1Id
+                  ? state.user1Nickname
+                  : state.user2Nickname,
+              recipientName:
+                myId === state.user1Id
+                  ? state.user2Nickname
+                  : state.user1Nickname,
               senderProfile: user?.imgUrl || sampleProfile,
               matchId: state.matchId,
-              receiverId: myId === state.user1Id ? state.user2Id : state.user1Id,
-              roomId: state.roomId
-            }
+              receiverId:
+                myId === state.user1Id ? state.user2Id : state.user1Id,
+              roomId: state.roomId,
+            },
           });
         }}
         onSurveyClick={() => {
@@ -278,19 +306,18 @@ function ChatPage() {
             state: {
               id: state.matchId,
               sessionId: state.matchId,
-              status: 'Surveying',
+              status: "Surveying",
               user1Id: state.user1Id,
               user1Nickname: state.user1Nickname,
               user2Id: state.user2Id,
               user2Nickname: state.user2Nickname,
               matchedAt: new Date().toISOString(), // 현재 시간으로 임시 설정
               agreed: false,
-            }
+            },
           });
         }}
-        matchId={state.matchId}
         onEndMeeting={() => {
-          navigate('/ChatList');
+          navigate("/ChatList");
         }}
       />
 
