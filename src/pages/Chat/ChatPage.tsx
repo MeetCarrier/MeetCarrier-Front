@@ -10,6 +10,7 @@ import { RootState, AppDispatch } from "../../Utils/store";
 import { UserState } from "../../Utils/userSlice";
 import { fetchUser } from "../../Utils/userSlice";
 import ChatNotificationBar from "./components/ChatNotificationBar";
+import MeetingInfoModal from "../MeetingSchedule/MeetingInfoModal";
 
 import back_arrow from "../../assets/img/icons/HobbyIcon/back_arrow.svg";
 import search_icon from "../../assets/img/icons/ChatIcon/search.svg";
@@ -56,6 +57,7 @@ function ChatPage() {
   );
 
   const [currentTime, setCurrentTime] = useState("");
+  const [showMeetingInfoModal, setShowMeetingInfoModal] = useState(false);
 
   useEffect(() => {
     const updateCurrentTime = () => {
@@ -351,21 +353,16 @@ function ChatPage() {
           meetingSchedule.isScheduled
             ? `${meetingSchedule.date?.split("-")[1]}월 ${
                 meetingSchedule.date?.split("-")[2]
-              }일`
+              }일 ${new Date(meetingSchedule.date || "").toLocaleDateString(
+                "ko-KR",
+                { weekday: "short" }
+              )}요일`
             : undefined
         }
+        location={meetingSchedule.location || undefined}
+        memo={meetingSchedule.memo || undefined}
         isScheduled={meetingSchedule.isScheduled}
-        onClick={() => {
-          // 일정 등록 페이지로 이동
-          navigate("/meeting-schedule", {
-            state: {
-              matchId: state.matchId,
-              receiverId:
-                myId === state.user1Id ? state.user2Id : state.user1Id,
-              roomId: state.roomId,
-            },
-          });
-        }}
+        onModifyClick={() => setShowMeetingInfoModal(true)}
       />
 
       <div
@@ -485,6 +482,13 @@ function ChatPage() {
 
         <div ref={messagesEndRef} />
       </div>
+
+      {/* 만남 일정 정보 모달 */}
+      <MeetingInfoModal
+        isOpen={showMeetingInfoModal}
+        onClose={() => setShowMeetingInfoModal(false)}
+        onConfirm={() => setShowMeetingInfoModal(false)}
+      />
     </>
   );
 }

@@ -8,42 +8,73 @@ import NavBar from "../../components/NavBar";
 import back_arrow from "../../assets/img/icons/HobbyIcon/back_arrow.svg";
 
 interface LocationState {
+  senderName: string;
+  recipientName: string;
+  senderProfile: string;
   matchId: number;
   receiverId: number;
   roomId: number;
 }
 
 function MeetingSchedulePage() {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  const dispatch = useDispatch<AppDispatch>();
-  const { matchId, receiverId, roomId } = location.state as LocationState;
+  const {
+    senderName,
+    recipientName,
+    senderProfile,
+    matchId,
+    receiverId,
+    roomId,
+  } = location.state as LocationState;
 
   const [date, setDate] = useState("");
-  const [memo, setMemo] = useState("");
   const [locationText, setLocationText] = useState("");
+  const [memo, setMemo] = useState("");
+
+  // 오늘 날짜와 한 달 후 날짜 계산
+  const today = new Date();
+  const oneMonthLater = new Date();
+  oneMonthLater.setMonth(today.getMonth() + 1);
+
+  // 날짜 형식을 YYYY-MM-DD로 변환
+  const formatDate = (date: Date) => {
+    return date.toISOString().split("T")[0];
+  };
+
+  // 날짜가 유효한지 확인
+  const isValidDate = (selectedDate: string) => {
+    const dateObj = new Date(selectedDate);
+    return dateObj >= today && dateObj <= oneMonthLater;
+  };
+
+  // 저장 버튼 활성화 여부 확인
+  const isFormValid = date && locationText && isValidDate(date);
 
   const handleSubmit = () => {
-    if (!date || !locationText) {
-      alert("날짜와 장소를 모두 입력해주세요.");
-      return;
-    }
+    if (!isFormValid) return;
 
-    // Redux에 일정 정보 저장
     dispatch(
       setMeetingSchedule({
         matchId,
+        receiverId,
         date,
-        memo,
         location: locationText,
+        memo,
         isScheduled: true,
       })
     );
 
-    alert("만남 일정이 등록되었습니다!");
-    // 이전 페이지 (채팅방)으로 돌아가기
     navigate(`/chat/${roomId}`, {
-      state: { matchId, receiverId, roomId },
+      state: {
+        senderName,
+        recipientName,
+        senderProfile,
+        matchId,
+        receiverId,
+        roomId,
+      },
     });
   };
 
@@ -62,10 +93,8 @@ function MeetingSchedulePage() {
         </p>
       </div>
 
-      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-132px)] mt-[50px] px-4">
-        <div className="w-full p-6 bg-white rounded-lg shadow-md">
-          <h2 className="text-xl font-bold mb-4 text-center">만남 일정 등록</h2>
-
+      <div className="flex flex-col items-center justify-center w-full min-h-[calc(100vh-132px)] mt-[50px] px-4">
+        <div className="w-full max-w-[800px] p-6 bg-white rounded-lg shadow-md">
           <div className="mb-4">
             <label
               htmlFor="date"
@@ -77,9 +106,14 @@ function MeetingSchedulePage() {
               type="date"
               id="date"
               value={date}
+              min={formatDate(today)}
+              max={formatDate(oneMonthLater)}
               onChange={(e) => setDate(e.target.value)}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             />
+            <p className="text-sm text-gray-500 mt-1">
+              * 한 달 이내의 날짜만 선택 가능합니다.
+            </p>
           </div>
 
           <div className="mb-4">
@@ -118,7 +152,12 @@ function MeetingSchedulePage() {
 
           <button
             onClick={handleSubmit}
-            className="w-full bg-[#D45A4B] hover:bg-[#bf4a3c] text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            disabled={!isFormValid}
+            className={`w-full font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ${
+              isFormValid
+                ? "bg-[#D45A4B] hover:bg-[#bf4a3c] text-white"
+                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+            }`}
           >
             저장
           </button>
