@@ -20,6 +20,7 @@ import TestResult from "./pages/Test/TestResult";
 // import NotFoundPage from './pages/NotFoundPage';
 import AlarmPage from "./pages/AlarmPage";
 import InviteWritePage from "./pages/Chat/Invite/InviteWritePage";
+import MeetingSchedulePage from "./pages/MeetingSchedule/MeetingSchedulePage";
 
 import MatchResultWatcher from "./components/MatchResultWatcher";
 
@@ -62,6 +63,7 @@ function App() {
             <Route path="Test" element={<Test />} />
             <Route path="TestResult" element={<TestResult />} />
             <Route path="Alarm" element={<AlarmPage />} />
+            <Route path="meeting-schedule" element={<MeetingSchedulePage />} />
             {/* <Route path="*" element={<NotFoundPage />} /> */}
           </Route>
         </Routes>

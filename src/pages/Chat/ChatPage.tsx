@@ -9,6 +9,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "../../Utils/store";
 import { UserState } from "../../Utils/userSlice";
 import { fetchUser } from "../../Utils/userSlice";
+import ChatNotificationBar from "./components/ChatNotificationBar";
 
 import back_arrow from "../../assets/img/icons/HobbyIcon/back_arrow.svg";
 import search_icon from "../../assets/img/icons/ChatIcon/search.svg";
@@ -48,6 +49,28 @@ function ChatPage() {
     (state: RootState) => state.user
   ) as UserState | null;
   const myId = user?.userId;
+
+  // Redux에서 만남 일정 정보 가져오기
+  const meetingSchedule = useSelector(
+    (state: RootState) => state.meetingSchedule
+  );
+
+  const [currentTime, setCurrentTime] = useState("");
+
+  useEffect(() => {
+    const updateCurrentTime = () => {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, "0");
+      const minutes = String(now.getMinutes()).padStart(2, "0");
+      const seconds = String(now.getSeconds()).padStart(2, "0");
+      setCurrentTime(`${hours}시 ${minutes}분 ${seconds}초`);
+    };
+
+    updateCurrentTime(); // 컴포넌트 마운트 시 한 번 실행
+    const intervalId = setInterval(updateCurrentTime, 1000); // 1초마다 업데이트
+
+    return () => clearInterval(intervalId); // 컴포넌트 언마운트 시 인터벌 정리
+  }, []);
 
   const emojiHeight = emojiOpen ? 200 : 0;
 
@@ -266,7 +289,6 @@ function ChatPage() {
           className="absolute top-1/2 -translate-y-1/2 right-6 w-[20px] h-[20px] cursor-pointer"
         />
       </div>
-
       {/* 하단 입력창 */}
       <ChatBar
         emojiOpen={emojiOpen}
@@ -318,6 +340,31 @@ function ChatPage() {
         }}
         onEndMeeting={() => {
           navigate("/ChatList");
+        }}
+      />
+
+      {/* 알림 바 */}
+      <ChatNotificationBar
+        type={meetingSchedule.isScheduled ? "schedule" : "time"}
+        time={currentTime}
+        scheduleDate={
+          meetingSchedule.isScheduled
+            ? `${meetingSchedule.date?.split("-")[1]}월 ${
+                meetingSchedule.date?.split("-")[2]
+              }일`
+            : undefined
+        }
+        isScheduled={meetingSchedule.isScheduled}
+        onClick={() => {
+          // 일정 등록 페이지로 이동
+          navigate("/meeting-schedule", {
+            state: {
+              matchId: state.matchId,
+              receiverId:
+                myId === state.user1Id ? state.user2Id : state.user1Id,
+              roomId: state.roomId,
+            },
+          });
         }}
       />
 

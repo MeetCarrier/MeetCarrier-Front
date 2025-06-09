@@ -26,6 +26,9 @@ function InviteWritePage() {
     receiverId,
     roomId,
   } = location.state as LocationState;
+
+  console.log("[InviteWritePage] Received location.state:", location.state);
+
   const [message, setMessage] = useState("");
 
   const handleSubmit = async () => {
