@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useAppSelector } from '../Utils/hooks';
+import { initializeFirebase } from '../Utils/fcm';
 import {
   setStatus,
   setSocketConnected,
   setMatchingTimeoutId,
   clearMatchingTimeout,
+  setSuccessData,
+  setFailData,
 } from '../Utils/matchingSlice';
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
@@ -19,9 +22,6 @@ import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../Utils/store';
 import { fetchUser } from '../Utils/userSlice';
 import { fetchSelfTestList } from '../Utils/selfTestSlice';
-import { useSelector } from 'react-redux';
-import { RootState } from '../Utils/store';
-import { UserState } from '../Utils/userSlice';
 import { startMatchingClient } from '../Utils/Matching';
 import {
   setMatchingClient,
@@ -43,18 +43,24 @@ function Main() {
     (state) => state.matching.isSocketConnected
   );
   const [locationAllowed, setLocationAllowed] = useState(false);
-  const user = useSelector(
-    (state: RootState) => state.user
-  ) as UserState | null;
+
+  const successData = useAppSelector((state) => state.matching.successData);
+  const failData = useAppSelector((state) => state.matching.failData);
+  const selfTestList = useAppSelector((state) => state.selfTest.list);
+  const isTest = selfTestList.length > 0;
 
   // 페이지 진입 시 유저 정보 요청 실패 시 로그인 요청
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // 유저 패치
         await dispatch(fetchUser()).unwrap();
         console.log('로그인 성공');
-
+        // 자기 평가 패치
         await dispatch(fetchSelfTestList()).unwrap();
+
+        // FCM 초기화
+        await initializeFirebase();
 
         if (!navigator.geolocation) {
           console.error('위치 정보 지원 안됨');
@@ -112,7 +118,6 @@ function Main() {
     checkUnreadAlarms();
   }, []);
 
-  // 자가 평가 점수가 없다면?(매칭 정보 설정을 안한 상태라면) -> 매칭 시작 전에 한번 물어보기
   // 매칭 시작
   const handleStartMatching = () => {
     dispatch(setStatus('matching'));
@@ -129,6 +134,7 @@ function Main() {
       onSuccess: (data) => {
         console.log('매칭 성공', data);
         dispatch(clearMatchingTimeout());
+        dispatch(setSuccessData(data));
         dispatch(setStatus('success'));
         // setTimeout(() => {
         //   dispatch(setStatus('success'));
@@ -137,6 +143,7 @@ function Main() {
       onFail: (data) => {
         console.log('매칭 실패', data);
         dispatch(clearMatchingTimeout());
+        dispatch(setFailData(data));
         dispatch(setStatus('fail'));
       },
       onConnected: () => {
@@ -146,17 +153,18 @@ function Main() {
     setMatchingClient(client);
   };
 
-  // 수정해야 함.
   const handleButton1ClickByStatus: Record<MatchingStatus, () => void> = {
     default: () => {
+      // 자가 평가 점수가 없다면?
+      // 위치 설정 X
       if (!locationAllowed) {
         alert('위치 권한이 허용되어야 매칭을 시작할 수 있습니다.');
         return;
       }
 
-      if (!user?.personalities || user.personalities.trim() === '') {
+      if (!isTest) {
         alert('자가 평가 테스트를 먼저 완료해주세요.');
-        return;
+        navigate('/SelfEvaluation');
       }
       handleStartMatching();
     },
@@ -176,10 +184,10 @@ function Main() {
       dispatch(setSocketConnected(false));
     },
     success: () => {
-      dispatch(setStatus('fail'));
+      navigate(`/survey/${successData?.surveySessionId}`);
     },
     fail: () => {
-      handleStartMatching();
+      console.log(failData?.message);
     },
   };
 

@@ -1,9 +1,6 @@
 import type { FC } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
-
-import { useSelector } from 'react-redux';
-import { RootState } from '../Utils/store';
 import { UserState } from '../Utils/userSlice';
 import { useAppSelector } from '../Utils/hooks';
 import { formatDate } from '../Utils/FormatDate';
@@ -43,9 +40,7 @@ const MainModal: FC<MainModalProps> = ({ fromMatching = false }) => {
       ? formatDate(new Date(selfTestList[0].createdAt))
       : null;
 
-  const user = useSelector(
-    (state: RootState) => state.user
-  ) as UserState | null;
+  const user = useAppSelector((state) => state.user) as UserState | null;
 
   const interestsText =
     user?.interests && user.interests.trim() !== '' ? user.interests : '무관';

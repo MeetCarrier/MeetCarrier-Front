@@ -39,6 +39,64 @@ function AlarmPage() {
     navigate('/main');
   };
 
+  // 알림 타입별 핸들러 틀
+  const handleReview = (notification: Notification) => {
+    // TODO: Review 알림 처리
+  };
+
+  const handleReport = (notification: Notification) => {
+    // TODO: Report 알림 처리
+  };
+
+  const handleJournal = (notification: Notification) => {
+    navigate('/Calendar');
+  };
+
+  const handleMeeting = (notification: Notification) => {
+    // TODO: Meeting 알림 처리
+  };
+
+  const handleRequest = (notification: Notification) => {
+    // TODO: Request 알림 처리
+  };
+
+  const handleMatch = (notification: Notification) => {
+    // TODO: Match 알림 처리
+  };
+
+  const handleInvitationRequest = (notification: Notification) => {
+    // TODO: InvitationRequest 알림 처리
+  };
+
+  const handleInvitationAccepted = (notification: Notification) => {
+    // TODO: InvitationAccepted 알림 처리
+  };
+
+  const handleInvitationRejected = (notification: Notification) => {
+    // TODO: InvitationRejected 알림 처리
+  };
+
+  const handleNotificationClick = (notification: Notification) => {
+    const handlers: Record<string, (n: Notification) => void> = {
+      Review: handleReview,
+      Report: handleReport,
+      Journal: handleJournal,
+      Meeting: handleMeeting,
+      Request: handleRequest,
+      Match: handleMatch,
+      InvitationRequest: handleInvitationRequest,
+      InvitationAccepted: handleInvitationAccepted,
+      InvitationRejected: handleInvitationRejected,
+    };
+
+    const handler = handlers[notification.type];
+    if (handler) {
+      handler(notification);
+    } else {
+      console.warn('정의되지 않은 알림 타입:', notification.type);
+    }
+  };
+
   return (
     <>
       <NavBar />
@@ -54,7 +112,7 @@ function AlarmPage() {
       </div>
 
       <div className="flex flex-col w-full h-[calc(100%-200px)] px-4 overflow-y-auto">
-        {alarms.map((alarm) => {
+        {[...alarms].reverse().map((alarm) => {
           const isPersonIcon = [
             'InvitationRequest',
             'InvitationAccepted',
@@ -68,7 +126,10 @@ function AlarmPage() {
             <div key={alarm.id} className="py-3 flex gap-3">
               <img src={icon} alt="icon" className="w-5 h-5 mt-1 shrink-0" />
               <div className="flex flex-col">
-                <p className="font-GanwonEduAll_Bold text-[#333333]">
+                <p
+                  className="font-GanwonEduAll_Bold text-[#333333] cursor-pointer"
+                  onClick={() => handleNotificationClick(alarm)}
+                >
                   {alarm.message}
                 </p>
                 <p className="text-xs font-GanwonEduAll_Light text-[#333333]/80">

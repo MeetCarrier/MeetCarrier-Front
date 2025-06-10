@@ -1,15 +1,15 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
-import { RootState } from "../Utils/store";
-import { UserState } from "../Utils/userSlice";
-import axios from "axios";
-import NavBar from "../components/NavBar";
-import check_icon from "../assets/img/icons/HobbyIcon/check.svg";
-import back_arrow from "../assets/img/icons/HobbyIcon/back_arrow.svg";
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { RootState } from '../Utils/store';
+import { UserState } from '../Utils/userSlice';
+import axios from 'axios';
+import NavBar from '../components/NavBar';
+import check_icon from '../assets/img/icons/HobbyIcon/check.svg';
+import back_arrow from '../assets/img/icons/HobbyIcon/back_arrow.svg';
 
 function SurveyQ() {
-  const [inputValue, setInputValue] = useState("");
+  const [inputValue, setInputValue] = useState('');
   const [questions, setQuestions] = useState<string[]>([]);
   // 질문 토글 부분
   const [selectedQuestion, setSelectedQuestions] = useState<string | null>(
@@ -23,9 +23,9 @@ function SurveyQ() {
   useEffect(() => {
     if (user?.questionList) {
       const parseQuestions = user.questionList
-        .split(",")
+        .split(',')
         .map((tag) => tag.trim())
-        .filter((tag) => tag != "");
+        .filter((tag) => tag != '');
       setQuestions(parseQuestions);
       setSelectedQuestions(user?.question);
     }
@@ -36,7 +36,7 @@ function SurveyQ() {
     if (trimmed && !questions.includes(trimmed)) {
       setQuestions((prev) => [...prev, trimmed]);
       setSelectedQuestions(trimmed); // 추가된 질문을 바로 선택
-      setInputValue("");
+      setInputValue('');
     }
   };
 
@@ -53,30 +53,30 @@ function SurveyQ() {
 
   // 나중에 수정
   const handleSubmit = async () => {
-    const questionStr = questions.join(",");
+    const questionStr = questions.join(',');
     const selectedQuestionStr = selectedQuestion;
     try {
       await axios.patch(
-        "https://www.mannamdeliveries.link/api/user",
+        'https://www.mannamdeliveries.link/api/user',
         { question: selectedQuestionStr, questionList: questionStr },
         {
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
           withCredentials: true,
         }
       );
-      alert("저장 완료!");
+      alert('저장 완료!');
     } catch (error) {
-      console.error("저장 실패:", error);
-      alert("저장에 실패했어요.");
+      console.error('저장 실패:', error);
+      alert('저장에 실패했어요.');
     }
   };
 
   const navigate = useNavigate();
 
   const handleBackClick = () => {
-    navigate("/main?modal=true");
+    navigate(-1);
   };
 
   return (
@@ -113,8 +113,8 @@ function SurveyQ() {
                 className={`px-4 py-3 rounded text-sm cursor-pointer flex justify-between items-center
             ${
               selectedQuestion === q
-                ? "border-2 border-red-400 text-red-500"
-                : "border border-gray-200"
+                ? 'border-2 border-red-400 text-red-500'
+                : 'border border-gray-200'
             }`}
               >
                 <span className="line-clamp-2">{q}</span>
@@ -143,7 +143,7 @@ function SurveyQ() {
           onChange={(e) => {
             if (e.target.value.length <= 40) setInputValue(e.target.value);
           }}
-          onKeyDown={(e) => e.key === "Enter" && addQuestion()}
+          onKeyDown={(e) => e.key === 'Enter' && addQuestion()}
           placeholder="예) 제일 잘맞는다고 생각하는 MBTI와 이유는?"
           className=" bg-white rounded-md text-xs mx-3 mt-2 px-3 py-2 border border-white placeholder:text-gray-400"
         />
