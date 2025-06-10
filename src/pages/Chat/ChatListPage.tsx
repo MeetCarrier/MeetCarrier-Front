@@ -85,7 +85,7 @@ function ChatListPage() {
         user1Nickname: match.user1Nickname,
         user2Id: match.user2Id,
         user2Nickname: match.user2Nickname,
-        matchId: match.id
+        matchId: match.id,
       },
     });
   };
@@ -93,15 +93,7 @@ function ChatListPage() {
   const handleSurveyClick = (match: MatchData) => {
     navigate(`/survey/${match.sessionId}`, {
       state: {
-        id: match.id,
         sessionId: match.sessionId,
-        status: match.status,
-        user1Id: match.user1Id,
-        user1Nickname: match.user1Nickname,
-        user2Id: match.user2Id,
-        user2Nickname: match.user2Nickname,
-        matchedAt: match.matchedAt,
-        agreed: match.agreed,
       },
     });
   };

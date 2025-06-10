@@ -41,16 +41,19 @@ interface Answer {
 }
 
 interface LocationState {
-  roomId: number;
-  status: string;
+  sessionId: string | number;
+}
+
+interface MatchData {
   user1Id: number;
   user1Nickname: string;
   user2Id: number;
   user2Nickname: string;
-  matchedAt?: string;
   agreed: boolean;
+  matchedAt?: string;
+  status: string;
   id: number;
-  sessionId?: string | number;
+  sessionId: number;
 }
 
 function SurveyPage() {
@@ -70,6 +73,7 @@ function SurveyPage() {
   const [showCompleteModal, setShowCompleteModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showSubmittedModal, setShowSubmittedModal] = useState(false);
+  const [matchData, setMatchData] = useState<MatchData | null>(null);
   const [chatRoomId, setChatRoomId] = useState<number | null>(() => {
     const sid = state?.sessionId || sessionId;
     const saved = localStorage.getItem(`chatRoomId_${sid}`);
@@ -414,8 +418,7 @@ function SurveyPage() {
     console.log("채팅방 참가 시도:", {
       realSessionId,
       myId,
-      stateId: state?.id,
-      state,
+      matchData,
     });
 
     if (!realSessionId || !myId) {
@@ -424,7 +427,7 @@ function SurveyPage() {
       return;
     }
 
-    if (!state?.id) {
+    if (!matchData?.id) {
       console.error("매치 ID가 없습니다.");
       alert("매치 정보를 찾을 수 없습니다.");
       return;
@@ -433,7 +436,7 @@ function SurveyPage() {
     try {
       console.log("채팅방 입장 API 요청 시작");
       const response = await axios.post(
-        `https://www.mannamdeliveries.link/api/room/${state.id}/${myId}/enter`,
+        `https://www.mannamdeliveries.link/api/room/${matchData.id}/${myId}/enter`,
         null,
         { withCredentials: true }
       );
@@ -449,7 +452,7 @@ function SurveyPage() {
       );
       navigate(`/chat/${newRoomId}`, {
         state: {
-          ...state,
+          ...matchData,
           roomId: newRoomId,
         },
       });
@@ -459,15 +462,42 @@ function SurveyPage() {
     }
   };
 
+  // 매치 데이터 가져오기
+  useEffect(() => {
+    const fetchMatchData = async () => {
+      const realSessionId = String(state?.sessionId || sessionId || "");
+      if (!realSessionId) return;
+
+      try {
+        const response = await axios.get(
+          "https://www.mannamdeliveries.link/api/matches",
+          { withCredentials: true }
+        );
+        const match = response.data.find(
+          (m: MatchData) => m.sessionId === Number(realSessionId)
+        );
+        if (!match) {
+          throw new Error("매치를 찾을 수 없습니다.");
+        }
+        setMatchData(match);
+      } catch (error) {
+        console.error("매치 데이터 조회 실패:", error);
+        navigate("/ChatList");
+      }
+    };
+
+    fetchMatchData();
+  }, [state?.sessionId, sessionId, navigate]);
+
   // userId로 내 정보/상대 정보 구분
   let myNickname = "나";
   let otherNickname = "상대방";
-  if (user?.userId === state?.user1Id) {
-    myNickname = state?.user1Nickname || myNickname;
-    otherNickname = state?.user2Nickname || otherNickname;
-  } else if (user?.userId === state?.user2Id) {
-    myNickname = state?.user2Nickname || myNickname;
-    otherNickname = state?.user1Nickname || otherNickname;
+  if (user?.userId === matchData?.user1Id) {
+    myNickname = matchData?.user1Nickname || myNickname;
+    otherNickname = matchData?.user2Nickname || otherNickname;
+  } else if (user?.userId === matchData?.user2Id) {
+    myNickname = matchData?.user2Nickname || myNickname;
+    otherNickname = matchData?.user1Nickname || otherNickname;
   }
 
   return (
@@ -509,9 +539,9 @@ function SurveyPage() {
                     sessionId: realSessionId,
                     leaverId: myId,
                     leaverNickname:
-                      myId === Number(state?.user1Id)
-                        ? state?.user1Nickname
-                        : state?.user2Nickname,
+                      myId === Number(matchData?.user1Id)
+                        ? matchData?.user1Nickname
+                        : matchData?.user2Nickname,
                   }),
                 });
               }
@@ -593,8 +623,10 @@ function SurveyPage() {
                       )}
                   </div>
                   <p className="text-xs text-gray-400">
-                    {state && state.matchedAt
-                      ? new Date(state.matchedAt).toLocaleDateString("ko-KR")
+                    {matchData?.matchedAt
+                      ? new Date(matchData.matchedAt).toLocaleDateString(
+                          "ko-KR"
+                        )
                       : ""}
                   </p>
                 </div>
@@ -748,8 +780,8 @@ function SurveyPage() {
       </Modal>
 
       {/* 채팅방 참가 버튼 */}
-      {state?.status === "Chatting" &&
-        !state.agreed &&
+      {matchData?.status === "Chatting" &&
+        !matchData.agreed &&
         !showCompleteModal &&
         surveyState?.isSubmitted &&
         surveyState?.isOtherSubmitted &&
