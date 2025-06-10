@@ -10,7 +10,7 @@ import { RootState, AppDispatch } from "../../Utils/store";
 import { UserState } from "../../Utils/userSlice";
 import { fetchUser } from "../../Utils/userSlice";
 import ChatNotificationBar from "./components/ChatNotificationBar";
-import MeetingInfoModal from "../MeetingSchedule/MeetingInfoModal";
+import MeetingInfoModal from "../../components/MeetingInfoModal";
 
 import back_arrow from "../../assets/img/icons/HobbyIcon/back_arrow.svg";
 import search_icon from "../../assets/img/icons/ChatIcon/search.svg";
@@ -439,7 +439,7 @@ function ChatPage() {
                   {/* 닉네임은 첫 메시지일 때만 */}
                   {!isMine && !isPrevSameSender && (
                     <span className="text-sm text-gray-700 mb-1">
-                      {nickname}
+                      {nickname}/
                     </span>
                   )}
 
