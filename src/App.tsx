@@ -17,6 +17,7 @@ import Profile from "./pages/Profile/ProfilePage";
 import SelfEvaluation from "./pages/SelfEvaluation";
 import Test from "./pages/Test/Test";
 import TestResult from "./pages/Test/TestResult";
+import ReviewPage from "./pages/Review/Review";
 // import NotFoundPage from './pages/NotFoundPage';
 import AlarmPage from "./pages/AlarmPage";
 import InviteWritePage from "./pages/Chat/Invite/InviteWritePage";
@@ -64,6 +65,7 @@ function App() {
             <Route path="TestResult" element={<TestResult />} />
             <Route path="Alarm" element={<AlarmPage />} />
             <Route path="meeting-schedule" element={<MeetingSchedulePage />} />
+            <Route path="review" element={<ReviewPage />} />
             {/* <Route path="*" element={<NotFoundPage />} /> */}
           </Route>
         </Routes>
