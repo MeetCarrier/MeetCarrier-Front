@@ -10,7 +10,6 @@ import check_icon from '../assets/img/icons/MainPageIcon/check_icon.svg';
 import person_icon from '../assets/img/icons/Test/interpersonalskill_icon.svg';
 import delete_icon from '../assets/img/icons/Dairy/delete_icon.svg';
 import toast from 'react-hot-toast';
-import { number } from 'motion/react';
 
 interface Notification {
   id: number;
