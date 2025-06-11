@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useAppSelector } from '../Utils/hooks';
 import { useNavigate } from 'react-router-dom';
 import modalbtn_icon from '../assets/img/icons/ModalBtn/modalbtn_icon.svg';
+import toast from 'react-hot-toast';
 
 const StampModal: FC = () => {
   const navigate = useNavigate();
@@ -37,11 +38,11 @@ const StampModal: FC = () => {
         );
       }
 
-      alert('저장 완료!');
+      toast.success('저장 완료!');
       navigate('/Calendar');
     } catch (error) {
       console.error('저장 실패', error);
-      alert('저장에 실패했어요.');
+      toast.error('저장에 실패했어요.');
     }
   };
 

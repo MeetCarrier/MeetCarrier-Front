@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useAppSelector } from '../Utils/hooks';
 import { useNavigate } from 'react-router-dom';
 import modalbtn_icon from '../assets/img/icons/ModalBtn/modalbtn_icon.svg';
+import toast from 'react-hot-toast';
 
 const TestModal: FC = () => {
   const navigate = useNavigate();
@@ -26,11 +27,11 @@ const TestModal: FC = () => {
         },
         { withCredentials: true }
       );
-      alert('제출 완료!');
+      toast.success('제출 완료!');
       navigate('/TestResult');
     } catch (error) {
       console.error('제출 실패', error);
-      alert('제출에 실패했어요.');
+      toast.error('제출에 실패했어요.');
     }
   };
 

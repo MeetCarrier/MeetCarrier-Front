@@ -13,7 +13,7 @@ function SelfEvaluation() {
 
   // 설정에서 들어갈 때는 바꿔야 함.
   const handleBackClick = () => {
-    navigate('/main?modal=true');
+    navigate(-1);
   };
 
   const handlebtn1Click = () => {

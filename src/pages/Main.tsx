@@ -1,28 +1,34 @@
-import { useState, useEffect } from "react";
-import { useAppSelector } from "../Utils/hooks";
+import { useState, useEffect } from 'react';
+import { useAppSelector } from '../Utils/hooks';
+import toast from 'react-hot-toast';
+import { initializeFirebase } from '../Utils/fcm';
 import {
   setStatus,
   setSocketConnected,
   setMatchingTimeoutId,
   clearMatchingTimeout,
-} from "../Utils/matchingSlice";
-import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
-import axios from "axios";
-import btn1 from "../assets/img/button/btn1.webp";
-import btn2 from "../assets/img/button/btn2.webp";
-import bell_default from "../assets/img/icons/NavIcon/bell_default.svg";
-import bell_alarm from "../assets/img/icons/NavIcon/bell_alarm.svg";
-import NavBar from "../components/NavBar";
-import Modal from "../components/Modal";
-import MainModal from "../Modal/MainModal";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "../Utils/store";
-import { fetchUser } from "../Utils/userSlice";
-import { fetchSelfTestList } from "../Utils/selfTestSlice";
+  setSuccessData,
+  setFailData,
+} 
+from '../Utils/matchingSlice';
+import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
+import axios from 'axios';
+import btn1 from '../assets/img/button/btn1.webp';
+import btn2 from '../assets/img/button/btn2.webp';
+import bell_default from '../assets/img/icons/NavIcon/bell_default.svg';
+import bell_alarm from '../assets/img/icons/NavIcon/bell_alarm.svg';
+import NavBar from '../components/NavBar';
+import Modal from '../components/Modal';
+import MainModal from '../Modal/MainModal';
+import IsTestModal from '../Modal/IsTestModal';
+import { useDispatch } from 'react-redux';
+import { AppDispatch } from '../Utils/store';
+import { fetchUser } from '../Utils/userSlice';
+import { fetchSelfTestList } from '../Utils/selfTestSlice';
+import { startMatchingClient } from '../Utils/Matching';
 import { useSelector } from "react-redux";
 import { RootState } from "../Utils/store";
 import { UserState } from "../Utils/userSlice";
-import { startMatchingClient } from "../Utils/Matching";
 import {
   setMatchingClient,
   getMatchingClient,
@@ -35,7 +41,8 @@ function Main() {
   const navigate = useNavigate();
   const [isAlarm, setIsAlarm] = useState(false);
   const [searchParams] = useSearchParams();
-  const isModalOpen = searchParams.get("modal") === "true";
+  const isModalOpen = searchParams.get('modal') === 'true';
+  const [isTestModal, setIsTestModal] = useState(false);
   const location = useLocation();
   const fromMatching = location.state?.fromMatching === true;
   const status = useAppSelector((state) => state.matching.status);
@@ -43,55 +50,60 @@ function Main() {
     (state) => state.matching.isSocketConnected
   );
   const [locationAllowed, setLocationAllowed] = useState(false);
-  const user = useSelector(
-    (state: RootState) => state.user
-  ) as UserState | null;
+
+  const successData = useAppSelector((state) => state.matching.successData);
+  const failData = useAppSelector((state) => state.matching.failData);
+  const selfTestList = useAppSelector((state) => state.selfTest.list);
+  const isTest = selfTestList.length > 0;
 
   // 페이지 진입 시 유저 정보 요청 실패 시 로그인 요청
   useEffect(() => {
     const fetchData = async () => {
       try {
         await dispatch(fetchUser()).unwrap();
-        console.log("로그인 성공");
-
+        console.log('로그인 성공');
         await dispatch(fetchSelfTestList()).unwrap();
-
-        if (!navigator.geolocation) {
-          console.error("위치 정보 지원 안됨");
-          return;
-        }
-
-        navigator.geolocation.getCurrentPosition(
-          async (position) => {
-            const { latitude, longitude } = position.coords;
-            console.log("위치:", { latitude, longitude });
-            setLocationAllowed(true);
-
-            try {
-              await axios.patch(
-                "https://www.mannamdeliveries.link/api/user",
-                { latitude: latitude, longitude: longitude },
-                {
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                  withCredentials: true,
-                }
-              );
-              console.log("위치 전송 완료");
-            } catch (error) {
-              console.error("위치 전송 실패", error);
-            }
-          },
-          (error) => {
-            console.error("위치 정보 실패", error.message);
-          }
-        );
       } catch (error) {
-        console.warn("유저 정보 불러오기 실패 → 로그인 페이지로 이동", error);
-        navigate("/Login");
+        console.warn('유저 정보 불러오기 실패 → 로그인 페이지로 이동', error);
+        navigate('/Login');
+        return;
       }
+
+      if (!navigator.geolocation) {
+        console.error('위치 정보 지원 안됨');
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          console.log('위치:', { latitude, longitude });
+          setLocationAllowed(true);
+
+          try {
+            await axios.patch(
+              'https://www.mannamdeliveries.link/api/user',
+              { latitude: latitude, longitude: longitude },
+              {
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                withCredentials: true,
+              }
+            );
+            console.log('위치 전송 완료');
+          } catch (error) {
+            console.error('위치 전송 실패', error);
+          }
+        },
+        (error) => {
+          console.error('위치 정보 실패', error.message);
+        }
+      );
+
+      await initializeFirebase();
     };
+
     fetchData();
   }, [dispatch, navigate]);
 
@@ -112,7 +124,6 @@ function Main() {
     checkUnreadAlarms();
   }, []);
 
-  // 자가 평가 점수가 없다면?(매칭 정보 설정을 안한 상태라면) -> 매칭 시작 전에 한번 물어보기
   // 매칭 시작
   const handleStartMatching = () => {
     dispatch(setStatus("matching"));
@@ -129,15 +140,14 @@ function Main() {
       onSuccess: (data) => {
         console.log("매칭 성공", data);
         dispatch(clearMatchingTimeout());
-        dispatch(setStatus("success"));
-        // setTimeout(() => {
-        //   dispatch(setStatus('success'));
-        // }, 5000);
+        dispatch(setSuccessData(data));
+        dispatch(setStatus('success'));
       },
       onFail: (data) => {
         console.log("매칭 실패", data);
         dispatch(clearMatchingTimeout());
-        dispatch(setStatus("fail"));
+        dispatch(setFailData(data));
+        dispatch(setStatus('fail'));
       },
       onConnected: () => {
         dispatch(setSocketConnected(true)); // 연결 완료 시점
@@ -146,19 +156,36 @@ function Main() {
     setMatchingClient(client);
   };
 
-  // 수정해야 함.
   const handleButton1ClickByStatus: Record<MatchingStatus, () => void> = {
-    default: () => {
+    default: async () => {
+      // 자가 평가 점수가 없다면?
+      // 위치 설정 X
       if (!locationAllowed) {
-        alert("위치 권한이 허용되어야 매칭을 시작할 수 있습니다.");
+        toast.error('위치 권한이 허용되어야 매칭을 시작할 수 있습니다.');
         return;
       }
 
-      if (!user?.personalities || user.personalities.trim() === "") {
-        alert("자가 평가 테스트를 먼저 완료해주세요.");
+      if (!isTest) {
+        setIsTestModal(true);
         return;
       }
-      handleStartMatching();
+
+      try {
+        const res = await axios.get(
+          'https://www.mannamdeliveries.link/api/matches/can-request',
+          { withCredentials: true }
+        );
+
+        if (res.data === false) {
+          toast.error('이미 진행 중인 만남이 있어 매칭을 시작할 수 없어요.');
+          return;
+        }
+
+        handleStartMatching();
+      } catch (error) {
+        console.error(error);
+        toast.error('매칭 가능 여부 확인에 실패했어요.');
+      }
     },
     matching: () => {
       const client = getMatchingClient();
@@ -176,10 +203,10 @@ function Main() {
       dispatch(setSocketConnected(false));
     },
     success: () => {
-      dispatch(setStatus("fail"));
+      navigate(`/survey/${successData?.surveySessionId}`);
     },
     fail: () => {
-      handleStartMatching();
+      console.log(failData?.message);
     },
   };
 
@@ -259,6 +286,10 @@ function Main() {
 
       <Modal isOpen={isModalOpen} onClose={() => navigate("/main")}>
         <MainModal fromMatching={fromMatching} />
+      </Modal>
+
+      <Modal isOpen={isTestModal} onClose={() => setIsTestModal(false)}>
+        <IsTestModal />
       </Modal>
     </>
   );

@@ -17,7 +17,7 @@ function Stamp() {
   const [searchParams] = useSearchParams();
   const isModalOpen = searchParams.get('modal') === 'true';
 
-  const stampCount = 16;
+  const stampCount = 15;
   const stamps = Array.from({ length: stampCount });
 
   return (
@@ -49,8 +49,7 @@ function Stamp() {
               {stamps.map((_, index) => {
                 const stampNum = index + 1;
                 const isActive = selected === stampNum;
-                const stampSrc =
-                  stampMap[stampNum]?.[isActive ? 'activate' : 'deactivate'];
+                const stampSrc = stampMap[stampNum];
 
                 return (
                   <button
@@ -61,7 +60,9 @@ function Stamp() {
                     <img
                       src={stampSrc}
                       alt={`스탬프 ${stampNum}`}
-                      className="w-full h-full object-contain"
+                      className={`w-full h-full object-contain transition-all duration-300 ${
+                        isActive ? 'opacity-100' : 'opacity-40 grayscale'
+                      }`}
                     />
                   </button>
                 );

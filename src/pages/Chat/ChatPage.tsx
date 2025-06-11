@@ -1,19 +1,19 @@
-import { useState, useEffect, useRef } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import axios from "axios";
-import ChatBar from "./components/ChatBar";
-import SockJS from "sockjs-client";
-import { Client } from "@stomp/stompjs";
-import sampleProfile from "../../assets/img/sample/sample_profile.svg";
-import { useSelector, useDispatch } from "react-redux";
-import { RootState, AppDispatch } from "../../Utils/store";
-import { UserState } from "../../Utils/userSlice";
-import { fetchUser } from "../../Utils/userSlice";
-import ChatNotificationBar from "./components/ChatNotificationBar";
-import MeetingInfoModal from "../../components/MeetingInfoModal";
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import axios from 'axios';
+import ChatBar from './components/ChatBar';
+import SockJS from 'sockjs-client';
+import { Client } from '@stomp/stompjs';
+import sampleProfile from '../../assets/img/sample/sample_profile.svg';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState, AppDispatch } from '../../Utils/store';
+import { UserState } from '../../Utils/userSlice';
+import { fetchUser } from '../../Utils/userSlice';
+import ChatNotificationBar from './components/ChatNotificationBar';
+import MeetingInfoModal from '../../components/MeetingInfoModal';
 
-import back_arrow from "../../assets/img/icons/HobbyIcon/back_arrow.svg";
-import search_icon from "../../assets/img/icons/ChatIcon/search.svg";
+import back_arrow from '../../assets/img/icons/HobbyIcon/back_arrow.svg';
+import search_icon from '../../assets/img/icons/ChatIcon/search.svg';
 
 interface ChatMessage {
   messageType: string;
@@ -56,15 +56,15 @@ function ChatPage() {
     (state: RootState) => state.meetingSchedule
   );
 
-  const [currentTime, setCurrentTime] = useState("");
+  const [currentTime, setCurrentTime] = useState('');
   const [showMeetingInfoModal, setShowMeetingInfoModal] = useState(false);
 
   useEffect(() => {
     const updateCurrentTime = () => {
       const now = new Date();
-      const hours = String(now.getHours()).padStart(2, "0");
-      const minutes = String(now.getMinutes()).padStart(2, "0");
-      const seconds = String(now.getSeconds()).padStart(2, "0");
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
       setCurrentTime(`${hours}시 ${minutes}분 ${seconds}초`);
     };
 
@@ -81,13 +81,13 @@ function ChatPage() {
     dispatch(fetchUser());
 
     if (!state?.roomId) {
-      console.error("방 정보가 없습니다.");
+      console.error('방 정보가 없습니다.');
       navigate(-1);
       return;
     }
 
     // location.state 내용 출력
-    console.log("[채팅방 진입] location.state:", {
+    console.log('[채팅방 진입] location.state:', {
       roomId: state.roomId,
       user1Id: state.user1Id,
       user1Nickname: state.user1Nickname,
@@ -100,36 +100,36 @@ function ChatPage() {
     // 채팅 기록 조회
     const fetchChatHistory = async () => {
       try {
-        console.log("채팅 기록 조회 시작:", state.roomId);
+        console.log('채팅 기록 조회 시작:', state.roomId);
         const response = await axios.get(
           `https://www.mannamdeliveries.link/api/chat/${state.roomId}`,
           { withCredentials: true }
         );
-        console.log("채팅 기록 조회 결과:", response.data);
+        console.log('채팅 기록 조회 결과:', response.data);
         setMessages(response.data);
       } catch (error) {
-        console.error("채팅 기록 조회 실패:", error);
+        console.error('채팅 기록 조회 실패:', error);
       }
     };
 
     // WebSocket 연결 설정
-    console.log("WebSocket 연결 시작");
+    console.log('WebSocket 연결 시작');
     const socket = new SockJS(
-      "https://www.mannamdeliveries.link/api/connection"
+      'https://www.mannamdeliveries.link/api/connection'
     );
     const stompClient = new Client({
       webSocketFactory: () => socket,
       onConnect: () => {
-        console.log("WebSocket 연결 성공");
+        console.log('WebSocket 연결 성공');
         // 채팅방 구독
         stompClient.subscribe(`/topic/room/${state.roomId}`, (message) => {
-          console.log("[수신된 메시지]", message);
+          console.log('[수신된 메시지]', message);
           const newMessage: ChatMessage = JSON.parse(message.body);
-          console.log("[파싱된 메시지]", newMessage);
+          console.log('[파싱된 메시지]', newMessage);
 
           // 내 메시지는 이미 로컬에서 띄웠으므로 무시
           if (newMessage.sender === myId) {
-            console.log("[무시된 내 메시지]", newMessage);
+            console.log('[무시된 내 메시지]', newMessage);
             return;
           }
 
@@ -138,21 +138,21 @@ function ChatPage() {
 
         // WebSocket 연결이 완료된 후 pendingMessage가 있다면 전송
         if (state.pendingMessage) {
-          console.log("[대기 중인 메시지 전송]", state.pendingMessage);
+          console.log('[대기 중인 메시지 전송]', state.pendingMessage);
           sendMessage(state.pendingMessage.message);
         }
       },
       onDisconnect: () => {
-        console.log("WebSocket 연결 해제");
+        console.log('WebSocket 연결 해제');
       },
       onStompError: (frame) => {
-        console.error("STOMP 에러 발생:", frame);
+        console.error('STOMP 에러 발생:', frame);
       },
       onWebSocketError: (event) => {
-        console.error("WebSocket 에러 발생:", event);
+        console.error('WebSocket 에러 발생:', event);
       },
       debug: function (str) {
-        console.log("STOMP Debug:", str);
+        console.log('STOMP Debug:', str);
       },
     });
 
@@ -163,7 +163,7 @@ function ChatPage() {
 
     // 컴포넌트 언마운트 시 연결 해제
     return () => {
-      console.log("컴포넌트 언마운트 - WebSocket 연결 해제");
+      console.log('컴포넌트 언마운트 - WebSocket 연결 해제');
       if (stompClientRef.current) {
         stompClientRef.current.deactivate();
       }
@@ -173,12 +173,12 @@ function ChatPage() {
   // 메시지 전송 함수
   const sendMessage = (message: string, imageUrl?: string) => {
     if (stompClientRef.current && stompClientRef.current.connected) {
-      console.log("[WebSocket 연결 상태]", stompClientRef.current.connected);
+      console.log('[WebSocket 연결 상태]', stompClientRef.current.connected);
 
       // 서버에 보낼 메시지 (규격 준수)
       const outgoingMessage = {
         roomId: state.roomId,
-        type: imageUrl ? "IMAGE" : "TEXT",
+        type: imageUrl ? 'IMAGE' : 'TEXT',
         message: message,
         userId: myId,
         imageUrl: imageUrl || null,
@@ -191,7 +191,7 @@ function ChatPage() {
         now.getTime() - 9 * 60 * 60 * 1000
       ).toISOString();
       const localMessage: ChatMessage = {
-        messageType: imageUrl ? "IMAGE" : "TEXT",
+        messageType: imageUrl ? 'IMAGE' : 'TEXT',
         message: message,
         imageUrl: imageUrl || null,
         sender: myId!,
@@ -199,10 +199,10 @@ function ChatPage() {
       };
 
       // 1. 화면에 즉시 표시
-      console.log("[보낼 메시지]", {
+      console.log('[보낼 메시지]', {
         headers: {
-          destination: "/app/api/chat/send",
-          contentType: "application/json",
+          destination: '/app/api/chat/send',
+          contentType: 'application/json',
         },
         body: outgoingMessage,
       });
@@ -210,20 +210,20 @@ function ChatPage() {
       try {
         // 2. 서버에 전송
         stompClientRef.current.publish({
-          destination: "/app/api/chat/send",
+          destination: '/app/api/chat/send',
           body: JSON.stringify(outgoingMessage),
           headers: {
-            "content-type": "application/json",
+            'content-type': 'application/json',
           },
         });
-        console.log("[메시지 전송 성공]");
+        console.log('[메시지 전송 성공]');
         setMessages((prev) => [...prev, localMessage]);
       } catch (error) {
-        console.error("[메시지 전송 실패]", error);
+        console.error('[메시지 전송 실패]', error);
       }
     } else {
       console.warn(
-        "[WebSocket 연결 없음] 연결 상태:",
+        '[WebSocket 연결 없음] 연결 상태:',
         stompClientRef.current?.connected
       );
     }
@@ -234,15 +234,15 @@ function ChatPage() {
     if (stompClientRef.current && stompClientRef.current.connected) {
       const leaveData = {
         roomId: state.roomId,
-        type: "LEAVE",
+        type: 'LEAVE',
       };
-      console.log("채팅방 퇴장 요청:", leaveData);
+      console.log('채팅방 퇴장 요청:', leaveData);
       stompClientRef.current.publish({
-        destination: "/app/api/chat/leave",
+        destination: '/app/api/chat/leave',
         body: JSON.stringify(leaveData),
       });
     }
-    navigate("/ChatList");
+    navigate('/ChatList');
   };
 
   const handleBackClick = () => {
@@ -251,7 +251,7 @@ function ChatPage() {
 
   // 스크롤을 항상 최신 메시지로 이동
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   // 날짜 포맷팅 함수 추가
@@ -261,14 +261,14 @@ function ChatPage() {
     yesterday.setDate(yesterday.getDate() - 1);
 
     if (date.toDateString() === today.toDateString()) {
-      return "오늘";
+      return '오늘';
     } else if (date.toDateString() === yesterday.toDateString()) {
-      return "어제";
+      return '어제';
     } else {
-      return date.toLocaleDateString("ko-KR", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
+      return date.toLocaleDateString('ko-KR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
       });
     }
   };
@@ -307,7 +307,7 @@ function ChatPage() {
         receiverId={myId === state.user1Id ? state.user2Id : state.user1Id}
         roomId={state.roomId}
         onInviteClick={() => {
-          navigate("/invite-write", {
+          navigate('/invite-write', {
             state: {
               senderName:
                 myId === state.user1Id
@@ -330,7 +330,7 @@ function ChatPage() {
             state: {
               id: state.matchId,
               sessionId: state.matchId,
-              status: "Surveying",
+              status: 'Surveying',
               user1Id: state.user1Id,
               user1Nickname: state.user1Nickname,
               user2Id: state.user2Id,
@@ -341,21 +341,21 @@ function ChatPage() {
           });
         }}
         onEndMeeting={() => {
-          navigate("/ChatList");
+          navigate('/ChatList');
         }}
       />
 
       {/* 알림 바 */}
       <ChatNotificationBar
-        type={meetingSchedule.isScheduled ? "schedule" : "time"}
+        type={meetingSchedule.isScheduled ? 'schedule' : 'time'}
         time={currentTime}
         scheduleDate={
           meetingSchedule.isScheduled
-            ? `${meetingSchedule.date?.split("-")[1]}월 ${
-                meetingSchedule.date?.split("-")[2]
-              }일 ${new Date(meetingSchedule.date || "").toLocaleDateString(
-                "ko-KR",
-                { weekday: "short" }
+            ? `${meetingSchedule.date?.split('-')[1]}월 ${
+                meetingSchedule.date?.split('-')[2]
+              }일 ${new Date(meetingSchedule.date || '').toLocaleDateString(
+                'ko-KR',
+                { weekday: 'short' }
               )}요일`
             : undefined
         }
@@ -369,14 +369,14 @@ function ChatPage() {
         className="flex flex-col w-full overflow-y-auto p-4 z-0"
         style={{
           height: `calc(100% - 240px - ${emojiHeight}px)`,
-          transition: "height 0.3s ease",
+          transition: 'height 0.3s ease',
         }}
       >
         {messages.map((msg, index) => {
           const isMine = msg.sender === myId;
           // myId로 내 정보/상대 정보 구분
-          let myNickname = "나";
-          let opponentNickname = "상대방";
+          let myNickname = '나';
+          let opponentNickname = '상대방';
           if (myId === state.user1Id) {
             myNickname = state.user1Nickname;
             opponentNickname = state.user2Nickname;
@@ -418,7 +418,7 @@ function ChatPage() {
               <div
                 key={index}
                 className={`flex ${
-                  isMine ? "justify-end" : "justify-start"
+                  isMine ? 'justify-end' : 'justify-start'
                 } mb-1`}
               >
                 {/* 왼쪽 프로필 (처음 메시지일 때만) */}
@@ -446,8 +446,8 @@ function ChatPage() {
                   <div
                     className={`px-3 py-2 rounded-xl whitespace-pre-wrap ${
                       isMine
-                        ? "bg-[#BD4B2C] text-[#F2F2F2] rounded-br-none self-end"
-                        : "bg-[#FFFFFF] text-[#333333] rounded-bl-none"
+                        ? 'bg-[#BD4B2C] text-[#F2F2F2] rounded-br-none self-end'
+                        : 'bg-[#FFFFFF] text-[#333333] rounded-bl-none'
                     }`}
                   >
                     {msg.imageUrl ? (
@@ -464,12 +464,12 @@ function ChatPage() {
                   {isNextDifferentSender && (
                     <span
                       className={`text-xs text-gray-400 mt-1 ${
-                        isMine ? "text-right pr-1" : "text-left pl-1"
+                        isMine ? 'text-right pr-1' : 'text-left pl-1'
                       }`}
                     >
-                      {koreanTime.toLocaleTimeString("ko-KR", {
-                        hour: "2-digit",
-                        minute: "2-digit",
+                      {koreanTime.toLocaleTimeString('ko-KR', {
+                        hour: '2-digit',
+                        minute: '2-digit',
                         hour12: true,
                       })}
                     </span>

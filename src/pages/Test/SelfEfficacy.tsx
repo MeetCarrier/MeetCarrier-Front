@@ -100,7 +100,11 @@ const SelfEfficacy = () => {
           <div className="flex justify-between items-end">
             {options.map((option, idx) => (
               <div key={idx} className="flex flex-col items-center w-[20%]">
-                <span className={`mt-1 text-[12px] ${textStyle(idx)}`}>
+                <span
+                  className={`mt-1 text-[12px] font-GanwonEduAll_Bold ${textStyle(
+                    idx
+                  )}`}
+                >
                   {option}
                 </span>
               </div>
