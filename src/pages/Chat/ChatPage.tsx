@@ -439,7 +439,7 @@ function ChatPage() {
                   {/* 닉네임은 첫 메시지일 때만 */}
                   {!isMine && !isPrevSameSender && (
                     <span className="text-sm text-gray-700 mb-1">
-                      {nickname}
+                      {nickname}/
                     </span>
                   )}
 

@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useAppSelector } from '../Utils/hooks';
 import { useNavigate } from 'react-router-dom';
 import modalbtn_icon from '../assets/img/icons/ModalBtn/modalbtn_icon.svg';
+import toast from 'react-hot-toast';
 
 const DiaryDeleteModal: FC = () => {
   const navigate = useNavigate();
@@ -18,11 +19,11 @@ const DiaryDeleteModal: FC = () => {
         `https://www.mannamdeliveries.link/api/journals/${journalId}`,
         { withCredentials: true }
       );
-      alert('삭제 완료!');
+      toast.success('삭제 완료!');
       navigate('/Calendar');
     } catch (error) {
       console.error('삭제 실패', error);
-      alert('삭제에 실패했어요.');
+      toast.error('삭제에 실패했어요.');
     }
   };
 

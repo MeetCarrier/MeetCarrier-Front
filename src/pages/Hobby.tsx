@@ -9,6 +9,7 @@ import check_icon from '../assets/img/icons/HobbyIcon/check.svg';
 import back_arrow from '../assets/img/icons/HobbyIcon/back_arrow.svg';
 import TagGroup from '../components/TagGroup';
 import hobbyIcon from '../assets/img/sample/hobby_icon.svg';
+import toast from 'react-hot-toast';
 
 function Hobby() {
   const user = useSelector(
@@ -50,10 +51,10 @@ function Hobby() {
           withCredentials: true,
         }
       );
-      alert('저장 완료!');
+      toast.success('저장 완료!');
     } catch (error) {
       console.error('저장 실패:', error);
-      alert('저장에 실패했어요.');
+      toast.error('저장에 실패했어요.');
     }
   };
 

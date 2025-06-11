@@ -94,7 +94,7 @@ const MainModal: FC<MainModalProps> = ({ fromMatching = false }) => {
             )}
           </div>
           <div>
-            <span className="text-gray-500 mt-1 text-xs font-GanwonEduAll_Light line-clamp-1">
+            <span className="text-gray-500 mt-1 text-xs font-GanwonEduAll_Light line-clamp-3">
               {interestsText}
             </span>
           </div>
@@ -118,7 +118,7 @@ const MainModal: FC<MainModalProps> = ({ fromMatching = false }) => {
             )}
           </div>
           <div>
-            <span className="text-gray-500 mt-1 text-xs font-GanwonEduAll_Light line-clamp-1">
+            <span className="text-gray-500 mt-1 text-xs font-GanwonEduAll_Light line-clamp-3">
               {questionsText}
             </span>
           </div>

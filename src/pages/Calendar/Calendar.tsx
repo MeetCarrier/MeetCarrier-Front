@@ -125,9 +125,7 @@ function CalendarGrid({
                     )}
                   {journalForDay && (
                     <img
-                      src={
-                        stampMap[parseInt(journalForDay.stamp) ?? 1]?.activate
-                      }
+                      src={stampMap[parseInt(journalForDay.stamp) ?? 1]}
                       alt="스탬프"
                       className="absolute top-1/2 left-1/2 h-[60%] -translate-x-1/2 -translate-y-1/4 cursor-pointer"
                       onClick={() => handleStampClick(journalForDay)}

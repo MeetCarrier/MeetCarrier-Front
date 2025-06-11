@@ -14,7 +14,7 @@ function ViewDiary() {
   const [showSelector, setShowSelector] = useState(false);
   const text = useAppSelector((state) => state.diary.text);
   const selectedStamp = useAppSelector((state) => state.diary.selectedStamp);
-  const stampImage = stampMap[selectedStamp ?? 1]?.activate;
+  const stampImage = stampMap[selectedStamp ?? 1];
   const dateLabel = useAppSelector((state) => state.diary.dateLabel);
   const isEditingToday = useAppSelector((state) => state.diary.isEditingToday);
 

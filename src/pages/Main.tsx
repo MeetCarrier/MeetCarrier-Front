@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAppSelector } from '../Utils/hooks';
+import toast from 'react-hot-toast';
 import { initializeFirebase } from '../Utils/fcm';
 import {
   setStatus,
@@ -18,6 +19,7 @@ import bell_alarm from '../assets/img/icons/NavIcon/bell_alarm.svg';
 import NavBar from '../components/NavBar';
 import Modal from '../components/Modal';
 import MainModal from '../Modal/MainModal';
+import IsTestModal from '../Modal/IsTestModal';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../Utils/store';
 import { fetchUser } from '../Utils/userSlice';
@@ -36,6 +38,7 @@ function Main() {
   const [isAlarm, setIsAlarm] = useState(false);
   const [searchParams] = useSearchParams();
   const isModalOpen = searchParams.get('modal') === 'true';
+  const [isTestModal, setIsTestModal] = useState(false);
   const location = useLocation();
   const fromMatching = location.state?.fromMatching === true;
   const status = useAppSelector((state) => state.matching.status);
@@ -53,51 +56,50 @@ function Main() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // 유저 패치
         await dispatch(fetchUser()).unwrap();
         console.log('로그인 성공');
-        // 자기 평가 패치
         await dispatch(fetchSelfTestList()).unwrap();
-
-        // FCM 초기화
-        await initializeFirebase();
-
-        if (!navigator.geolocation) {
-          console.error('위치 정보 지원 안됨');
-          return;
-        }
-
-        navigator.geolocation.getCurrentPosition(
-          async (position) => {
-            const { latitude, longitude } = position.coords;
-            console.log('위치:', { latitude, longitude });
-            setLocationAllowed(true);
-
-            try {
-              await axios.patch(
-                'https://www.mannamdeliveries.link/api/user',
-                { latitude: latitude, longitude: longitude },
-                {
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  withCredentials: true,
-                }
-              );
-              console.log('위치 전송 완료');
-            } catch (error) {
-              console.error('위치 전송 실패', error);
-            }
-          },
-          (error) => {
-            console.error('위치 정보 실패', error.message);
-          }
-        );
       } catch (error) {
         console.warn('유저 정보 불러오기 실패 → 로그인 페이지로 이동', error);
         navigate('/Login');
+        return;
       }
+
+      if (!navigator.geolocation) {
+        console.error('위치 정보 지원 안됨');
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          console.log('위치:', { latitude, longitude });
+          setLocationAllowed(true);
+
+          try {
+            await axios.patch(
+              'https://www.mannamdeliveries.link/api/user',
+              { latitude: latitude, longitude: longitude },
+              {
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                withCredentials: true,
+              }
+            );
+            console.log('위치 전송 완료');
+          } catch (error) {
+            console.error('위치 전송 실패', error);
+          }
+        },
+        (error) => {
+          console.error('위치 정보 실패', error.message);
+        }
+      );
+
+      await initializeFirebase();
     };
+
     fetchData();
   }, [dispatch, navigate]);
 
@@ -136,9 +138,6 @@ function Main() {
         dispatch(clearMatchingTimeout());
         dispatch(setSuccessData(data));
         dispatch(setStatus('success'));
-        // setTimeout(() => {
-        //   dispatch(setStatus('success'));
-        // }, 5000);
       },
       onFail: (data) => {
         console.log('매칭 실패', data);
@@ -154,19 +153,35 @@ function Main() {
   };
 
   const handleButton1ClickByStatus: Record<MatchingStatus, () => void> = {
-    default: () => {
+    default: async () => {
       // 자가 평가 점수가 없다면?
       // 위치 설정 X
       if (!locationAllowed) {
-        alert('위치 권한이 허용되어야 매칭을 시작할 수 있습니다.');
+        toast.error('위치 권한이 허용되어야 매칭을 시작할 수 있습니다.');
         return;
       }
 
       if (!isTest) {
-        alert('자가 평가 테스트를 먼저 완료해주세요.');
-        navigate('/SelfEvaluation');
+        setIsTestModal(true);
+        return;
       }
-      handleStartMatching();
+
+      try {
+        const res = await axios.get(
+          'https://www.mannamdeliveries.link/api/matches/can-request',
+          { withCredentials: true }
+        );
+
+        if (res.data === false) {
+          toast.error('이미 진행 중인 만남이 있어 매칭을 시작할 수 없어요.');
+          return;
+        }
+
+        handleStartMatching();
+      } catch (error) {
+        console.error(error);
+        toast.error('매칭 가능 여부 확인에 실패했어요.');
+      }
     },
     matching: () => {
       const client = getMatchingClient();
@@ -267,6 +282,10 @@ function Main() {
 
       <Modal isOpen={isModalOpen} onClose={() => navigate('/main')}>
         <MainModal fromMatching={fromMatching} />
+      </Modal>
+
+      <Modal isOpen={isTestModal} onClose={() => setIsTestModal(false)}>
+        <IsTestModal />
       </Modal>
     </>
   );

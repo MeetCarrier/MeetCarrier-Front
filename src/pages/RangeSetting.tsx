@@ -8,6 +8,7 @@ import axios from 'axios';
 import NavBar from '../components/NavBar';
 import check_icon from '../assets/img/icons/HobbyIcon/check.svg';
 import back_arrow from '../assets/img/icons/HobbyIcon/back_arrow.svg';
+import toast from 'react-hot-toast';
 
 function RangeSetting() {
   const navigate = useNavigate();
@@ -48,10 +49,10 @@ function RangeSetting() {
           withCredentials: true,
         }
       );
-      alert('저장 완료!');
+      toast.success('저장 완료!');
     } catch (error) {
       console.error('저장 실패:', error);
-      alert('저장에 실패했어요.');
+      toast.error('저장에 실패했어요.');
     }
   };
 
