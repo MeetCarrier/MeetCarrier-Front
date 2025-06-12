@@ -112,6 +112,59 @@ function SurveyPage() {
           answers,
         })
       );
+
+      // localStorage의 답변과 서버의 답변을 병합
+      const fetchAndMergeAnswers = async () => {
+        try {
+          const response = await axios.get(
+            `https://www.mannamdeliveries.link/api/survey/${realSessionId}/answers`,
+            { withCredentials: true }
+          );
+
+          const serverAnswers = response.data
+            .filter((a: Answer) => Number(a.userId) === myId)
+            .reduce((acc: { [key: number]: string }, curr: Answer) => {
+              acc[curr.questionId] = curr.content;
+              return acc;
+            }, {});
+
+          // localStorage의 답변과 서버의 답변을 병합
+          const mergedAnswers = {
+            ...answers,
+            ...serverAnswers,
+          };
+
+          // 현재 질문의 답변이 있으면 편집 모드에서 표시
+          const currentQuestion = questions[currentStep];
+          if (currentQuestion && mergedAnswers[currentQuestion.questionId]) {
+            setEditedContent(mergedAnswers[currentQuestion.questionId]);
+          }
+
+          dispatch(
+            setSurveyState({
+              sessionId: realSessionId,
+              isSubmitted: isSubmitted || Object.keys(serverAnswers).length > 0,
+              isOtherSubmitted,
+              hasJoinedChat,
+              answers: mergedAnswers,
+            })
+          );
+        } catch (error) {
+          console.error("답변 병합 실패:", error);
+          // 서버 요청 실패 시 localStorage의 상태만 사용
+          dispatch(
+            setSurveyState({
+              sessionId: realSessionId,
+              isSubmitted,
+              isOtherSubmitted,
+              hasJoinedChat,
+              answers,
+            })
+          );
+        }
+      };
+
+      fetchAndMergeAnswers();
     } else {
       // 초기 상태 설정
       dispatch(
@@ -124,16 +177,20 @@ function SurveyPage() {
         })
       );
     }
-  }, [realSessionId, dispatch]);
+  }, [realSessionId, dispatch, myId, currentStep, questions]);
 
-  // 상태 변경 시 localStorage에 저장
+  // 상태 변경 시 localStorage에 저장 (디바운스 적용)
   useEffect(() => {
-    if (realSessionId && surveyState) {
+    if (!realSessionId || !surveyState) return;
+
+    const timeoutId = setTimeout(() => {
       localStorage.setItem(
         `survey_${realSessionId}`,
         JSON.stringify(surveyState)
       );
-    }
+    }, 500); // 500ms 디바운스
+
+    return () => clearTimeout(timeoutId);
   }, [surveyState, realSessionId]);
 
   // chatRoomId가 변경될 때마다 localStorage에 저장
@@ -358,6 +415,7 @@ function SurveyPage() {
       [currentQuestion.questionId]: editedContent,
     };
 
+    // Redux 상태 업데이트
     dispatch(
       updateSurveyAnswers({
         sessionId: realSessionId,
@@ -365,7 +423,18 @@ function SurveyPage() {
       })
     );
 
+    // localStorage에 즉시 저장
+    const currentState = {
+      ...surveyState,
+      answers: updatedAnswers,
+    };
+    localStorage.setItem(
+      `survey_${realSessionId}`,
+      JSON.stringify(currentState)
+    );
+
     setIsEditing(false);
+    setEditedContent("");
   };
 
   const handleSubmit = async () => {
@@ -504,7 +573,7 @@ function SurveyPage() {
     <>
       <NavBar />
 
-      <div className="absolute top-[50px] text-[#333333] left-0 right-0 px-6 text-center">
+      <div className="absolute top-[50px] text-[#333333] left-0 right-0 px-5 text-center">
         <img
           src={back_arrow}
           alt="back_arrow"
@@ -565,7 +634,7 @@ function SurveyPage() {
         </div>
       )}
 
-      <div className="w-full h-[calc(100%-200px)] px-4 z-0 font-GanwonEduAll_Light">
+      <div className="w-full h-[calc(100%-170px)] px-4 z-0 font-GanwonEduAll_Light overflow-y-auto">
         <FootPrintCheck currentStep={currentStep + 1} />
 
         <Swiper
@@ -655,7 +724,7 @@ function SurveyPage() {
                       onChange={(e) => setEditedContent(e.target.value)}
                     />
                   ) : (
-                    <p className="text-xs text-gray-600">
+                    <p className="text-xs text-gray-600 whitespace-pre-line">
                       {currentAnswer ? (
                         currentAnswer
                       ) : (
@@ -690,7 +759,7 @@ function SurveyPage() {
         {!surveyState?.isSubmitted &&
           !isEditing &&
           isAllQuestionsAnswered() && (
-            <div className="flex justify-center mt-4">
+            <div className="fixed bottom-[90px] left-0 right-0 flex justify-center z-30">
               <button
                 className="px-6 py-2 bg-[#C67B5A] text-white text-sm font-GanwonEduAll_Bold rounded-md"
                 onClick={() => setShowSubmitModal(true)}
@@ -779,14 +848,13 @@ function SurveyPage() {
         </div>
       </Modal>
 
-      {/* 채팅방 참가 버튼 */}
       {matchData?.status === "Chatting" &&
         !matchData.agreed &&
         !showCompleteModal &&
         surveyState?.isSubmitted &&
         surveyState?.isOtherSubmitted &&
         !surveyState?.hasJoinedChat && (
-          <div className="fixed bottom-30 left-0 right-0 flex justify-center">
+          <div className="fixed bottom-[90px] left-0 right-0 flex justify-center z-30">
             <button
               className="px-6 py-3 bg-[#C67B5A] text-white text-sm font-GanwonEduAll_Bold rounded-full shadow-lg"
               onClick={handleJoinChat}
