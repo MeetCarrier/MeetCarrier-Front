@@ -27,6 +27,15 @@ interface Journals {
   stamp: string;
 }
 
+interface Meeting {
+  id: number;
+  date: string;
+  location: string;
+  note: string;
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
+  nickname: string;
+}
+
 // month 0 부터 시작임, 일단 기본 값을 넣음.. 나중에 수정
 function CalendarGrid({
   year,
@@ -150,6 +159,10 @@ function Calendar() {
   const [showYearList, setShowYearList] = useState(false);
   const [showMonthList, setShowMonthList] = useState(false);
   const [journals, setJournals] = useState<Journals[]>([]);
+  const [upcomingMeeting, setUpcomingMeeting] = useState<{
+    nickname: string;
+    dday: number;
+  } | null>(null);
 
   useEffect(() => {
     const fetchJournalList = async () => {
@@ -173,6 +186,58 @@ function Calendar() {
 
     fetchJournalList();
   }, [year, month]);
+
+  useEffect(() => {
+    const fetchUpcomingMeeting = async () => {
+      try {
+        const res = await axios.get<Meeting[]>(
+          'https://www.mannamdeliveries.link/api/meetings',
+          { withCredentials: true }
+        );
+
+        console.log('만남 일정', res.data);
+
+        const now = new Date();
+
+        const validMeetings = res.data
+          .filter((m) => m.status === 'ACCEPTED')
+          .map((m) => ({
+            ...m,
+            dateObj: new Date(m.date),
+          }))
+          .filter((m) => m.dateObj.getTime() >= now.getTime()); // ⬅️ 시간이 지난 약속 제거
+
+        if (validMeetings.length === 0) return;
+
+        const nextMeeting = validMeetings.sort(
+          (a, b) => a.dateObj.getTime() - b.dateObj.getTime()
+        )[0];
+
+        // 날짜 기준 D-day 계산
+        const todayStart = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate()
+        );
+        const meetingDayStart = new Date(
+          nextMeeting.dateObj.getFullYear(),
+          nextMeeting.dateObj.getMonth(),
+          nextMeeting.dateObj.getDate()
+        );
+
+        const diffTime = meetingDayStart.getTime() - todayStart.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        setUpcomingMeeting({
+          nickname: nextMeeting.nickname,
+          dday: diffDays,
+        });
+      } catch (error) {
+        console.error('다가오는 약속 조회 실패:', error);
+      }
+    };
+    fetchUpcomingMeeting();
+  }, []);
 
   const currentYear = today.getFullYear();
 
@@ -346,10 +411,10 @@ function Calendar() {
               다가오는 만남
             </p>
             <p className="text-[15px] font-GanwonEduAll_Bold text-[#333333]/50">
-              D-5
+              {upcomingMeeting ? `D-${upcomingMeeting.dday}` : 'D-?'}
             </p>
             <p className="text-[15px] font-GanwonEduAll_Bold text-[#333333]/50">
-              이땃쥐돌이
+              {upcomingMeeting?.nickname || '없음'}
             </p>
           </div>
           <button onClick={handleDiaryClick} className="cursor-pointer">

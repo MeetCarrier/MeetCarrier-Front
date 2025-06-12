@@ -12,10 +12,11 @@ import toast from 'react-hot-toast';
 function SurveyQ() {
   const [inputValue, setInputValue] = useState('');
   const [questions, setQuestions] = useState<string[]>([]);
-  // 질문 토글 부분
   const [selectedQuestion, setSelectedQuestions] = useState<string | null>(
     null
   );
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editingValue, setEditingValue] = useState('');
 
   const user = useSelector(
     (state: RootState) => state.user
@@ -26,7 +27,7 @@ function SurveyQ() {
       const parseQuestions = user.questionList
         .split(',')
         .map((tag) => tag.trim())
-        .filter((tag) => tag != '');
+        .filter((tag) => tag !== '');
       setQuestions(parseQuestions);
       setSelectedQuestions(user?.question);
     }
@@ -35,8 +36,12 @@ function SurveyQ() {
   const addQuestion = () => {
     const trimmed = inputValue.trim();
     if (trimmed && !questions.includes(trimmed)) {
+      if (questions.length >= 5) {
+        toast.error('질문은 최대 5개까지 등록할 수 있어요!');
+        return;
+      }
       setQuestions((prev) => [...prev, trimmed]);
-      setSelectedQuestions(trimmed); // 추가된 질문을 바로 선택
+      setSelectedQuestions(trimmed);
       setInputValue('');
     }
   };
@@ -44,7 +49,7 @@ function SurveyQ() {
   const deleteQuestion = (q: string) => {
     setQuestions((prev) => prev.filter((item) => item !== q));
     if (selectedQuestion === q) {
-      setSelectedQuestions(null); // 선택된 질문이면 선택 해제
+      setSelectedQuestions(null);
     }
   };
 
@@ -52,7 +57,28 @@ function SurveyQ() {
     setSelectedQuestions((prev) => (prev === q ? null : q));
   };
 
-  // 나중에 수정
+  const startEdit = (index: number, value: string) => {
+    setEditingIndex(index);
+    setEditingValue(value);
+  };
+
+  const saveEdit = (index: number) => {
+    const trimmed = editingValue.trim();
+    if (!trimmed || questions.includes(trimmed)) {
+      toast.error('중복이거나 빈 질문입니다');
+      return;
+    }
+    const updated = [...questions];
+    const old = updated[index];
+    updated[index] = trimmed;
+    setQuestions(updated);
+    if (selectedQuestion === old) {
+      setSelectedQuestions(trimmed);
+    }
+    setEditingIndex(null);
+    setEditingValue('');
+  };
+
   const handleSubmit = async () => {
     const questionStr = questions.join(',');
     const selectedQuestionStr = selectedQuestion;
@@ -100,6 +126,7 @@ function SurveyQ() {
           onClick={handleSubmit}
         />
       </div>
+
       <div className="flex flex-col w-full h-[calc(100%-240px)] overflow-y-auto p-4 z-0 bg-[#F2F2F2]">
         {questions.length === 0 ? (
           <div className="flex-1 flex justify-center items-center text-sm text-gray-400">
@@ -110,24 +137,54 @@ function SurveyQ() {
             {questions.map((q, idx) => (
               <li
                 key={idx}
-                onClick={() => toggleSelect(q)}
-                className={`px-4 py-3 rounded text-sm cursor-pointer flex justify-between items-center
-            ${
-              selectedQuestion === q
-                ? 'border-2 border-red-400 text-red-500'
-                : 'border border-gray-200'
-            }`}
+                className={`px-4 py-3 rounded text-sm flex justify-between items-center ${
+                  selectedQuestion === q
+                    ? 'border-2 border-red-400 text-red-500'
+                    : 'border border-gray-200'
+                }`}
               >
-                <span className="line-clamp-2">{q}</span>
-                <span
-                  className="text-xs text-red-500"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    deleteQuestion(q);
-                  }}
-                >
-                  수정
-                </span>
+                {editingIndex === idx ? (
+                  <input
+                    value={editingValue}
+                    onChange={(e) => setEditingValue(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && saveEdit(idx)}
+                    className="flex-1 mr-2 text-sm border rounded px-2 py-1"
+                  />
+                ) : (
+                  <span
+                    className="flex-1 line-clamp-4 font-GanwonEduAll_Light"
+                    onClick={() => toggleSelect(q)}
+                  >
+                    {q}
+                  </span>
+                )}
+
+                {editingIndex === idx ? (
+                  <button
+                    onClick={() => saveEdit(idx)}
+                    className="text-xs text-blue-500 ml-2 font-GanwonEduAll_Bold"
+                  >
+                    저장
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => startEdit(idx, q)}
+                      className="text-xs text-blue-500 ml-2 font-GanwonEduAll_Bold"
+                    >
+                      수정
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteQuestion(q);
+                      }}
+                      className="text-xs text-red-500 ml-2 font-GanwonEduAll_Bold"
+                    >
+                      삭제
+                    </button>
+                  </>
+                )}
               </li>
             ))}
           </ul>
@@ -146,7 +203,7 @@ function SurveyQ() {
           }}
           onKeyDown={(e) => e.key === 'Enter' && addQuestion()}
           placeholder="예) 제일 잘맞는다고 생각하는 MBTI와 이유는?"
-          className=" bg-white rounded-md text-xs mx-3 mt-2 px-3 py-2 border border-white placeholder:text-gray-400"
+          className="bg-white rounded-md text-xs mx-3 mt-2 px-3 py-2 border border-white placeholder:text-gray-400"
         />
       </div>
     </>

@@ -66,12 +66,12 @@ function AlarmPage() {
     // TODO: Report 알림 처리
   };
   // 칭찬 일기
-  const handleJournal = (notification: Notification) => {
+  const handleJournal = () => {
     navigate('/Calendar');
   };
   // 만남 일수? 알려주는 것
-  const handleMeeting = (notification: Notification) => {
-    // TODO: Meeting 알림 처리
+  const handleMeeting = () => {
+    navigate('/Calendar');
   };
   // 추천 친구 매칭 요청
   const handleRequest = async (notification: Notification) => {
@@ -85,16 +85,16 @@ function AlarmPage() {
     setIsRecFriendModal(true);
   };
   // 매칭이 성사되면 오는 것
-  const handleMatch = (notification: Notification) => {
-    // TODO: Match 알림 처리
+  const handleMatch = () => {
+    navigate('/ChatList');
   };
   // 만남 초대장 요청
   const handleInvitationRequest = (notification: Notification) => {
     // TODO: InvitationRequest 알림 처리
   };
   // 상대가 만남 초대장 수락
-  const handleInvitationAccepted = (notification: Notification) => {
-    // TODO: InvitationAccepted 알림 처리
+  const handleInvitationAccepted = () => {
+    navigate('/Calendar');
   };
   // 상대가 만남 초대장 거절
   const handleInvitationRejected = (notification: Notification) => {
@@ -209,6 +209,7 @@ function AlarmPage() {
       <Modal
         isOpen={isRecFriendModal}
         onClose={() => setIsRecFriendModal(false)}
+        hideCloseButton={true}
       >
         <RecFriendModal
           notificationId={activeNotificationId}
