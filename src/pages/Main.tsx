@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { useAppSelector } from '../Utils/hooks';
-import toast from 'react-hot-toast';
-import { initializeFirebase } from '../Utils/fcm';
+import { useState, useEffect } from "react";
+import { useAppSelector, useAppDispatch } from "../Utils/hooks";
+import toast from "react-hot-toast";
+import { initializeFirebase } from "../Utils/fcm";
 import {
   setStatus,
   setSocketConnected,
@@ -9,23 +9,22 @@ import {
   clearMatchingTimeout,
   setSuccessData,
   setFailData,
-} 
-from '../Utils/matchingSlice';
-import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
-import btn1 from '../assets/img/button/btn1.webp';
-import btn2 from '../assets/img/button/btn2.webp';
-import bell_default from '../assets/img/icons/NavIcon/bell_default.svg';
-import bell_alarm from '../assets/img/icons/NavIcon/bell_alarm.svg';
-import NavBar from '../components/NavBar';
-import Modal from '../components/Modal';
-import MainModal from '../Modal/MainModal';
-import IsTestModal from '../Modal/IsTestModal';
-import { useDispatch } from 'react-redux';
-import { AppDispatch } from '../Utils/store';
-import { fetchUser } from '../Utils/userSlice';
-import { fetchSelfTestList } from '../Utils/selfTestSlice';
-import { startMatchingClient } from '../Utils/Matching';
+  setModalDismissed,
+} from "../Utils/matchingSlice";
+import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
+import btn1 from "../assets/img/button/btn1.webp";
+import btn2 from "../assets/img/button/btn2.webp";
+import bell_default from "../assets/img/icons/NavIcon/bell_default.svg";
+import bell_alarm from "../assets/img/icons/NavIcon/bell_alarm.svg";
+import NavBar from "../components/NavBar";
+import Modal from "../components/Modal";
+import MainModal from "../Modal/MainModal";
+import IsTestModal from "../Modal/IsTestModal";
+import RecommendModal from "../Modal/RecommendModal";
+import { fetchUser } from "../Utils/userSlice";
+import { fetchSelfTestList } from "../Utils/selfTestSlice";
+import { startMatchingClient } from "../Utils/Matching";
 import { useSelector } from "react-redux";
 import { RootState } from "../Utils/store";
 import { UserState } from "../Utils/userSlice";
@@ -37,11 +36,11 @@ import {
 import { MatchingContent, type MatchingStatus } from "../Utils/MatchingContent";
 
 function Main() {
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const [isAlarm, setIsAlarm] = useState(false);
   const [searchParams] = useSearchParams();
-  const isModalOpen = searchParams.get('modal') === 'true';
+  const isModalOpen = searchParams.get("modal") === "true";
   const [isTestModal, setIsTestModal] = useState(false);
   const location = useLocation();
   const fromMatching = location.state?.fromMatching === true;
@@ -50,6 +49,9 @@ function Main() {
     (state) => state.matching.isSocketConnected
   );
   const [locationAllowed, setLocationAllowed] = useState(false);
+
+  const [recommededUser, setRecommendedUser] = useState<number[]>([]);
+  const [isRecommendModalOpen, setIsRecommendModalOpen] = useState(false);
 
   const successData = useAppSelector((state) => state.matching.successData);
   const failData = useAppSelector((state) => state.matching.failData);
@@ -61,43 +63,43 @@ function Main() {
     const fetchData = async () => {
       try {
         await dispatch(fetchUser()).unwrap();
-        console.log('로그인 성공');
+        console.log("로그인 성공");
         await dispatch(fetchSelfTestList()).unwrap();
       } catch (error) {
-        console.warn('유저 정보 불러오기 실패 → 로그인 페이지로 이동', error);
-        navigate('/Login');
+        console.warn("유저 정보 불러오기 실패 → 로그인 페이지로 이동", error);
+        navigate("/Login");
         return;
       }
 
       if (!navigator.geolocation) {
-        console.error('위치 정보 지원 안됨');
+        console.error("위치 정보 지원 안됨");
         return;
       }
 
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           const { latitude, longitude } = position.coords;
-          console.log('위치:', { latitude, longitude });
+          console.log("위치:", { latitude, longitude });
           setLocationAllowed(true);
 
           try {
             await axios.patch(
-              'https://www.mannamdeliveries.link/api/user',
+              "https://www.mannamdeliveries.link/api/user",
               { latitude: latitude, longitude: longitude },
               {
                 headers: {
-                  'Content-Type': 'application/json',
+                  "Content-Type": "application/json",
                 },
                 withCredentials: true,
               }
             );
-            console.log('위치 전송 완료');
+            console.log("위치 전송 완료");
           } catch (error) {
-            console.error('위치 전송 실패', error);
+            console.error("위치 전송 실패", error);
           }
         },
         (error) => {
-          console.error('위치 정보 실패', error.message);
+          console.error("위치 정보 실패", error.message);
         }
       );
 
@@ -141,13 +143,16 @@ function Main() {
         console.log("매칭 성공", data);
         dispatch(clearMatchingTimeout());
         dispatch(setSuccessData(data));
-        dispatch(setStatus('success'));
+        dispatch(setStatus("success"));
       },
       onFail: (data) => {
         console.log("매칭 실패", data);
         dispatch(clearMatchingTimeout());
         dispatch(setFailData(data));
-        dispatch(setStatus('fail'));
+        const isEmpty =
+          Array.isArray(data?.recommendedUserIds) &&
+          data.recommendedUserIds.length === 0;
+        dispatch(setStatus(isEmpty ? "fail2" : "fail"));
       },
       onConnected: () => {
         dispatch(setSocketConnected(true)); // 연결 완료 시점
@@ -158,10 +163,11 @@ function Main() {
 
   const handleButton1ClickByStatus: Record<MatchingStatus, () => void> = {
     default: async () => {
-      // 자가 평가 점수가 없다면?
-      // 위치 설정 X
+      // 자가 평가 점수가 없다면? -> X
+      // 위치 설정 X -> X
+      // 이미 매칭이 있다면? -> X
       if (!locationAllowed) {
-        toast.error('위치 권한이 허용되어야 매칭을 시작할 수 있습니다.');
+        toast.error("위치 권한이 허용되어야 매칭을 시작할 수 있어요.");
         return;
       }
 
@@ -172,19 +178,19 @@ function Main() {
 
       try {
         const res = await axios.get(
-          'https://www.mannamdeliveries.link/api/matches/can-request',
+          "https://www.mannamdeliveries.link/api/matches/can-request",
           { withCredentials: true }
         );
 
         if (res.data === false) {
-          toast.error('이미 진행 중인 만남이 있어 매칭을 시작할 수 없어요.');
+          toast.error("이미 진행 중인 만남이 있어요.");
           return;
         }
 
         handleStartMatching();
       } catch (error) {
         console.error(error);
-        toast.error('매칭 가능 여부 확인에 실패했어요.');
+        toast.error("매칭 가능 여부 확인에 실패했어요.");
       }
     },
     matching: () => {
@@ -206,7 +212,44 @@ function Main() {
       navigate(`/survey/${successData?.surveySessionId}`);
     },
     fail: () => {
-      console.log(failData?.message);
+      const ids = failData?.recommendedUserIds;
+      if (Array.isArray(ids) && ids.length > 0) {
+        setRecommendedUser(ids);
+        setIsRecommendModalOpen(true);
+      } else {
+        toast.error("추천 유저에 문제가 생겼어요");
+      }
+    },
+    fail2: async () => {
+      // 자가 평가 점수가 없다면? -> X
+      // 위치 설정 X -> X
+      // 이미 매칭이 있다면? -> X
+      if (!locationAllowed) {
+        toast.error("위치 권한이 허용되어야 매칭을 시작할 수 있습니다.");
+        return;
+      }
+
+      if (!isTest) {
+        setIsTestModal(true);
+        return;
+      }
+
+      try {
+        const res = await axios.get(
+          "https://www.mannamdeliveries.link/api/matches/can-request",
+          { withCredentials: true }
+        );
+
+        if (res.data === false) {
+          toast.error("이미 진행 중인 만남이 있어요.");
+          return;
+        }
+
+        handleStartMatching();
+      } catch (error) {
+        console.error(error);
+        toast.error("매칭 가능 여부 확인에 실패했어요.");
+      }
     },
   };
 
@@ -221,6 +264,16 @@ function Main() {
       navigate("/main?modal=true");
     },
     fail: () => {
+      const client = getMatchingClient();
+      if (client) {
+        client.disconnect();
+        clearMatchingClient();
+      }
+      dispatch(clearMatchingTimeout());
+      dispatch(setStatus("default"));
+      dispatch(setSocketConnected(false));
+    },
+    fail2: () => {
       const client = getMatchingClient();
       if (client) {
         client.disconnect();
@@ -290,6 +343,13 @@ function Main() {
 
       <Modal isOpen={isTestModal} onClose={() => setIsTestModal(false)}>
         <IsTestModal />
+      </Modal>
+
+      <Modal
+        isOpen={isRecommendModalOpen}
+        onClose={() => setIsRecommendModalOpen(false)}
+      >
+        <RecommendModal userIds={recommededUser} />
       </Modal>
     </>
   );

@@ -5,9 +5,15 @@ interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   children: ReactNode;
+  hideCloseButton?: boolean;
 }
 
-const Modal: FC<ModalProps> = ({ isOpen, onClose, children }) => {
+const Modal: FC<ModalProps> = ({
+  isOpen,
+  onClose,
+  children,
+  hideCloseButton,
+}) => {
   return (
     <AnimatePresence>
       {isOpen && (
@@ -31,12 +37,14 @@ const Modal: FC<ModalProps> = ({ isOpen, onClose, children }) => {
               className="bg-white w-[90%] max-w-[320px] rounded-2xl shadow-md p-6 relative"
               onClick={(e) => e.stopPropagation()}
             >
-              <button
-                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-lg cursor-pointer"
-                onClick={onClose}
-              >
-                ✕
-              </button>
+              {!hideCloseButton && (
+                <button
+                  className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-lg cursor-pointer"
+                  onClick={onClose}
+                >
+                  ✕
+                </button>
+              )}
               {children}
             </div>
           </motion.div>

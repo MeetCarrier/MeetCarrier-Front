@@ -1,8 +1,8 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import axios from 'axios';
 
-export const fetchUser = createAsyncThunk("user/fetchUser", async () => {
-  const res = await axios.get("https://www.mannamdeliveries.link/api/user", {
+export const fetchUser = createAsyncThunk('user/fetchUser', async () => {
+  const res = await axios.get('https://www.mannamdeliveries.link/api/user', {
     withCredentials: true,
   });
   return res.data;
@@ -16,7 +16,6 @@ export interface UserState {
   latitude: number;
   longitude: number;
   age: number;
-  personalities: string;
   interests: string;
   footprint: number;
   question: string;
@@ -30,7 +29,7 @@ export interface UserState {
 const initialState: UserState | null = null;
 
 const userSlice = createSlice({
-  name: "user",
+  name: 'user',
   initialState,
   reducers: {
     resetUser: () => null,
