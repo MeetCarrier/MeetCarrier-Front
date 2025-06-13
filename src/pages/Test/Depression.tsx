@@ -112,7 +112,7 @@ const Depression = () => {
           </div>
 
           <div className="flex justify-center mt-6">
-            <div className=" w-[95%] my-[1%] border-[1px] border-[#333333]/50"></div>
+            <div className=" w-[95%] my-[1%] border-[1px] border-[#333333]/20"></div>
           </div>
         </div>
       ))}

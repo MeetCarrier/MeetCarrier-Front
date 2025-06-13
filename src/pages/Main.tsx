@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
-import { useAppSelector, useAppDispatch } from "../Utils/hooks";
-import toast from "react-hot-toast";
-import { initializeFirebase } from "../Utils/fcm";
+import { useState, useEffect } from 'react';
+import { useAppSelector, useAppDispatch } from '../Utils/hooks';
+import toast from 'react-hot-toast';
+import { initializeFirebase } from '../Utils/fcm';
 import {
   setStatus,
   setSocketConnected,
@@ -9,34 +9,35 @@ import {
   clearMatchingTimeout,
   setSuccessData,
   setFailData,
-} from "../Utils/matchingSlice";
-import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
-import axios from "axios";
-import btn1 from "../assets/img/button/btn1.webp";
-import btn2 from "../assets/img/button/btn2.webp";
-import bell_default from "../assets/img/icons/NavIcon/bell_default.svg";
-import bell_alarm from "../assets/img/icons/NavIcon/bell_alarm.svg";
-import NavBar from "../components/NavBar";
-import Modal from "../components/Modal";
-import MainModal from "../Modal/MainModal";
-import IsTestModal from "../Modal/IsTestModal";
-import RecommendModal from "../Modal/RecommendModal";
-import { fetchUser } from "../Utils/userSlice";
-import { fetchSelfTestList } from "../Utils/selfTestSlice";
-import { startMatchingClient } from "../Utils/Matching";
+} from '../Utils/matchingSlice';
+import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
+import axios from 'axios';
+import btn1 from '../assets/img/button/btn1.webp';
+import btn2 from '../assets/img/button/btn2.webp';
+import bell_default from '../assets/img/icons/NavIcon/bell_default.svg';
+import bell_alarm from '../assets/img/icons/NavIcon/bell_alarm.svg';
+import NavBar from '../components/NavBar';
+import Modal from '../components/Modal';
+import MainModal from '../Modal/MainModal';
+import IsTestModal from '../Modal/IsTestModal';
+import RecommendModal from '../Modal/RecommendModal';
+import { fetchUser } from '../Utils/userSlice';
+import { fetchSelfTestList } from '../Utils/selfTestSlice';
+import { startMatchingClient } from '../Utils/Matching';
 import {
   setMatchingClient,
   getMatchingClient,
   clearMatchingClient,
-} from "../Utils/matchingClientInstance";
-import { MatchingContent, type MatchingStatus } from "../Utils/MatchingContent";
+} from '../Utils/matchingClientInstance';
+import { MatchingContent, type MatchingStatus } from '../Utils/MatchingContent';
+import { useUnreadAlarm } from '../Utils/useUnreadAlarm';
 
 function Main() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const [isAlarm, setIsAlarm] = useState(false);
+  const isAlarm = useUnreadAlarm();
   const [searchParams] = useSearchParams();
-  const isModalOpen = searchParams.get("modal") === "true";
+  const isModalOpen = searchParams.get('modal') === 'true';
   const [isTestModal, setIsTestModal] = useState(false);
   const location = useLocation();
   const fromMatching = location.state?.fromMatching === true;
@@ -59,43 +60,43 @@ function Main() {
     const fetchData = async () => {
       try {
         await dispatch(fetchUser()).unwrap();
-        console.log("로그인 성공");
+        console.log('로그인 성공');
         await dispatch(fetchSelfTestList()).unwrap();
       } catch (error) {
-        console.warn("유저 정보 불러오기 실패 → 로그인 페이지로 이동", error);
-        navigate("/Login");
+        console.warn('유저 정보 불러오기 실패 → 로그인 페이지로 이동', error);
+        navigate('/Login');
         return;
       }
 
       if (!navigator.geolocation) {
-        console.error("위치 정보 지원 안됨");
+        console.error('위치 정보 지원 안됨');
         return;
       }
 
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           const { latitude, longitude } = position.coords;
-          console.log("위치:", { latitude, longitude });
+          console.log('위치:', { latitude, longitude });
           setLocationAllowed(true);
 
           try {
             await axios.patch(
-              "https://www.mannamdeliveries.link/api/user",
+              'https://www.mannamdeliveries.link/api/user',
               { latitude: latitude, longitude: longitude },
               {
                 headers: {
-                  "Content-Type": "application/json",
+                  'Content-Type': 'application/json',
                 },
                 withCredentials: true,
               }
             );
-            console.log("위치 전송 완료");
+            console.log('위치 전송 완료');
           } catch (error) {
-            console.error("위치 전송 실패", error);
+            console.error('위치 전송 실패', error);
           }
         },
         (error) => {
-          console.error("위치 정보 실패", error.message);
+          console.error('위치 정보 실패', error.message);
         }
       );
 
@@ -105,30 +106,13 @@ function Main() {
     fetchData();
   }, [dispatch, navigate]);
 
-  useEffect(() => {
-    const checkUnreadAlarms = async () => {
-      try {
-        const res = await axios.get(
-          "https://www.mannamdeliveries.link/api/notification/has-unread",
-          { withCredentials: true }
-        );
-        setIsAlarm(res.data === true);
-        console.log("알림 유뮤", res.data);
-      } catch (err) {
-        console.error("알림 확인 실패:", err);
-      }
-    };
-
-    checkUnreadAlarms();
-  }, []);
-
   // 매칭 시작
   const handleStartMatching = () => {
-    dispatch(setStatus("matching"));
+    dispatch(setStatus('matching'));
 
     const timeoutId = window.setTimeout(() => {
-      console.log("매칭 시간 초과");
-      dispatch(setStatus("fail"));
+      console.log('매칭 시간 초과');
+      dispatch(setStatus('fail'));
       dispatch(clearMatchingTimeout());
     }, 600000);
 
@@ -136,19 +120,19 @@ function Main() {
 
     const client = startMatchingClient({
       onSuccess: (data) => {
-        console.log("매칭 성공", data);
+        console.log('매칭 성공', data);
         dispatch(clearMatchingTimeout());
         dispatch(setSuccessData(data));
-        dispatch(setStatus("success"));
+        dispatch(setStatus('success'));
       },
       onFail: (data) => {
-        console.log("매칭 실패", data);
+        console.log('매칭 실패', data);
         dispatch(clearMatchingTimeout());
         dispatch(setFailData(data));
         const isEmpty =
           Array.isArray(data?.recommendedUserIds) &&
           data.recommendedUserIds.length === 0;
-        dispatch(setStatus(isEmpty ? "fail2" : "fail"));
+        dispatch(setStatus(isEmpty ? 'fail2' : 'fail'));
       },
       onConnected: () => {
         dispatch(setSocketConnected(true)); // 연결 완료 시점
@@ -163,7 +147,7 @@ function Main() {
       // 위치 설정 X -> X
       // 이미 매칭이 있다면? -> X
       if (!locationAllowed) {
-        toast.error("위치 권한이 허용되어야 매칭을 시작할 수 있어요.");
+        toast.error('위치 권한이 허용되어야 매칭을 시작할 수 있어요.');
         return;
       }
 
@@ -174,26 +158,26 @@ function Main() {
 
       try {
         const res = await axios.get(
-          "https://www.mannamdeliveries.link/api/matches/can-request",
+          'https://www.mannamdeliveries.link/api/matches/can-request',
           { withCredentials: true }
         );
 
         if (res.data === false) {
-          toast.error("이미 진행 중인 만남이 있어요.");
+          toast.error('이미 진행 중인 만남이 있어요.');
           return;
         }
 
         handleStartMatching();
       } catch (error) {
         console.error(error);
-        toast.error("매칭 가능 여부 확인에 실패했어요.");
+        toast.error('매칭 가능 여부 확인에 실패했어요.');
       }
     },
     matching: () => {
       const client = getMatchingClient();
       // 소켓 연결 중 해제
       if (!isSocketConnected) {
-        console.log("아직 연결되지 않았습니다.");
+        console.log('아직 연결되지 않았습니다.');
         return;
       }
       if (client) {
@@ -201,7 +185,7 @@ function Main() {
         clearMatchingClient();
       }
       dispatch(clearMatchingTimeout());
-      dispatch(setStatus("default"));
+      dispatch(setStatus('default'));
       dispatch(setSocketConnected(false));
     },
     success: () => {
@@ -213,7 +197,7 @@ function Main() {
         setRecommendedUser(ids);
         setIsRecommendModalOpen(true);
       } else {
-        toast.error("추천 유저에 문제가 생겼어요");
+        toast.error('추천 유저에 문제가 생겼어요');
       }
     },
     fail2: async () => {
@@ -221,7 +205,7 @@ function Main() {
       // 위치 설정 X -> X
       // 이미 매칭이 있다면? -> X
       if (!locationAllowed) {
-        toast.error("위치 권한이 허용되어야 매칭을 시작할 수 있습니다.");
+        toast.error('위치 권한이 허용되어야 매칭을 시작할 수 있습니다.');
         return;
       }
 
@@ -232,32 +216,32 @@ function Main() {
 
       try {
         const res = await axios.get(
-          "https://www.mannamdeliveries.link/api/matches/can-request",
+          'https://www.mannamdeliveries.link/api/matches/can-request',
           { withCredentials: true }
         );
 
         if (res.data === false) {
-          toast.error("이미 진행 중인 만남이 있어요.");
+          toast.error('이미 진행 중인 만남이 있어요.');
           return;
         }
 
         handleStartMatching();
       } catch (error) {
         console.error(error);
-        toast.error("매칭 가능 여부 확인에 실패했어요.");
+        toast.error('매칭 가능 여부 확인에 실패했어요.');
       }
     },
   };
 
   const handleButton2ClickByStatus: Record<MatchingStatus, () => void> = {
     default: () => {
-      navigate("/main?modal=true");
+      navigate('/main?modal=true');
     },
     matching: () => {
-      navigate("/main?modal=true", { state: { fromMatching: true } });
+      navigate('/main?modal=true', { state: { fromMatching: true } });
     },
     success: () => {
-      navigate("/main?modal=true");
+      navigate('/main?modal=true');
     },
     fail: () => {
       const client = getMatchingClient();
@@ -266,7 +250,7 @@ function Main() {
         clearMatchingClient();
       }
       dispatch(clearMatchingTimeout());
-      dispatch(setStatus("default"));
+      dispatch(setStatus('default'));
       dispatch(setSocketConnected(false));
     },
     fail2: () => {
@@ -276,13 +260,13 @@ function Main() {
         clearMatchingClient();
       }
       dispatch(clearMatchingTimeout());
-      dispatch(setStatus("default"));
+      dispatch(setStatus('default'));
       dispatch(setSocketConnected(false));
     },
   };
 
   const handlebellClick = () => {
-    navigate("/Alarm");
+    navigate('/Alarm');
   };
 
   return (
@@ -333,7 +317,7 @@ function Main() {
         />
       </div>
 
-      <Modal isOpen={isModalOpen} onClose={() => navigate("/main")}>
+      <Modal isOpen={isModalOpen} onClose={() => navigate('/main')}>
         <MainModal fromMatching={fromMatching} />
       </Modal>
 

@@ -1,17 +1,19 @@
-import { useEffect } from "react";
-import NavBar from "../../components/NavBar";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState, AppDispatch } from "../../Utils/store";
-import { fetchUser, UserState } from "../../Utils/userSlice";
-import { useNavigate } from "react-router-dom";
+import { useEffect } from 'react';
+import NavBar from '../../components/NavBar';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState, AppDispatch } from '../../Utils/store';
+import { fetchUser, UserState } from '../../Utils/userSlice';
+import { useNavigate } from 'react-router-dom';
+import { useUnreadAlarm } from '../../Utils/useUnreadAlarm';
 
-import bellIcon from "../../assets/img/icons/NavIcon/bell_default.svg";
-import arrowIcon from "../../assets/img/icons/HobbyIcon/back_arrow.svg";
-import stampImage from "../../assets/img/stamp.svg";
-import defaultProfileImg from "../../assets/img/sample/sample_profile.svg";
+import bell_default from '../../assets/img/icons/NavIcon/bell_default.svg';
+import bell_alarm from '../../assets/img/icons/NavIcon/bell_alarm.svg';
+import arrowIcon from '../../assets/img/icons/HobbyIcon/back_arrow.svg';
+import stampImage from '../../assets/img/stamp.svg';
+import defaultProfileImg from '../../assets/img/sample/sample_profile.svg';
 
-import PsychTestList from "./PsychTestList";
-import ReviewList from "./ReviewList";
+import PsychTestList from './PsychTestList';
+import ReviewList from './ReviewList';
 
 function ProfilePage() {
   const dispatch = useDispatch<AppDispatch>();
@@ -24,20 +26,26 @@ function ProfilePage() {
     if (!user) dispatch(fetchUser());
   }, [dispatch, user]);
 
+  const isAlarm = useUnreadAlarm();
+
+  const handlebellClick = () => {
+    navigate('/Alarm');
+  };
+
   // 더미 데이터 대체용
   const fallbackUser: UserState = {
     userId: 0,
-    socialType: "KAKAO",
-    nickname: "밥만 잘먹더라",
-    gender: "Male",
+    socialType: 'KAKAO',
+    nickname: '밥만 잘먹더라',
+    gender: 'Male',
     latitude: 0,
     longitude: 0,
     age: 21,
-    interests: "",
+    interests: '',
     footprint: 245,
-    question: "",
-    questionList: "",
-    imgUrl: "",
+    question: '',
+    questionList: '',
+    imgUrl: '',
     maxAgeGap: 0,
     allowOppositeGender: true,
     maxMatchingDistance: 0,
@@ -49,8 +57,8 @@ function ProfilePage() {
   const percentage = Math.min((footprint / footprintGoal) * 100, 100);
 
   useEffect(() => {
-    console.log("닉네임:", displayUser.nickname);
-    console.log("성별:", displayUser.gender);
+    console.log('닉네임:', displayUser.nickname);
+    console.log('성별:', displayUser.gender);
   }, [displayUser]);
 
   return (
@@ -58,10 +66,10 @@ function ProfilePage() {
       <NavBar />
 
       <div className="w-[100%] px-4 max-w-md h-[calc(100vh-100px)] overflow-y-auto flex flex-col items-center space-y-3 mt-26">
-        {" "}
+        {' '}
         {/* 내 정보 요약 */}
         <button
-          onClick={() => navigate("/profile/edit")}
+          onClick={() => navigate('/profile/edit')}
           className="flex items-center justify-between w-full px-4 py-2 cursor-pointer"
         >
           {/* 우표형 프로필 */}
@@ -70,8 +78,8 @@ function ProfilePage() {
               className="relative w-[50px] h-[50px]"
               style={{
                 backgroundImage: `url(${stampImage})`,
-                backgroundSize: "cover",
-                backgroundRepeat: "no-repeat",
+                backgroundSize: 'cover',
+                backgroundRepeat: 'no-repeat',
               }}
             >
               <img
@@ -86,8 +94,8 @@ function ProfilePage() {
                 {displayUser.nickname}
               </div>
               <div className="text-sm text-[#999999] font-GanwonEduAll_Light">
-                {displayUser.age}세 ·{" "}
-                {displayUser.gender === "Male" ? "남성" : "여성"}
+                {displayUser.age}세 ·{' '}
+                {displayUser.gender === 'Male' ? '남성' : '여성'}
               </div>
             </div>
           </div>
@@ -119,9 +127,9 @@ function ProfilePage() {
         <PsychTestList />
         <ReviewList
           reviews={[
-            { content: "친절하고 배려심 있어요", count: 11 },
-            { content: "재밌어요", count: 9 },
-            { content: "말이 잘 통해요", count: 1 },
+            { content: '친절하고 배려심 있어요', count: 11 },
+            { content: '재밌어요', count: 9 },
+            { content: '말이 잘 통해요', count: 1 },
           ]}
         />
       </div>
@@ -130,9 +138,10 @@ function ProfilePage() {
       <div className="absolute top-[50px] text-[#333333] left-0 right-0 px-6 text-center">
         <p className="text-[20px] font-MuseumClassic_L italic">마이페이지</p>
         <img
-          src={bellIcon}
+          src={isAlarm ? bell_alarm : bell_default}
           alt="bell_default"
           className="absolute top-1/2 -translate-y-1/2 right-6 w-[20px] h-[20px]"
+          onClick={handlebellClick}
         />
       </div>
     </>

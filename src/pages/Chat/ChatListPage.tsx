@@ -1,14 +1,16 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "../../Utils/store";
-import { fetchUser, UserState } from "../../Utils/userSlice";
-import { fetchUserById, UserProfileData } from "../../Utils/api";
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '../../Utils/store';
+import { fetchUser, UserState } from '../../Utils/userSlice';
+import { fetchUserById, UserProfileData } from '../../Utils/api';
+import { useUnreadAlarm } from '../../Utils/useUnreadAlarm';
 
-import NavBar from "../../components/NavBar";
-import ItemCard from "./components/ItemCard";
-import ProfileModal from "../../components/ProfileModal";
-import bell_default from "../../assets/img/icons/NavIcon/bell_default.svg";
+import NavBar from '../../components/NavBar';
+import ItemCard from './components/ItemCard';
+import ProfileModal from '../../components/ProfileModal';
+import bell_default from '../../assets/img/icons/NavIcon/bell_default.svg';
+import bell_alarm from '../../assets/img/icons/NavIcon/bell_alarm.svg';
 
 type MatchData = {
   id: number;
@@ -33,6 +35,7 @@ type MatchData = {
 function ChatListPage() {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+  const isAlarm = useUnreadAlarm();
   const [matchList, setMatchList] = useState<MatchData[]>([]);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserProfileData | null>(
@@ -48,13 +51,13 @@ function ChatListPage() {
 
     const fetchMatches = async () => {
       try {
-        console.log("[매치 불러오기] API 호출 시작...");
+        console.log('[매치 불러오기] API 호출 시작...');
         const res = await fetch(
-          "https://www.mannamdeliveries.link/api/matches",
+          'https://www.mannamdeliveries.link/api/matches',
           {
-            credentials: "include",
+            credentials: 'include',
             headers: {
-              "Content-Type": "application/json",
+              'Content-Type': 'application/json',
             },
           }
         );
@@ -66,10 +69,10 @@ function ChatListPage() {
         }
 
         const data = await res.json();
-        console.log("[매치 불러오기] 성공:", data);
+        console.log('[매치 불러오기] 성공:', data);
         setMatchList(data);
       } catch (e) {
-        console.error("[매치 불러오기] 실패:", e);
+        console.error('[매치 불러오기] 실패:', e);
       }
     };
 
@@ -77,15 +80,15 @@ function ChatListPage() {
   }, [dispatch]);
 
   const chattingList = matchList.filter(
-    (m) => m.status === "Chatting" && m.agreed === true
+    (m) => m.status === 'Chatting' && m.agreed === true
   );
   const surveyList = matchList.filter(
     (m) =>
-      m.status === "Surveying" ||
-      (m.status === "Chatting" && m.agreed === false)
+      m.status === 'Surveying' ||
+      (m.status === 'Chatting' && m.agreed === false)
   );
   const cancelledList = matchList.filter(
-    (m) => m.status === "Survey_Cancelled" || m.status === "Chat_Cancelled"
+    (m) => m.status === 'Survey_Cancelled' || m.status === 'Chat_Cancelled'
   );
 
   const handleChatClick = (match: MatchData) => {
@@ -106,7 +109,7 @@ function ChatListPage() {
 
   const handleReviewClick = (match: MatchData) => {
     // TODO: 후기 작성 페이지로 이동
-    console.log("후기 작성:", match);
+    console.log('후기 작성:', match);
   };
 
   const handleProfileClick = async (opponentId: number) => {
@@ -115,15 +118,19 @@ function ChatListPage() {
       setSelectedUser({
         ...userData,
         footprint:
-          typeof userData.footprint === "string"
+          typeof userData.footprint === 'string'
             ? Number(userData.footprint)
             : userData.footprint,
         imageUrl: userData.imageUrl ?? null,
       });
       setShowProfileModal(true);
     } catch (error) {
-      console.error("사용자 정보 조회 실패:", error);
+      console.error('사용자 정보 조회 실패:', error);
     }
+  };
+
+  const handlebellClick = () => {
+    navigate('/Alarm');
   };
 
   return (
@@ -133,9 +140,10 @@ function ChatListPage() {
       <div className="absolute top-[50px] text-[#333333] left-0 right-0 px-6 text-center">
         <p className="text-[20px] font-MuseumClassic_L italic">만남 센터</p>
         <img
-          src={bell_default}
+          src={isAlarm ? bell_alarm : bell_default}
           alt="bell_default"
           className="absolute top-1/2 -translate-y-1/2 right-6 w-[20px] h-[20px]"
+          onClick={handlebellClick}
         />
       </div>
 
@@ -233,9 +241,9 @@ function ChatListPage() {
                     onProfileClick={() => handleProfileClick(opponentId)}
                     onClickReview={() => handleReviewClick(cancelled)}
                     onClick={() => {
-                      if (cancelled.status === "Survey_Cancelled") {
+                      if (cancelled.status === 'Survey_Cancelled') {
                         handleSurveyClick(cancelled);
-                      } else if (cancelled.status === "Chat_Cancelled") {
+                      } else if (cancelled.status === 'Chat_Cancelled') {
                         handleChatClick(cancelled);
                       }
                     }}

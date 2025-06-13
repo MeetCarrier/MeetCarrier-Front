@@ -92,7 +92,7 @@ function TestResult() {
       </div>
 
       <div className="flex flex-col w-full h-[calc(100%-200px)] overflow-y-auto z-0">
-        <div className="relative w-[280px] h-[280px] mx-auto shrink-0">
+        <div className="relative w-[280px] h-[280px] mx-auto shrink-0 pointer-events-none">
           <ResponsiveRadar
             data={data}
             keys={keys}
@@ -101,24 +101,24 @@ function TestResult() {
             margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
             curve="linearClosed"
             borderWidth={2}
-            borderColor={{ from: 'color' }}
+            borderColor={() => '#BD4B2C'}
             gridLevels={5}
             gridShape="linear"
             gridLabelOffset={-999}
             enableDots={false}
-            colors={{ scheme: 'nivo' }}
+            colors={() => 'rgba(189, 75, 44, 0.3)'}
             fillOpacity={10}
             blendMode="multiply"
             animate={true}
             motionConfig="wobbly"
           />
-          <div className="absolute left-1/2 top-[2%] -translate-x-1/2 text-xs text-[#333]">
+          <div className="absolute font-GanwonEduAll_Light left-1/2 top-[2%] -translate-x-1/2 text-xs text-[#333]">
             자기효능감
           </div>
-          <div className="absolute left-[4%] bottom-[20%] text-xs text-[#333] text-center">
+          <div className="absolute font-GanwonEduAll_Light left-[4%] bottom-[20%] text-xs text-[#333] text-center">
             대인관계능력
           </div>
-          <div className="absolute right-[4%] bottom-[20%] text-xs text-[#333] text-center">
+          <div className="absolute font-GanwonEduAll_Light right-[4%] bottom-[20%] text-xs text-[#333] text-center">
             우울감·정서상태
           </div>
         </div>

@@ -79,8 +79,8 @@ const MainModal: FC<MainModalProps> = ({ fromMatching = false }) => {
         <li className="py-3">
           <div className="flex justify-between items-center">
             <div className="flex gap-2">
-              <img src={icon_like} alt="관심사" className="w-4.5 h-4.5" />
-              <span className="font-medium font-GanwonEduAll_Bold text-[#333333] text-sm">
+              <img src={icon_like} alt="관심사" className="w-5 h-5 mt-1" />
+              <span className="font-medium font-GanwonEduAll_Bold text-[#333333] text-[18px]">
                 관심사
               </span>
             </div>
@@ -94,7 +94,7 @@ const MainModal: FC<MainModalProps> = ({ fromMatching = false }) => {
             )}
           </div>
           <div>
-            <span className="text-gray-500 mt-1 text-xs font-GanwonEduAll_Light line-clamp-3">
+            <span className="text-gray-500 mt-1 text-[14px] font-GanwonEduAll_Light line-clamp-3">
               {interestsText}
             </span>
           </div>
@@ -103,8 +103,8 @@ const MainModal: FC<MainModalProps> = ({ fromMatching = false }) => {
         <li className="py-3">
           <div className="flex justify-between items-center">
             <div className="flex gap-2">
-              <img src={icon_cloud} alt="질문" className="w-4.5 h-4.5" />
-              <span className="font-medium font-GanwonEduAll_Bold text-[#333333] text-sm">
+              <img src={icon_cloud} alt="질문" className="w-6 h-6 mt-1" />
+              <span className="font-medium font-GanwonEduAll_Bold text-[#333333] text-[18px]">
                 친구에게 물어보고 싶은 질문
               </span>
             </div>
@@ -118,7 +118,7 @@ const MainModal: FC<MainModalProps> = ({ fromMatching = false }) => {
             )}
           </div>
           <div>
-            <span className="text-gray-500 mt-1 text-xs font-GanwonEduAll_Light line-clamp-3">
+            <span className="text-gray-500 mt-1 text-[14px] font-GanwonEduAll_Light line-clamp-3">
               {questionsText}
             </span>
           </div>
@@ -127,8 +127,8 @@ const MainModal: FC<MainModalProps> = ({ fromMatching = false }) => {
         <li className="py-3">
           <div className="flex justify-between items-center">
             <div className="flex gap-2">
-              <img src={icon_vector} alt="거리" className="w-4.5 h-4.5" />
-              <span className="font-medium font-GanwonEduAll_Bold text-[#333333] text-sm">
+              <img src={icon_vector} alt="거리" className="w-5 h-5 mt-1" />
+              <span className="font-medium font-GanwonEduAll_Bold text-[#333333] text-[18px]">
                 범위 설정
               </span>
             </div>
@@ -142,26 +142,26 @@ const MainModal: FC<MainModalProps> = ({ fromMatching = false }) => {
             )}
           </div>
           <div className="flex justify-between items-center mt-1">
-            <span className="text-gray-500 text-xs font-GanwonEduAll_Light">
+            <span className="text-gray-500 text-[14px] font-GanwonEduAll_Light">
               매칭 거리
             </span>
-            <span className="text-gray-500 text-xs font-GanwonEduAll_Light">
+            <span className="text-gray-500 text-[14px] font-GanwonEduAll_Light">
               {distanceText}
             </span>
           </div>
           <div className="flex justify-between items-center mt-1">
-            <span className="text-gray-500 text-xs font-GanwonEduAll_Light">
+            <span className="text-gray-500 text-[14px] font-GanwonEduAll_Light">
               상대와 연령 차이
             </span>
-            <span className="text-gray-500 text-xs font-GanwonEduAll_Light">
+            <span className="text-gray-500 text-[14px] font-GanwonEduAll_Light">
               {ageGapText}
             </span>
           </div>
           <div className="flex justify-between items-center mt-1">
-            <span className="text-gray-500 text-xs font-GanwonEduAll_Light">
+            <span className="text-gray-500 text-[14px] font-GanwonEduAll_Light">
               이성 매칭 허용
             </span>
-            <span className="text-gray-500 text-xs font-GanwonEduAll_Light">
+            <span className="text-gray-500 text-[14px] font-GanwonEduAll_Light">
               {genderAllowText}
             </span>
           </div>
@@ -173,9 +173,9 @@ const MainModal: FC<MainModalProps> = ({ fromMatching = false }) => {
               <img
                 src={icon_check}
                 alt="자기 평가 테스트"
-                className="w-4.5 h-4.5"
+                className="w-5 h-5 mt-1"
               />
-              <span className="font-medium text-sm font-GanwonEduAll_Bold text-[#333333]">
+              <span className="font-medium text-[18px] font-GanwonEduAll_Bold text-[#333333]">
                 자기 평가 테스트
               </span>
             </div>
@@ -189,7 +189,7 @@ const MainModal: FC<MainModalProps> = ({ fromMatching = false }) => {
             )}
           </div>
           <div>
-            <span className="text-gray-500 text-xs font-GanwonEduAll_Light">
+            <span className="text-gray-500 text-[14px] font-GanwonEduAll_Light">
               {latestTestDate
                 ? `${latestTestDate}`
                 : "아직 '자기 평가 테스트'를 하지 않았어요!"}
