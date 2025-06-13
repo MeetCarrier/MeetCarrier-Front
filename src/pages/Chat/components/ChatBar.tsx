@@ -59,7 +59,6 @@ function ChatBar({
   senderName = "나",
   recipientName = "상대방",
   senderProfile,
-  onInviteClick,
   onSurveyClick,
   matchId,
   receiverId,
@@ -358,10 +357,6 @@ function ChatBar({
         matchId={matchId}
         receiverId={receiverId}
         roomId={roomId}
-        onSubmit={() => {
-          onInviteClick();
-          setShowInviteModal(false);
-        }}
       />
 
       <EndModal

@@ -30,7 +30,6 @@ import exitIcon from "../../assets/img/icons/Survey/exit.svg";
 import reportIcon from "../../assets/img/icons/Survey/report.svg";
 import ReportModal from "../../components/ReportModal";
 import largeNextButton from "../../assets/img/icons/Login/l_btn_fill.svg";
-import lockIcon from "../../assets/img/icons/Survey/lock.svg";
 import ProfileModal from "../../components/ProfileModal";
 import EndModal from "../../components/EndModal";
 import SurveySlide from "./components/SurveySlide";
@@ -531,11 +530,6 @@ function SurveyPage() {
     );
   };
 
-  const getLabeledQuestionTitle = (index: number, total: number) => {
-    const labels = ["첫", "두", "세", "네"];
-    return index === total - 1 ? "마지막-질문" : `${labels[index]}번째-질문`;
-  };
-
   const handleJoinChat = async () => {
     console.log("채팅방 참가 시도:", {
       realSessionId,
@@ -768,7 +762,7 @@ function SurveyPage() {
                 index={index}
                 questionsLength={questions.length}
                 allAnswers={answers}
-                myId={myId}
+                myId={myId ?? null}
                 myNickname={myNickname}
                 otherNickname={otherNickname}
                 isEditing={isEditing}
@@ -918,11 +912,6 @@ function SurveyPage() {
             };
             console.log("[설문 신고 전송]", reportBody);
 
-            const response = await axios.post(
-              `https://www.mannamdeliveries.link/api/survey/${realSessionId}/report`,
-              reportBody,
-              { withCredentials: true }
-            );
             alert("신고가 접수되었습니다.");
             setShowReportModal(false);
           } catch (error) {

@@ -321,11 +321,11 @@ function ChatPage() {
   let otherNickname = "상대방";
   if (matchData) {
     if (user?.userId === matchData.user1Id) {
-      myNickname = matchData.user1Nickname;
-      otherNickname = matchData.user2Nickname;
+      myNickname = matchData.user1Nickname ?? "";
+      otherNickname = matchData.user2Nickname ?? "";
     } else if (user?.userId === matchData.user2Id) {
-      myNickname = matchData.user2Nickname;
-      otherNickname = matchData.user1Nickname;
+      myNickname = matchData.user2Nickname ?? "";
+      otherNickname = matchData.user1Nickname ?? "";
     }
   }
 
@@ -369,8 +369,8 @@ function ChatPage() {
         matchId={matchData?.id || 0}
         receiverId={
           user?.userId === matchData?.user1Id
-            ? matchData?.user2Id
-            : matchData?.user1Id || 0
+            ? matchData?.user2Id ?? 0
+            : matchData?.user1Id ?? 0
         }
         roomId={state.roomId}
         onInviteClick={() => {
@@ -386,8 +386,8 @@ function ChatPage() {
               matchId: matchData?.id || 0,
               receiverId:
                 user?.userId === matchData?.user1Id
-                  ? matchData?.user2Id
-                  : matchData?.user1Id || 0,
+                  ? matchData?.user2Id ?? 0
+                  : matchData?.user1Id ?? 0,
               roomId: state.roomId,
             },
           });
@@ -411,7 +411,6 @@ function ChatPage() {
           navigate("/ChatList");
         }}
         stompClient={stompClientRef.current}
-        isDisabled={matchData?.status === "Chat_Cancelled"}
       />
 
       {/* 알림 바 */}
@@ -447,11 +446,11 @@ function ChatPage() {
           let myNickname = "나";
           let opponentNickname = "상대방";
           if (myId === matchData?.user1Id) {
-            myNickname = matchData.user1Nickname;
-            opponentNickname = matchData.user2Nickname;
+            myNickname = matchData?.user1Nickname ?? "";
+            opponentNickname = matchData?.user2Nickname ?? "";
           } else if (myId === matchData?.user2Id) {
-            myNickname = matchData.user2Nickname;
-            opponentNickname = matchData.user1Nickname;
+            myNickname = matchData?.user2Nickname ?? "";
+            opponentNickname = matchData?.user1Nickname ?? "";
           }
           const nickname = isMine ? myNickname : opponentNickname;
           const isPrevSameSender =

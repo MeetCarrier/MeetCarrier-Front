@@ -3,15 +3,16 @@ import Modal from "./Modal";
 import stampImage from "../assets/img/stamp.svg";
 import defaultProfileImg from "../assets/img/sample/sample_profile.svg";
 
-interface UserProfileData {
-  age: number;
-  gender: string;
-  footprint: number;
-  imgUrl?: string;
+export type UserProfileData = {
+  userId: number;
+  nickname: string;
+  imageUrl: string | null;
+  age?: number;
+  gender?: string;
+  footprint?: number;
   interests?: string;
   question?: string;
-  nickname: string;
-}
+};
 
 interface ProfileModalProps {
   isOpen: boolean;
@@ -24,10 +25,10 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
   onClose,
   user,
 }) => {
-  const { nickname, age, gender, footprint, imgUrl, interests, question } =
+  const { nickname, age, gender, footprint, imageUrl, interests, question } =
     user;
   const footprintGoal = 1000;
-  const percentage = Math.min((footprint / footprintGoal) * 100, 100);
+  const percentage = Math.min(((footprint ?? 0) / footprintGoal) * 100, 100);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -43,7 +44,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
             }}
           >
             <img
-              src={imgUrl || defaultProfileImg}
+              src={imageUrl || defaultProfileImg}
               alt="profile"
               className="absolute top-[6%] left-[6%] w-[88%] h-[88%] object-cover rounded-[2px]"
             />
@@ -64,7 +65,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
           <div className="flex justify-between text-sm text-[#666] mb-1">
             <span>만남 발자국</span>
             <span className="text-[#BD4B2C] font-GanwonEduAll_Bold">
-              {Math.floor(footprint)}보
+              {Math.floor(footprint ?? 0)}보
             </span>
           </div>
           <div className="w-full h-2 bg-gray-300 rounded-full">
@@ -80,7 +81,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
           <p className="text-sm font-GanwonEduAll_Bold mb-2">관심사</p>
           {interests ? (
             <p className="text-sm text-[#666] whitespace-pre-wrap">
-              {interests.replaceAll(",", ", ")}
+              {interests?.replace(/,/g, ", ")}
             </p>
           ) : (
             <p className="text-sm text-[#aaa]">관심사가 없습니다.</p>

@@ -1,7 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css";
 
 import back_arrow from "../../assets/img/icons/HobbyIcon/back_arrow.svg";
 import help_icon from "../../assets/img/icons/Review/help.svg";
@@ -15,7 +14,6 @@ const ReviewPage = () => {
   const navigate = useNavigate();
   const [rating, setRating] = useState(1);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [currentSlide, setCurrentSlide] = useState(0);
 
   const categories = [
     {
@@ -118,12 +116,7 @@ const ReviewPage = () => {
             <span className="text-gray-400">(1개~5개)</span>
           </p>
 
-          <Swiper
-            spaceBetween={12}
-            slidesPerView={1}
-            onSlideChange={(swiper) => setCurrentSlide(swiper.activeIndex)}
-            className="mb-4"
-          >
+          <Swiper spaceBetween={12} slidesPerView={1} className="mb-4">
             {categories.map((category) => (
               <SwiperSlide key={category.title}>
                 <div className="h-65">

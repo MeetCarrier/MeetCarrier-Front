@@ -9,7 +9,6 @@ import {
   clearMatchingTimeout,
   setSuccessData,
   setFailData,
-  setModalDismissed,
 } from "../Utils/matchingSlice";
 import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
@@ -25,9 +24,6 @@ import RecommendModal from "../Modal/RecommendModal";
 import { fetchUser } from "../Utils/userSlice";
 import { fetchSelfTestList } from "../Utils/selfTestSlice";
 import { startMatchingClient } from "../Utils/Matching";
-import { useSelector } from "react-redux";
-import { RootState } from "../Utils/store";
-import { UserState } from "../Utils/userSlice";
 import {
   setMatchingClient,
   getMatchingClient,

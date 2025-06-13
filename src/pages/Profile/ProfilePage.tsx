@@ -2,15 +2,13 @@ import { useEffect } from "react";
 import NavBar from "../../components/NavBar";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "../../Utils/store";
-import { fetchUser, UserState, resetUser } from "../../Utils/userSlice";
-import axios from "axios";
+import { fetchUser, UserState } from "../../Utils/userSlice";
 import { useNavigate } from "react-router-dom";
 
 import bellIcon from "../../assets/img/icons/NavIcon/bell_default.svg";
 import arrowIcon from "../../assets/img/icons/HobbyIcon/back_arrow.svg";
 import stampImage from "../../assets/img/stamp.svg";
 import defaultProfileImg from "../../assets/img/sample/sample_profile.svg";
-import backgroundImage from "../../assets/img/background/profile_bg.webp";
 
 import PsychTestList from "./PsychTestList";
 import ReviewList from "./ReviewList";
@@ -35,7 +33,6 @@ function ProfilePage() {
     latitude: 0,
     longitude: 0,
     age: 21,
-    personalities: "",
     interests: "",
     footprint: 245,
     question: "",

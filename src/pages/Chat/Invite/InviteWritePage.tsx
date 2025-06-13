@@ -2,14 +2,12 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import letterBg from "../../../assets/img/icons/Letter/letterWrite.svg";
-import sampleProfile from "../../../assets/img/sample/sample_profile.svg"; // 예시 프로필
 import NavBar from "../../../components/NavBar";
-import back_arrow from "../../../assets/img/icons/HobbyIcon/back_arrow.svg"; // 뒤로가기 아이콘 추가
+import back_arrow from "../../../assets/img/icons/HobbyIcon/back_arrow.svg";
 
 interface LocationState {
   senderName: string;
   recipientName: string;
-  senderProfile: string;
   matchId: number;
   receiverId: number;
   roomId: number;
@@ -18,14 +16,8 @@ interface LocationState {
 function InviteWritePage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const {
-    senderName,
-    recipientName,
-    senderProfile,
-    matchId,
-    receiverId,
-    roomId,
-  } = location.state as LocationState;
+  const { senderName, recipientName, matchId, receiverId, roomId } =
+    location.state as LocationState;
 
   //console.log("[InviteWritePage] Received location.state:", location.state);
 

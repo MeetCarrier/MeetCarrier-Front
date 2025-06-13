@@ -1,13 +1,15 @@
 import axios from "axios";
 
 export interface UserProfileData {
-  age: number;
-  gender: string;
-  footprint: number;
-  imgUrl?: string;
+  userId: number;
+  nickname: string;
+  imageUrl: string | null;
+  age?: number;
+  gender?: string;
+  footprint?: number;
   interests?: string;
   question?: string;
-  nickname: string;
+  // imgUrl 등은 imageUrl로 통일
 }
 
 export const fetchUserById = async (

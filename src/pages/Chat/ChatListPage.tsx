@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../Utils/store";
 import { fetchUser, UserState } from "../../Utils/userSlice";
-import axios from "axios";
 import { fetchUserById, UserProfileData } from "../../Utils/api";
 
 import NavBar from "../../components/NavBar";
@@ -29,13 +28,6 @@ type MatchData = {
   user2Id: number;
   user2Nickname: string;
   user2ImageUrl: string | null;
-};
-
-type UserProfileData = {
-  userId: number;
-  nickname: string;
-  imageUrl: string | null;
-  // Add any other necessary properties here
 };
 
 function ChatListPage() {
@@ -120,7 +112,14 @@ function ChatListPage() {
   const handleProfileClick = async (opponentId: number) => {
     try {
       const userData = await fetchUserById(opponentId);
-      setSelectedUser(userData);
+      setSelectedUser({
+        ...userData,
+        footprint:
+          typeof userData.footprint === "string"
+            ? Number(userData.footprint)
+            : userData.footprint,
+        imageUrl: userData.imageUrl ?? null,
+      });
       setShowProfileModal(true);
     } catch (error) {
       console.error("사용자 정보 조회 실패:", error);
@@ -164,7 +163,6 @@ function ChatListPage() {
                     username={opponentNickname}
                     time={chat.lastMessageAt ?? chat.matchedAt}
                     lastMessage={chat.lastMessage}
-                    opponentId={opponentId}
                     onProfileClick={() => handleProfileClick(opponentId)}
                   />
                 </div>
@@ -199,7 +197,6 @@ function ChatListPage() {
                     profileImageUrl={opponentImage ?? undefined}
                     username={opponentNickname}
                     time={survey.matchedAt}
-                    opponentId={opponentId}
                     onProfileClick={() => handleProfileClick(opponentId)}
                   />
                 </div>
@@ -232,7 +229,6 @@ function ChatListPage() {
                     profileImageUrl={opponentImage ?? undefined}
                     username={opponentNickname}
                     time={cancelled.matchedAt}
-                    opponentId={opponentId}
                     status={cancelled.status}
                     onProfileClick={() => handleProfileClick(opponentId)}
                     onClickReview={() => handleReviewClick(cancelled)}

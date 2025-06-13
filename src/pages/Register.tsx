@@ -15,7 +15,6 @@ const Register: React.FC = () => {
     gender: "", // 'Male' or 'Female'
     birthdate: "", // YYYY/MM/DD format
   });
-  const [nicknameChecked, setNicknameChecked] = useState(false);
   const [isNicknameUnique, setIsNicknameUnique] = useState(false);
   const [nicknameError, setNicknameError] = useState("");
 
@@ -24,7 +23,6 @@ const Register: React.FC = () => {
   ) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
     if (e.target.name === "nickname") {
-      setNicknameChecked(false); // 닉네임 변경 시 중복 확인 초기화
       setNicknameError("");
     }
   };
@@ -40,7 +38,7 @@ const Register: React.FC = () => {
     }
     try {
       // 닉네임 중복 확인 API 호출
-      const response = await axios.get(
+      await axios.get(
         `https://www.mannamdeliveries.link/api/oauth/signup/nick/check`,
         {
           params: { nickname: formData.nickname },
@@ -50,17 +48,14 @@ const Register: React.FC = () => {
 
       // 성공 = 사용 가능
       setIsNicknameUnique(true);
-      setNicknameChecked(true);
       setNicknameError("사용 가능한 닉네임입니다.");
     } catch (error: any) {
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 409) {
           setIsNicknameUnique(false);
-          setNicknameChecked(true);
           setNicknameError("이미 사용 중인 닉네임입니다.");
         } else {
           setIsNicknameUnique(false);
-          setNicknameChecked(true);
           setNicknameError("닉네임 중복 확인 중 오류가 발생했습니다.");
         }
       } else {

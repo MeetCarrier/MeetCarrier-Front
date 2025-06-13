@@ -11,7 +11,6 @@ interface InviteLetterModalProps {
   senderName: string;
   recipientName: string;
   senderProfile?: string;
-  onSubmit: () => void;
   matchId: number;
   receiverId: number;
   roomId: number;
@@ -23,7 +22,6 @@ const InviteLetterModal: FC<InviteLetterModalProps> = ({
   senderName,
   recipientName,
   senderProfile = sampleProfile,
-  onSubmit,
   matchId,
   receiverId,
   roomId,

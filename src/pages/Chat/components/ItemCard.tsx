@@ -1,14 +1,12 @@
 import React from "react";
 import stamp from "../../../assets/img/stamp.svg";
 import sampleProfile from "../../../assets/img/sample/sample_profile.svg";
-import { fetchUserById } from "../../../Utils/api";
 
 interface ItemCardProps {
   profileImageUrl?: string;
   username: string;
   time: string;
   lastMessage?: string;
-  opponentId: number; // ✅ 추가
   showReviewButton?: boolean;
   onClickReview?: () => void;
   onProfileClick?: () => void;
@@ -47,7 +45,6 @@ const ItemCard: React.FC<ItemCardProps> = ({
   username,
   time,
   lastMessage,
-  opponentId,
   showReviewButton = false,
   onClickReview,
   onProfileClick,

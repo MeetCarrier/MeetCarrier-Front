@@ -1,7 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "../../Utils/store";
+import { useDispatch } from "react-redux";
 import { setMeetingSchedule } from "../../Utils/meetingScheduleSlice";
 
 import NavBar from "../../components/NavBar";
