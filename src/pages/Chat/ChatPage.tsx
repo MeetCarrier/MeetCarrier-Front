@@ -25,16 +25,21 @@ interface ChatMessage {
 
 interface LocationState {
   roomId: number;
+}
+
+interface MatchData {
+  id: number;
   user1Id: number;
   user1Nickname: string;
+  user1ImageUrl?: string; // 추가
   user2Id: number;
   user2Nickname: string;
-  matchId: number;
-  pendingMessage?: {
-    type: string;
-    message: string;
-    userId: number;
-  };
+  user2ImageUrl?: string; // 추가
+  agreed: boolean;
+  matchedAt?: string;
+  status: string;
+  sessionId: number;
+  roomId: number;
 }
 
 function ChatPage() {
@@ -44,6 +49,7 @@ function ChatPage() {
   const state = location.state as LocationState;
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [emojiOpen, setEmojiOpen] = useState(false);
+  const [matchData, setMatchData] = useState<MatchData | null>(null);
   const stompClientRef = useRef<Client | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const user = useSelector(
@@ -76,25 +82,53 @@ function ChatPage() {
 
   const emojiHeight = emojiOpen ? 200 : 0;
 
+  // 매치 데이터 가져오기
+  useEffect(() => {
+    const fetchMatchData = async () => {
+      if (!state?.roomId) {
+        console.error("방 정보가 없습니다.");
+        navigate(-1);
+        return;
+      }
+
+      try {
+        const response = await axios.get(
+          "https://www.mannamdeliveries.link/api/matches",
+          { withCredentials: true }
+        );
+        const match = response.data.find(
+          (m: MatchData) => m.roomId === state.roomId
+        );
+
+        if (!match) {
+          console.error("매치 정보를 찾을 수 없습니다.");
+          navigate(-1);
+          return;
+        }
+
+        console.log("[매치 정보 조회 성공]", match);
+        setMatchData(match);
+      } catch (error) {
+        console.error("매치 데이터 조회 실패:", error);
+        navigate(-1);
+      }
+    };
+
+    fetchMatchData();
+  }, [state?.roomId, navigate]);
+
   useEffect(() => {
     // 사용자 정보 가져오기
     dispatch(fetchUser());
 
-    if (!state?.roomId) {
-      console.error("방 정보가 없습니다.");
-      navigate(-1);
+    if (!state?.roomId || !matchData) {
       return;
     }
 
     // location.state 내용 출력
     console.log("[채팅방 진입] location.state:", {
       roomId: state.roomId,
-      user1Id: state.user1Id,
-      user1Nickname: state.user1Nickname,
-      user2Id: state.user2Id,
-      user2Nickname: state.user2Nickname,
-      matchId: state.matchId,
-      pendingMessage: state.pendingMessage,
+      matchData: matchData,
     });
 
     // 채팅 기록 조회
@@ -126,21 +160,22 @@ function ChatPage() {
           console.log("[수신된 메시지]", message);
           const newMessage: ChatMessage = JSON.parse(message.body);
           console.log("[파싱된 메시지]", newMessage);
+          console.log("[현재 사용자 ID]", myId, "타입:", typeof myId);
+          console.log(
+            "[메시지 발신자 ID]",
+            newMessage.sender,
+            "타입:",
+            typeof newMessage.sender
+          );
 
           // 내 메시지는 이미 로컬에서 띄웠으므로 무시
-          if (newMessage.sender === myId) {
+          if (Number(newMessage.sender) === Number(myId)) {
             console.log("[무시된 내 메시지]", newMessage);
             return;
           }
 
           setMessages((prev) => [...prev, newMessage]);
         });
-
-        // WebSocket 연결이 완료된 후 pendingMessage가 있다면 전송
-        if (state.pendingMessage) {
-          console.log("[대기 중인 메시지 전송]", state.pendingMessage);
-          sendMessage(state.pendingMessage.message);
-        }
       },
       onDisconnect: () => {
         console.log("WebSocket 연결 해제");
@@ -168,10 +203,15 @@ function ChatPage() {
         stompClientRef.current.deactivate();
       }
     };
-  }, [state?.roomId, navigate, dispatch]);
+  }, [state?.roomId, navigate, dispatch, myId, matchData]);
 
   // 메시지 전송 함수
   const sendMessage = (message: string, imageUrl?: string) => {
+    if (!myId) {
+      console.error("사용자 ID가 없습니다.");
+      return;
+    }
+
     if (stompClientRef.current && stompClientRef.current.connected) {
       console.log("[WebSocket 연결 상태]", stompClientRef.current.connected);
 
@@ -180,7 +220,6 @@ function ChatPage() {
         roomId: state.roomId,
         type: imageUrl ? "IMAGE" : "TEXT",
         message: message,
-        userId: myId,
         imageUrl: imageUrl || null,
       };
 
@@ -194,7 +233,7 @@ function ChatPage() {
         messageType: imageUrl ? "IMAGE" : "TEXT",
         message: message,
         imageUrl: imageUrl || null,
-        sender: myId!,
+        sender: Number(myId),
         sentAt: utcSentAt,
       };
 
@@ -273,6 +312,19 @@ function ChatPage() {
     }
   };
 
+  // userId로 내 정보/상대 정보 구분
+  let myNickname = "나";
+  let otherNickname = "상대방";
+  if (matchData) {
+    if (user?.userId === matchData.user1Id) {
+      myNickname = matchData.user1Nickname;
+      otherNickname = matchData.user2Nickname;
+    } else if (user?.userId === matchData.user2Id) {
+      myNickname = matchData.user2Nickname;
+      otherNickname = matchData.user1Nickname;
+    }
+  }
+
   return (
     <>
       <div className="absolute top-[50px] text-[#333333] left-0 right-0 px-6 text-center">
@@ -283,7 +335,7 @@ function ChatPage() {
           onClick={handleBackClick}
         />
         <p className="text-[20px] font-MuseumClassic_L italic">
-          {myId === state.user1Id ? state.user2Nickname : state.user1Nickname}
+          {otherNickname}
         </p>
         <img
           src={search_icon}
@@ -296,47 +348,35 @@ function ChatPage() {
         emojiOpen={emojiOpen}
         onEmojiToggle={() => setEmojiOpen((prev) => !prev)}
         onSendMessage={sendMessage}
-        senderName={
-          myId === state.user1Id ? state.user1Nickname : state.user2Nickname
-        }
-        recipientName={
-          myId === state.user1Id ? state.user2Nickname : state.user1Nickname
-        }
+        senderName={myNickname}
+        recipientName={otherNickname}
         senderProfile={user?.imgUrl || sampleProfile}
-        matchId={state.matchId}
-        receiverId={myId === state.user1Id ? state.user2Id : state.user1Id}
+        matchId={matchData?.id || 0}
+        receiverId={
+          user?.userId === matchData?.user1Id
+            ? matchData?.user2Id
+            : matchData?.user1Id || 0
+        }
         roomId={state.roomId}
         onInviteClick={() => {
           navigate("/invite-write", {
             state: {
-              senderName:
-                myId === state.user1Id
-                  ? state.user1Nickname
-                  : state.user2Nickname,
-              recipientName:
-                myId === state.user1Id
-                  ? state.user2Nickname
-                  : state.user1Nickname,
+              senderName: myNickname,
+              recipientName: otherNickname,
               senderProfile: user?.imgUrl || sampleProfile,
-              matchId: state.matchId,
+              matchId: matchData?.id || 0,
               receiverId:
-                myId === state.user1Id ? state.user2Id : state.user1Id,
+                user?.userId === matchData?.user1Id
+                  ? matchData?.user2Id
+                  : matchData?.user1Id || 0,
               roomId: state.roomId,
             },
           });
         }}
         onSurveyClick={() => {
-          navigate(`/survey/${state.matchId}`, {
+          navigate(`/survey/${matchData?.sessionId}`, {
             state: {
-              id: state.matchId,
-              sessionId: state.matchId,
-              status: "Surveying",
-              user1Id: state.user1Id,
-              user1Nickname: state.user1Nickname,
-              user2Id: state.user2Id,
-              user2Nickname: state.user2Nickname,
-              matchedAt: new Date().toISOString(), // 현재 시간으로 임시 설정
-              agreed: false,
+              sessionId: matchData?.sessionId,
             },
           });
         }}
@@ -377,12 +417,12 @@ function ChatPage() {
           // myId로 내 정보/상대 정보 구분
           let myNickname = "나";
           let opponentNickname = "상대방";
-          if (myId === state.user1Id) {
-            myNickname = state.user1Nickname;
-            opponentNickname = state.user2Nickname;
-          } else if (myId === state.user2Id) {
-            myNickname = state.user2Nickname;
-            opponentNickname = state.user1Nickname;
+          if (myId === matchData?.user1Id) {
+            myNickname = matchData.user1Nickname;
+            opponentNickname = matchData.user2Nickname;
+          } else if (myId === matchData?.user2Id) {
+            myNickname = matchData.user2Nickname;
+            opponentNickname = matchData.user1Nickname;
           }
           const nickname = isMine ? myNickname : opponentNickname;
           const isPrevSameSender =
@@ -391,8 +431,11 @@ function ChatPage() {
             index === messages.length - 1 ||
             messages[index + 1].sender !== msg.sender;
 
-          const profileUrl =
-            !isMine && msg.imageUrl ? msg.imageUrl : sampleProfile;
+          const profileUrl = !isMine
+            ? myId === matchData?.user1Id
+              ? matchData?.user2ImageUrl || sampleProfile
+              : matchData?.user1ImageUrl || sampleProfile
+            : user?.imgUrl || sampleProfile;
 
           // UTC 시간을 한국 시간으로 변환
           const messageDate = new Date(msg.sentAt);
@@ -426,11 +469,11 @@ function ChatPage() {
                     <img
                       src={profileUrl}
                       alt="프로필"
-                      className="w-8 h-8 rounded-[2px]"
+                      className="w-8 h-8 rounded-[2px] bg-white"
                     />
                   </div>
                 ) : (
-                  !isMine && <div className="w-8 mr-2" />
+                  !isMine && <div className="w-8 mr-2 " />
                 )}
 
                 {/* 채팅 div */}
@@ -438,7 +481,7 @@ function ChatPage() {
                   {/* 닉네임은 첫 메시지일 때만 */}
                   {!isMine && !isPrevSameSender && (
                     <span className="text-sm text-gray-700 mb-1">
-                      {nickname}/
+                      {nickname}
                     </span>
                   )}
 
@@ -453,7 +496,7 @@ function ChatPage() {
                       <img
                         src={msg.imageUrl}
                         alt="전송된 이미지"
-                        className="max-w-full max-h-[200px] rounded-lg"
+                        className="max-w-full max-h-[150px] rounded-lg bg-white"
                       />
                     ) : (
                       msg.message

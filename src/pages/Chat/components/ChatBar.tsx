@@ -206,7 +206,13 @@ function ChatBar({
             className="w-9 h-9 rounded-full bg-[#A34027] flex items-center justify-center flex-shrink-0"
             onClick={onEmojiToggle}
           >
-            <img src={plus_icon} alt="plus" className="w-5 h-5" />
+            <img
+              src={plus_icon}
+              alt="plus"
+              className={`w-5 h-5 transform transition-transform duration-300 ${
+                emojiOpen ? "rotate-45" : "rotate-0"
+              }`}
+            />
           </button>
 
           <div className="flex items-center flex-1 bg-[#A34027] rounded-full px-3 py-2">

@@ -13,6 +13,8 @@ type MatchData = {
   matchedAt: string;
   status: string;
   agreed: boolean;
+  lastMessage: string;
+  lastMessageAt: string;
 
   sessionId: number;
   roomId: number;
@@ -81,11 +83,6 @@ function ChatListPage() {
     navigate(`/chat/${match.roomId}`, {
       state: {
         roomId: match.roomId,
-        user1Id: match.user1Id,
-        user1Nickname: match.user1Nickname,
-        user2Id: match.user2Id,
-        user2Nickname: match.user2Nickname,
-        matchId: match.id,
       },
     });
   };
@@ -131,7 +128,11 @@ function ChatListPage() {
                   <ItemCard
                     profileImageUrl={opponentImage ?? undefined}
                     username={opponentNickname}
-                    time={chat.matchedAt}
+                    time={chat.lastMessageAt ?? chat.matchedAt}
+                    lastMessage={chat.lastMessage}
+                    opponentId={
+                      chat.user1Id === myId ? chat.user2Id : chat.user1Id
+                    }
                   />
                 </div>
               );
