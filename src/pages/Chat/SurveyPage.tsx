@@ -453,9 +453,9 @@ function SurveyPage() {
       setIsEditing(false);
       setEditedContent("");
     } else if (currentStep > 0) {
-      navigate("/ChatList");
+      navigate(-1);
     } else {
-      navigate("/ChatList");
+      navigate(-1);
     }
   };
 
@@ -695,20 +695,27 @@ function SurveyPage() {
           onClick={handleBackClick}
         />
         <p className="text-[20px] font-MuseumClassic_L italic">질문 센터</p>
-        {matchData?.status !== "Survey_Cancelled" && (
+        {matchData?.status === "Survey" && !isEditing && (
           <img
             ref={menuButtonRef}
-            src={isEditing ? checkIcon : menuIcon}
-            alt={isEditing ? "저장" : "메뉴"}
+            src={menuIcon}
+            alt="메뉴"
             className="absolute top-1/2 -translate-y-1/2 right-6 w-[20px] h-[20px] cursor-pointer"
-            onClick={
-              isEditing ? handleSave : () => setIsMenuOpen((prev) => !prev)
-            }
+            onClick={() => setIsMenuOpen((prev) => !prev)}
+          />
+        )}
+        {matchData?.status === "Survey" && isEditing && (
+          <img
+            ref={menuButtonRef}
+            src={checkIcon}
+            alt="저장"
+            className="absolute top-1/2 -translate-y-1/2 right-6 w-[20px] h-[20px] cursor-pointer"
+            onClick={handleSave}
           />
         )}
       </div>
 
-      {isMenuOpen && matchData?.status !== "Survey_Cancelled" && (
+      {isMenuOpen && matchData?.status === "Survey" && (
         <div
           ref={menuRef}
           className="absolute top-[90px] right-6 bg-white shadow-md rounded-xl  z-50 flex flex-col w-32 py-2"

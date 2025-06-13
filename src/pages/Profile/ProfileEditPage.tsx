@@ -1,9 +1,10 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import NavBar from "../../components/NavBar";
 import imageCompression from "browser-image-compression";
+import Modal from "../../components/Modal";
 
 import { RootState, AppDispatch } from "../../Utils/store";
 import { fetchUser, UserState, resetUser } from "../../Utils/userSlice";
@@ -17,6 +18,10 @@ function ProfileEditPage() {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showNicknameModal, setShowNicknameModal] = useState(false);
+  const [newNickname, setNewNickname] = useState("");
+  const [nicknameError, setNicknameError] = useState("");
+
   const user = useSelector(
     (state: RootState) => state.user
   ) as UserState | null;
@@ -155,6 +160,37 @@ function ProfileEditPage() {
     }
   };
 
+  const handleNicknameChange = async () => {
+    if (!newNickname.trim()) {
+      setNicknameError("닉네임을 입력해주세요.");
+      return;
+    }
+
+    if (newNickname.length > 10) {
+      setNicknameError("닉네임은 10자 이내로 입력해주세요.");
+      return;
+    }
+
+    try {
+      await axios.patch(
+        "https://www.mannamdeliveries.link/api/user",
+        { nickname: newNickname },
+        { withCredentials: true }
+      );
+      console.log("닉네임 업데이트 성공");
+
+      // 사용자 정보 새로고침
+      dispatch(fetchUser());
+      setShowNicknameModal(false);
+      setNewNickname("");
+      setNicknameError("");
+      alert("닉네임이 변경되었습니다.");
+    } catch (error) {
+      console.error("닉네임 변경 중 오류 발생:", error);
+      setNicknameError("닉네임 변경에 실패했습니다.");
+    }
+  };
+
   return (
     <>
       <NavBar />
@@ -206,7 +242,10 @@ function ProfileEditPage() {
           {/* 닉네임 */}
           <div className="w-full bg-white rounded-xl px-5 py-4 shadow-sm">
             <button
-              onClick={() => alert("닉네임 변경 기능 개발 예정")}
+              onClick={() => {
+                setNewNickname(displayUser.nickname);
+                setShowNicknameModal(true);
+              }}
               className="w-full flex justify-between items-center"
             >
               <span className="text-sm text-[#333] font-medium">닉네임</span>
@@ -263,6 +302,48 @@ function ProfileEditPage() {
         />
         <p className="text-[20px] font-MuseumClassic_L italic">계정 관리</p>
       </div>
+
+      {/* 닉네임 수정 모달 */}
+      <Modal
+        isOpen={showNicknameModal}
+        onClose={() => setShowNicknameModal(false)}
+      >
+        <div className="flex flex-col items-center p-4">
+          <h3 className="text-lg font-GanwonEduAll_Bold mb-4">닉네임 수정</h3>
+          <input
+            type="text"
+            value={newNickname}
+            onChange={(e) => {
+              setNewNickname(e.target.value);
+              setNicknameError("");
+            }}
+            placeholder="새로운 닉네임을 입력하세요"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg mb-2 focus:outline-none focus:border-[#BD4B2C]"
+            maxLength={10}
+          />
+          {nicknameError && (
+            <p className="text-red-500 text-sm mb-4">{nicknameError}</p>
+          )}
+          <div className="flex justify-center gap-4 w-full mt-4">
+            <button
+              className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded"
+              onClick={() => {
+                setShowNicknameModal(false);
+                setNewNickname("");
+                setNicknameError("");
+              }}
+            >
+              취소
+            </button>
+            <button
+              className="px-4 py-2 bg-[#BD4B2C] text-white text-sm rounded"
+              onClick={handleNicknameChange}
+            >
+              변경하기
+            </button>
+          </div>
+        </div>
+      </Modal>
     </>
   );
 }

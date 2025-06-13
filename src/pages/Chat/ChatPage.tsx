@@ -517,7 +517,9 @@ function ChatPage() {
 
                   <div
                     className={`px-3 py-2 rounded-xl whitespace-pre-wrap ${
-                      isMine
+                      msg.imageUrl
+                        ? ""
+                        : isMine
                         ? "bg-[#BD4B2C] text-[#F2F2F2] rounded-br-none self-end"
                         : "bg-[#FFFFFF] text-[#333333] rounded-bl-none"
                     }`}
@@ -526,7 +528,7 @@ function ChatPage() {
                       <img
                         src={msg.imageUrl}
                         alt="전송된 이미지"
-                        className="max-w-full max-h-[150px] rounded-lg bg-white"
+                        className="max-w-full max-h-[150px] rounded-lg"
                       />
                     ) : (
                       msg.message

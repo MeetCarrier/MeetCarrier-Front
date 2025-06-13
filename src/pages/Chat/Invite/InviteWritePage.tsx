@@ -60,18 +60,9 @@ function InviteWritePage() {
       console.log("[초대장 전송 응답]", response.data);
 
       // 3. 채팅 페이지로 이동
-      navigate("/chat", {
+      navigate(`/chat/${roomId}`, {
         state: {
           roomId: roomId,
-          user1Id: receiverId,
-          user1Nickname: recipientName,
-          user2Id: matchId,
-          user2Nickname: senderName,
-          pendingMessage: {
-            type: "TEXT",
-            message: `${senderName}님이 대면 초대장을 보냈어요! 확인해보세요!`,
-            userId: receiverId,
-          },
         },
       });
     } catch (error) {

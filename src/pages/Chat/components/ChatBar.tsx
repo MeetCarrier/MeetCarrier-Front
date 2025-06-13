@@ -19,6 +19,23 @@ import survey_icon from "../../../assets/img/icons/ChatIcon/ic_survey.svg";
 import imageCompression from "browser-image-compression";
 import axios from "axios";
 
+// 이모티콘 이미지 임포트
+import emoji1 from "../../../assets/img/icons/Chat/1.svg";
+import emoji2 from "../../../assets/img/icons/Chat/2.svg";
+import emoji3 from "../../../assets/img/icons/Chat/3.svg";
+import emoji4 from "../../../assets/img/icons/Chat/4.svg";
+import emoji5 from "../../../assets/img/icons/Chat/5.svg";
+import emoji6 from "../../../assets/img/icons/Chat/6.svg";
+import emoji7 from "../../../assets/img/icons/Chat/7.svg";
+import emoji8 from "../../../assets/img/icons/Chat/8.svg";
+import emoji9 from "../../../assets/img/icons/Chat/9.svg";
+import emoji10 from "../../../assets/img/icons/Chat/10.svg";
+import emoji11 from "../../../assets/img/icons/Chat/11.svg";
+import emoji12 from "../../../assets/img/icons/Chat/12.svg";
+import emoji13 from "../../../assets/img/icons/Chat/13.svg";
+import emoji14 from "../../../assets/img/icons/Chat/14.svg";
+import emoji15 from "../../../assets/img/icons/Chat/15.svg";
+
 interface ChatBarProps {
   emojiOpen: boolean;
   onEmojiToggle: () => void;
@@ -55,6 +72,27 @@ function ChatBar({
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showEndModal, setShowEndModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [currentMenuType, setCurrentMenuType] = useState<"general" | "emoji">(
+    "general"
+  );
+
+  const emojis = [
+    emoji1,
+    emoji2,
+    emoji3,
+    emoji4,
+    emoji5,
+    emoji6,
+    emoji7,
+    emoji8,
+    emoji9,
+    emoji10,
+    emoji11,
+    emoji12,
+    emoji13,
+    emoji14,
+    emoji15,
+  ];
 
   const handleSendMessage = () => {
     if (message.trim() && onSendMessage) {
@@ -152,52 +190,72 @@ function ChatBar({
   return (
     <>
       <div
-        className={`w-full overflow-hidden transition-all duration-300 ease-in-out`}
+        className={`w-full overflow-y-auto transition-all duration-300 ease-in-out`}
         style={{
           height: emojiOpen ? 200 : 0,
           backgroundImage: `url(${navbg2})`,
         }}
       >
         <div className="grid grid-cols-4 gap-y-4 px-6 pt-4">
-          {[
-            {
-              icon: album_icon,
-              label: "앨범",
-              onClick: () => fileInputRef.current?.click(),
-            },
-            {
-              icon: invite_icon,
-              label: "대면초대장",
-              onClick: () => setShowInviteModal(true),
-            },
-            {
-              icon: end_icon,
-              label: "만남종료",
-              onClick: () => setShowEndModal(true),
-            },
-            {
-              icon: report_icon,
-              label: "신고",
-              onClick: () => setShowReportModal(true),
-            },
-            {
-              icon: survey_icon,
-              label: "비대면설문지",
-              onClick: onSurveyClick,
-            },
-          ].map(({ icon, label, onClick }, index) => (
-            <div key={index} className="flex flex-col items-center">
-              <div
-                className="w-12 h-12 rounded-full bg-[#722518] flex items-center justify-center cursor-pointer"
-                onClick={onClick}
-              >
-                <img src={icon} alt={label} className="w-6 h-6" />
-              </div>
-              <span className="text-white text-xs mt-1 text-center">
-                {label}
-              </span>
-            </div>
-          ))}
+          {currentMenuType === "emoji"
+            ? // 이모티콘 메뉴
+              emojis.map((emojiSrc, index) => (
+                <div key={index} className="flex flex-col items-center">
+                  <div
+                    className="w-20 h-20 flex items-center justify-center cursor-pointer bg-white"
+                    onClick={() => console.log(`Emoji ${index + 1} clicked`)} // 이모티콘 클릭 시 동작 추가 예정
+                  >
+                    <img
+                      src={emojiSrc}
+                      alt={`emoji-${index + 1}`}
+                      className="w-15 h-15"
+                    />
+                  </div>
+                </div>
+              ))
+            : // 일반 메뉴
+              [
+                {
+                  icon: album_icon,
+                  label: "앨범",
+                  onClick: () => fileInputRef.current?.click(),
+                },
+                {
+                  icon: invite_icon,
+                  label: "대면초대장",
+                  onClick: () => setShowInviteModal(true),
+                },
+                {
+                  icon: end_icon,
+                  label: "만남종료",
+                  onClick: () => setShowEndModal(true),
+                },
+                {
+                  icon: report_icon,
+                  label: "신고",
+                  onClick: () => setShowReportModal(true),
+                },
+                {
+                  icon: survey_icon,
+                  label: "비대면설문지",
+                  onClick: onSurveyClick,
+                },
+              ].map(({ icon, label, onClick }, index) => (
+                <div
+                  key={`utility-${index}`}
+                  className="flex flex-col items-center"
+                >
+                  <div
+                    className="w-12 h-12 rounded-full bg-[#722518] flex items-center justify-center cursor-pointer"
+                    onClick={onClick}
+                  >
+                    <img src={icon} alt={label} className="w-6 h-6" />
+                  </div>
+                  <span className="text-white text-xs mt-1 text-center">
+                    {label}
+                  </span>
+                </div>
+              ))}
         </div>
       </div>
       <div
@@ -207,13 +265,18 @@ function ChatBar({
         <div className="flex items-center w-full gap-2">
           <button
             className="w-9 h-9 rounded-full bg-[#A34027] flex items-center justify-center flex-shrink-0"
-            onClick={onEmojiToggle}
+            onClick={() => {
+              onEmojiToggle(); // 상위 컴포넌트의 emojiOpen 상태 토글
+              setCurrentMenuType("general"); // + 버튼 클릭 시 항상 일반 메뉴로 설정
+            }}
           >
             <img
               src={plus_icon}
               alt="plus"
               className={`w-5 h-5 transform transition-transform duration-300 ${
-                emojiOpen ? "rotate-45" : "rotate-0"
+                emojiOpen && currentMenuType === "general"
+                  ? "rotate-45"
+                  : "rotate-0" // 메뉴가 열려있고 일반 메뉴일 때만 회전
               }`}
             />
           </button>
@@ -227,7 +290,24 @@ function ChatBar({
               onKeyPress={handleKeyPress}
               className={`flex-1 bg-transparent text-white text-sm placeholder:text-white outline-none`}
             />
-            <button>
+            <button
+              onClick={() => {
+                if (!emojiOpen) {
+                  // 메뉴가 닫혀있으면 메뉴를 열고 이모지 타입으로 설정
+                  onEmojiToggle();
+                  setCurrentMenuType("emoji");
+                } else {
+                  // 메뉴가 열려있으면
+                  if (currentMenuType === "general") {
+                    // 일반 메뉴가 활성화되어 있으면 이모지 메뉴로 전환
+                    setCurrentMenuType("emoji");
+                  } else {
+                    // 이모지 메뉴가 활성화되어 있으면 일반 메뉴로 전환
+                    setCurrentMenuType("general");
+                  }
+                }
+              }}
+            >
               <img src={face_icon} alt="face" className="w-5 h-5 ml-2" />
             </button>
           </div>
