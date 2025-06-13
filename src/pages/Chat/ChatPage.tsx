@@ -407,7 +407,7 @@ function ChatPage() {
               messageDate.toDateString();
 
           return (
-            <>
+            <div key={`${msg.sentAt}-${index}`}>
               {showDateDivider && (
                 <div className="flex justify-center items-center my-4">
                   <div className="bg-gray-200 text-gray-600 text-xs px-3 py-1 rounded-full">
@@ -416,7 +416,6 @@ function ChatPage() {
                 </div>
               )}
               <div
-                key={index}
                 className={`flex ${
                   isMine ? "justify-end" : "justify-start"
                 } mb-1`}
@@ -476,7 +475,7 @@ function ChatPage() {
                   )}
                 </div>
               </div>
-            </>
+            </div>
           );
         })}
 

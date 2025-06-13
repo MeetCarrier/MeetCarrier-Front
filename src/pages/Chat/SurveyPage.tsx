@@ -550,7 +550,7 @@ function SurveyPage() {
     try {
       console.log("채팅방 입장 API 요청 시작");
       const response = await axios.post(
-        `https://www.mannamdeliveries.link/api/room/${matchData.id}/${myId}/enter`,
+        `https://www.mannamdeliveries.link/api/room/${matchData.id}/enter`,
         null,
         { withCredentials: true }
       );
@@ -564,9 +564,26 @@ function SurveyPage() {
           hasJoinedChat: true,
         })
       );
+
+      // navigate 호출 전에 필요한 모든 정보가 있는지 확인
+      if (!matchData) {
+        console.error("매치 데이터가 없습니다.");
+        alert("채팅방 정보를 찾을 수 없습니다.");
+        return;
+      }
+
+      // 필요한 모든 정보를 포함하여 navigate
       navigate(`/chat/${newRoomId}`, {
         state: {
-          ...matchData,
+          id: matchData.id,
+          sessionId: Number(realSessionId),
+          user1Id: matchData.user1Id,
+          user1Nickname: matchData.user1Nickname,
+          user2Id: matchData.user2Id,
+          user2Nickname: matchData.user2Nickname,
+          agreed: matchData.agreed,
+          matchedAt: matchData.matchedAt,
+          status: matchData.status,
           roomId: newRoomId,
         },
       });

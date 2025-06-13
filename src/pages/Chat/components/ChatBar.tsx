@@ -53,6 +53,13 @@ function ChatBar({
   const [showEndModal, setShowEndModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const handleSendMessage = () => {
+    if (message.trim() && onSendMessage) {
+      onSendMessage(message.trim());
+      setMessage("");
+    }
+  };
+
   const uploadImageAndSendMessage = async (file: File) => {
     const formData = new FormData();
     formData.append("multipartFile", file);
@@ -73,7 +80,7 @@ function ChatBar({
       const imageUrl = response.data;
 
       if (onSendMessage) {
-        onSendMessage("", imageUrl);
+        onSendMessage("이미지를 전송했습니다.", imageUrl);
       }
     } catch (error) {
       console.error("이미지 서버 업로드 실패:", error);
@@ -83,13 +90,6 @@ function ChatBar({
         console.error("서버 응답 헤더:", error.response?.headers);
       }
       alert("이미지 업로드에 실패했습니다.");
-    }
-  };
-
-  const handleSendMessage = () => {
-    if (message.trim() && onSendMessage) {
-      onSendMessage(message);
-      setMessage("");
     }
   };
 
