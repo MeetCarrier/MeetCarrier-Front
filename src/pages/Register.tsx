@@ -101,24 +101,54 @@ const Register: React.FC = () => {
       const birthMonth = parseInt(formData.birthdate.substring(4, 6));
       const birthDay = parseInt(formData.birthdate.substring(6, 8));
 
+      console.log("=== 생년월일 파싱 ===");
+      console.log("년:", birthYear);
+      console.log("월:", birthMonth);
+      console.log("일:", birthDay);
+
       const today = new Date();
       const birthDate = new Date(birthYear, birthMonth - 1, birthDay);
-      let age = today.getFullYear() - birthDate.getFullYear();
 
-      // 생일이 지나지 않았는지 확인
+      console.log("=== 날짜 객체 ===");
+      console.log("오늘:", today);
+      console.log("생년월일:", birthDate);
+
+      // 만 나이 계산
+      let age = today.getFullYear() - birthDate.getFullYear();
       const monthDiff = today.getMonth() - birthDate.getMonth();
+
+      console.log("=== 나이 계산 과정 ===");
+      console.log("기본 나이:", age);
+      console.log("월 차이:", monthDiff);
+      console.log("오늘 날짜:", today.getDate());
+      console.log("생일 날짜:", birthDate.getDate());
+
       if (
         monthDiff < 0 ||
         (monthDiff === 0 && today.getDate() < birthDate.getDate())
       ) {
         age--;
+        console.log("생일이 지나지 않아 나이 -1");
+      }
+
+      // 나이가 0보다 작거나 100보다 크면 에러
+      if (age < 0 || age > 100) {
+        alert("유효하지 않은 생년월일입니다.");
+        return;
       }
 
       const submitData = {
         nickname: formData.nickname,
         gender: formData.gender,
-        age: age,
+        age: Number(age), // 명시적으로 숫자 타입으로 변환
       };
+
+      console.log("=== 회원가입 데이터 ===");
+      console.log("닉네임:", formData.nickname);
+      console.log("성별:", formData.gender);
+      console.log("생년월일:", formData.birthdate);
+      console.log("계산된 나이:", age);
+      console.log("전송할 데이터:", submitData);
 
       await axios.post(
         "https://www.mannamdeliveries.link/api/oauth/signup/detail",
