@@ -11,6 +11,8 @@ import { UserState } from "../../Utils/userSlice";
 import { fetchUser } from "../../Utils/userSlice";
 import ChatNotificationBar from "./components/ChatNotificationBar";
 import MeetingInfoModal from "../../components/MeetingInfoModal";
+import ProfileModal from "../../components/ProfileModal";
+import { fetchUserById, UserProfileData } from "../../Utils/api";
 
 import back_arrow from "../../assets/img/icons/HobbyIcon/back_arrow.svg";
 import search_icon from "../../assets/img/icons/ChatIcon/search.svg";
@@ -64,6 +66,10 @@ function ChatPage() {
 
   const [currentTime, setCurrentTime] = useState("");
   const [showMeetingInfoModal, setShowMeetingInfoModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<UserProfileData | null>(
+    null
+  );
 
   useEffect(() => {
     const updateCurrentTime = () => {
@@ -140,7 +146,18 @@ function ChatPage() {
           { withCredentials: true }
         );
         console.log("채팅 기록 조회 결과:", response.data);
-        setMessages(response.data);
+
+        // UTC 시간을 한국 시간으로 변환
+        const convertedMessages = response.data.map((msg: ChatMessage) => {
+          const utcDate = new Date(msg.sentAt);
+          // UTC 시간을 그대로 사용 (서버에서 이미 UTC로 보내주므로 추가 변환 불필요)
+          return {
+            ...msg,
+            sentAt: utcDate.toISOString(),
+          };
+        });
+
+        setMessages(convertedMessages);
       } catch (error) {
         console.error("채팅 기록 조회 실패:", error);
       }
@@ -226,9 +243,7 @@ function ChatPage() {
       // 로컬에서 바로 화면에 띄울 메시지 (내가 보낸 것이므로 sender와 sentAt 명시)
       const now = new Date();
       // 현재 시간을 UTC로 변환 (한국 시간에서 9시간을 빼서 UTC로 만듦)
-      const utcSentAt = new Date(
-        now.getTime() - 9 * 60 * 60 * 1000
-      ).toISOString();
+      const utcSentAt = new Date(now.getTime()).toISOString();
       const localMessage: ChatMessage = {
         messageType: imageUrl ? "IMAGE" : "TEXT",
         message: message,
@@ -270,17 +285,6 @@ function ChatPage() {
 
   // 채팅방 퇴장 함수
   const handleLeave = () => {
-    if (stompClientRef.current && stompClientRef.current.connected) {
-      const leaveData = {
-        roomId: state.roomId,
-        type: "LEAVE",
-      };
-      console.log("채팅방 퇴장 요청:", leaveData);
-      stompClientRef.current.publish({
-        destination: "/app/api/chat/leave",
-        body: JSON.stringify(leaveData),
-      });
-    }
     navigate("/ChatList");
   };
 
@@ -325,6 +329,17 @@ function ChatPage() {
     }
   }
 
+  const handleProfileClick = async (opponentId: number) => {
+    if (!opponentId) return;
+    try {
+      const userData = await fetchUserById(opponentId);
+      setSelectedUser(userData);
+      setShowProfileModal(true);
+    } catch (error) {
+      console.error("사용자 정보 조회 실패:", error);
+    }
+  };
+
   return (
     <>
       <div className="absolute top-[50px] text-[#333333] left-0 right-0 px-6 text-center">
@@ -359,6 +374,10 @@ function ChatPage() {
         }
         roomId={state.roomId}
         onInviteClick={() => {
+          if (matchData?.status === "Chat_Cancelled") {
+            alert("종료된 채팅방에서는 초대할 수 없습니다.");
+            return;
+          }
           navigate("/invite-write", {
             state: {
               senderName: myNickname,
@@ -374,6 +393,10 @@ function ChatPage() {
           });
         }}
         onSurveyClick={() => {
+          if (matchData?.status === "Chat_Cancelled") {
+            alert("종료된 채팅방에서는 설문을 볼 수 없습니다.");
+            return;
+          }
           navigate(`/survey/${matchData?.sessionId}`, {
             state: {
               sessionId: matchData?.sessionId,
@@ -381,8 +404,14 @@ function ChatPage() {
           });
         }}
         onEndMeeting={() => {
+          if (matchData?.status === "Chat_Cancelled") {
+            alert("이미 종료된 채팅방입니다.");
+            return;
+          }
           navigate("/ChatList");
         }}
+        stompClient={stompClientRef.current}
+        isDisabled={matchData?.status === "Chat_Cancelled"}
       />
 
       {/* 알림 바 */}
@@ -439,9 +468,7 @@ function ChatPage() {
 
           // UTC 시간을 한국 시간으로 변환
           const messageDate = new Date(msg.sentAt);
-          const koreanTime = new Date(
-            messageDate.getTime() + 9 * 60 * 60 * 1000
-          );
+          const koreanTime = new Date(messageDate.getTime());
 
           // 날짜 구분선 표시 여부 확인
           const showDateDivider =
@@ -465,7 +492,10 @@ function ChatPage() {
               >
                 {/* 왼쪽 프로필 (처음 메시지일 때만) */}
                 {!isMine && !isPrevSameSender ? (
-                  <div className="w-8 mr-2">
+                  <div
+                    className="w-8 mr-2 cursor-pointer"
+                    onClick={() => handleProfileClick(msg.sender)}
+                  >
                     <img
                       src={profileUrl}
                       alt="프로필"
@@ -531,6 +561,14 @@ function ChatPage() {
         onClose={() => setShowMeetingInfoModal(false)}
         onConfirm={() => setShowMeetingInfoModal(false)}
       />
+
+      {showProfileModal && selectedUser && (
+        <ProfileModal
+          isOpen={showProfileModal}
+          onClose={() => setShowProfileModal(false)}
+          user={selectedUser}
+        />
+      )}
     </>
   );
 }

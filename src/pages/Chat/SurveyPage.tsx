@@ -18,6 +18,7 @@ import {
   setOtherSubmitted,
   setHasJoinedChat,
 } from "../../Utils/surveySlice";
+import { fetchUserById, UserProfileData } from "../../Utils/api";
 
 import back_arrow from "../../assets/img/icons/HobbyIcon/back_arrow.svg";
 import NavBar from "../../components/NavBar";
@@ -30,6 +31,9 @@ import reportIcon from "../../assets/img/icons/Survey/report.svg";
 import ReportModal from "../../components/ReportModal";
 import largeNextButton from "../../assets/img/icons/Login/l_btn_fill.svg";
 import lockIcon from "../../assets/img/icons/Survey/lock.svg";
+import ProfileModal from "../../components/ProfileModal";
+import EndModal from "../../components/EndModal";
+import SurveySlide from "./components/SurveySlide";
 
 interface Question {
   questionId: number;
@@ -81,6 +85,13 @@ function SurveyPage() {
     const saved = localStorage.getItem(`chatRoomId_${sid}`);
     return saved ? parseInt(saved) : null;
   });
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<UserProfileData | null>(
+    null
+  );
+  const [showEndModal, setShowEndModal] = useState(false);
+  const [showOpponentLeaveModal, setShowOpponentLeaveModal] = useState(false);
+  const [leaverNickname, setLeaverNickname] = useState("");
 
   const menuRef = useRef<HTMLDivElement>(null);
   const swiperRef = useRef<SwiperCore | null>(null);
@@ -282,8 +293,8 @@ function SurveyPage() {
               destination: `/topic/survey/${realSessionId}/leave`,
               data,
             });
-            alert(`${data.leaverNickname}님이 설문을 나갔습니다.`);
-            navigate("/ChatList");
+            setLeaverNickname(data.leaverNickname);
+            setShowOpponentLeaveModal(true);
           }
         );
       },
@@ -631,6 +642,47 @@ function SurveyPage() {
     otherNickname = matchData?.user1Nickname || otherNickname;
   }
 
+  const handleProfileClick = async (opponentId: number) => {
+    if (!opponentId) return;
+    try {
+      const userData = await fetchUserById(opponentId);
+      setSelectedUser(userData);
+      setShowProfileModal(true);
+    } catch (error) {
+      console.error("사용자 정보 조회 실패:", error);
+    }
+  };
+
+  const handleEndSurvey = async (
+    reasonCodes: string[],
+    customReason: string
+  ) => {
+    if (!realSessionId || !myId) return;
+
+    try {
+      if (stompClientRef.current && stompClientRef.current.connected) {
+        const endSurveyBody = {
+          sessionId: Number(realSessionId),
+          reasonCodes: reasonCodes.join(","),
+          customReason: customReason,
+        };
+        console.log("[만남 종료 사유 전송]", endSurveyBody);
+
+        stompClientRef.current.publish({
+          destination: "/app/api/survey/leave",
+          body: JSON.stringify(endSurveyBody),
+        });
+
+        navigate("/ChatList");
+      } else {
+        throw new Error("WebSocket 연결이 없습니다.");
+      }
+    } catch (error) {
+      console.error("만남 종료 처리 실패:", error);
+      alert("만남 종료 처리 중 오류가 발생했습니다.");
+    }
+  };
+
   return (
     <>
       <NavBar />
@@ -643,18 +695,20 @@ function SurveyPage() {
           onClick={handleBackClick}
         />
         <p className="text-[20px] font-MuseumClassic_L italic">질문 센터</p>
-        <img
-          ref={menuButtonRef}
-          src={isEditing ? checkIcon : menuIcon}
-          alt={isEditing ? "저장" : "메뉴"}
-          className="absolute top-1/2 -translate-y-1/2 right-6 w-[20px] h-[20px] cursor-pointer"
-          onClick={
-            isEditing ? handleSave : () => setIsMenuOpen((prev) => !prev)
-          }
-        />
+        {matchData?.status !== "Survey_Cancelled" && (
+          <img
+            ref={menuButtonRef}
+            src={isEditing ? checkIcon : menuIcon}
+            alt={isEditing ? "저장" : "메뉴"}
+            className="absolute top-1/2 -translate-y-1/2 right-6 w-[20px] h-[20px] cursor-pointer"
+            onClick={
+              isEditing ? handleSave : () => setIsMenuOpen((prev) => !prev)
+            }
+          />
+        )}
       </div>
 
-      {isMenuOpen && (
+      {isMenuOpen && matchData?.status !== "Survey_Cancelled" && (
         <div
           ref={menuRef}
           className="absolute top-[90px] right-6 bg-white shadow-md rounded-xl  z-50 flex flex-col w-32 py-2"
@@ -663,21 +717,8 @@ function SurveyPage() {
           <button
             className="flex items-center gap-2 px-4 py-2 text-sm text-[#333] hover:bg-gray-100 w-full text-left font-GanwonEduAll_Light"
             onClick={() => {
-              if (stompClientRef.current && stompClientRef.current.connected) {
-                stompClientRef.current.publish({
-                  destination: "/app/api/survey/leave",
-                  body: JSON.stringify({
-                    sessionId: realSessionId,
-                    leaverId: myId,
-                    leaverNickname:
-                      myId === Number(matchData?.user1Id)
-                        ? matchData?.user1Nickname
-                        : matchData?.user2Nickname,
-                  }),
-                });
-              }
               setIsMenuOpen(false);
-              navigate("/ChatList");
+              setShowEndModal(true);
             }}
           >
             <img src={exitIcon} alt="만남 종료" className="w-5 h-5 mr-1" />
@@ -710,152 +751,29 @@ function SurveyPage() {
           onSwiper={(swiper) => (swiperRef.current = swiper)}
           className="h-full min-h-0 py-6"
         >
-          {questions.map((question, index) => {
-            const allAnswers = answers.filter(
-              (a) => a.questionId === question.questionId
-            );
-
-            const myAnswer = allAnswers.find((a) => Number(a.userId) === myId);
-            const otherAnswer = allAnswers.find(
-              (a) => Number(a.userId) !== myId
-            );
-
-            const showOther = !isEditing;
-            const currentAnswer =
-              surveyState?.answers[question.questionId] ||
-              myAnswer?.content ||
-              "";
-
-            return (
-              <SwiperSlide
-                key={question.questionId}
-                className="h-full flex flex-col min-h-0"
-              >
-                {/* SwiperSlide 내의 모든 콘텐츠를 감싸는 스크롤 가능한 컨테이너 */}
-                <div className="flex-1 flex flex-col h-full">
-                  <p className="mt-6 text-md font-GanwonEduAll_Bold mb-1 text-[#333]">
-                    {question.content}
-                  </p>
-
-                  <div className="flex justify-between items-end mb-4">
-                    <div className="flex items-center text-sm text-[#333] font-GanwonEduAll_Bold">
-                      {getLabeledQuestionTitle(index, questions.length)
-                        .split("")
-                        .map((char, i) =>
-                          char === "-" ? (
-                            <span key={i} className="mx-[2px]">
-                              {char}
-                            </span>
-                          ) : (
-                            <span
-                              key={i}
-                              className="border border-[#BD4B2C] px-2 py-[4px] mx-[1px] tracking-wide"
-                            >
-                              {char}
-                            </span>
-                          )
-                        )}
-                    </div>
-                    <p className="text-xs text-gray-400">
-                      {matchData?.matchedAt
-                        ? new Date(matchData.matchedAt).toLocaleDateString(
-                            "ko-KR"
-                          )
-                        : ""}
-                    </p>
-                  </div>
-
-                  {/* 내 답변 */}
-                  <div
-                    className={`bg-white rounded min-h-[100px] p-4 shadow-sm border border-gray-200 mb-3 ${
-                      !surveyState?.isSubmitted ? "cursor-pointer" : ""
-                    }`}
-                    onClick={() => {
-                      if (!isEditing && !surveyState?.isSubmitted) {
-                        setIsEditing(true);
-                        setEditedContent(currentAnswer);
-                      }
-                    }}
-                  >
-                    <div className="flex justify-between items-center mb-1">
-                      <p className="text-sm font-semibold text-gray-800">
-                        {myNickname}
-                      </p>
-                    </div>
-
-                    {isEditing ? (
-                      <div className="relative">
-                        <textarea
-                          maxLength={150}
-                          rows={5}
-                          className="w-full h-[120px] border rounded p-2 text-sm resize-none"
-                          value={editedContent}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            if (value.length <= 150) {
-                              setEditedContent(value);
-                            }
-                          }}
-                        />
-                        <div className="absolute bottom-1 right-2 text-xs text-gray-400">
-                          {editedContent.length}/150
-                        </div>
-                      </div>
-                    ) : (
-                      <p className="text-xs text-gray-600 line-clamp-5 break-words">
-                        {currentAnswer ? (
-                          currentAnswer
-                        ) : (
-                          <>
-                            이곳을 눌러 떠오르는 생각을 남겨보세요.
-                            <br />
-                            친구는 답변을 통해 당신을 알아가게 될 거예요.
-                          </>
-                        )}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* 상대방 답변 (수정 중이면 숨김) */}
-                  {showOther && (
-                    <div
-                      className={
-                        "bg-white rounded min-h-[100px] p-4 shadow-sm border border-gray-200 mb-3"
-                      }
-                    >
-                      <div className="flex justify-between items-center mb-1 w-full">
-                        <p className="text-sm font-semibold text-gray-800">
-                          {otherNickname}
-                        </p>
-                      </div>
-                      {surveyState?.isSubmitted ? (
-                        <p className="text-xs text-gray-600 w-full">
-                          {otherAnswer?.content ?? "아직 작성하지 않았어요."}
-                        </p>
-                      ) : otherAnswer?.content ? (
-                        <div className="flex flex-col items-center justify-center text-center py-4">
-                          <img
-                            src={lockIcon}
-                            alt="lock"
-                            className="w-7 h-7 mb-1"
-                          />
-                          <p className="text-sm font-GanwonEduAll_Bold text-[#333] mb-1">
-                            상대방의 답변을 보고 싶다면? <br /> 나도 답변을
-                            작성해야 해요!
-                          </p>
-                          <p className="text-xs text-gray-500"></p>
-                        </div>
-                      ) : (
-                        <p className="text-xs text-gray-600 w-full">
-                          아직 작성하지 않았어요.
-                        </p>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </SwiperSlide>
-            );
-          })}
+          {questions.map((question, index) => (
+            <SwiperSlide
+              key={question.questionId}
+              className="h-full flex flex-col min-h-0"
+            >
+              <SurveySlide
+                question={question}
+                index={index}
+                questionsLength={questions.length}
+                allAnswers={answers}
+                myId={myId}
+                myNickname={myNickname}
+                otherNickname={otherNickname}
+                isEditing={isEditing}
+                surveyState={surveyState}
+                editedContent={editedContent}
+                setEditedContent={setEditedContent}
+                setIsEditing={setIsEditing}
+                matchData={matchData}
+                onProfileClick={handleProfileClick}
+              />
+            </SwiperSlide>
+          ))}
         </Swiper>
 
         {!surveyState?.isSubmitted &&
@@ -980,16 +898,75 @@ function SurveyPage() {
       <ReportModal
         isOpen={showReportModal}
         onClose={() => setShowReportModal(false)}
-        reportType="Question"
-        onSubmit={(reasons, content) => {
-          alert(
-            "신고가 접수되었습니다.\n사유: " +
-              reasons.join(", ") +
-              "\n내용: " +
-              content
-          );
+        reportType="User"
+        targetUser={
+          matchData?.user1Id === myId ? matchData?.user2Id : matchData?.user1Id
+        }
+        onSubmit={async (reasons, content) => {
+          try {
+            const reportBody = {
+              sessionId: Number(realSessionId),
+              reasonCodes: reasons.join(","),
+              customReason: content,
+            };
+            console.log("[설문 신고 전송]", reportBody);
+
+            const response = await axios.post(
+              `https://www.mannamdeliveries.link/api/survey/${realSessionId}/report`,
+              reportBody,
+              { withCredentials: true }
+            );
+            alert("신고가 접수되었습니다.");
+            setShowReportModal(false);
+          } catch (error) {
+            console.error("신고 처리 실패:", error);
+            alert("신고 처리 중 오류가 발생했습니다.");
+          }
         }}
       />
+
+      {showProfileModal && selectedUser && (
+        <ProfileModal
+          isOpen={showProfileModal}
+          onClose={() => setShowProfileModal(false)}
+          user={selectedUser}
+        />
+      )}
+
+      <EndModal
+        isOpen={showEndModal}
+        onClose={() => setShowEndModal(false)}
+        onSubmit={handleEndSurvey}
+      />
+
+      {/* 상대방 퇴장 모달 */}
+      <Modal
+        isOpen={showOpponentLeaveModal}
+        onClose={() => {
+          setShowOpponentLeaveModal(false);
+          navigate("/ChatList");
+        }}
+      >
+        <div className="flex flex-col items-center">
+          <h3 className="text-lg font-GanwonEduAll_Bold mb-4">
+            상대방이 나갔습니다
+          </h3>
+          <p className="text-sm mb-6 text-center">
+            {leaverNickname}님이 설문을 나갔습니다.
+          </p>
+          <div className="flex justify-center w-full">
+            <button
+              className="px-6 py-2 bg-[#C67B5A] text-white text-sm rounded"
+              onClick={() => {
+                setShowOpponentLeaveModal(false);
+                navigate("/ChatList");
+              }}
+            >
+              확인
+            </button>
+          </div>
+        </div>
+      </Modal>
     </>
   );
 }

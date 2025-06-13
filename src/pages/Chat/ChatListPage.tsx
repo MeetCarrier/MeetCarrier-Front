@@ -3,9 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../Utils/store";
 import { fetchUser, UserState } from "../../Utils/userSlice";
+import axios from "axios";
+import { fetchUserById, UserProfileData } from "../../Utils/api";
 
 import NavBar from "../../components/NavBar";
 import ItemCard from "./components/ItemCard";
+import ProfileModal from "../../components/ProfileModal";
 import bell_default from "../../assets/img/icons/NavIcon/bell_default.svg";
 
 type MatchData = {
@@ -28,10 +31,21 @@ type MatchData = {
   user2ImageUrl: string | null;
 };
 
+type UserProfileData = {
+  userId: number;
+  nickname: string;
+  imageUrl: string | null;
+  // Add any other necessary properties here
+};
+
 function ChatListPage() {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const [matchList, setMatchList] = useState<MatchData[]>([]);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<UserProfileData | null>(
+    null
+  );
   const user = useSelector(
     (state: RootState) => state.user
   ) as UserState | null;
@@ -78,6 +92,9 @@ function ChatListPage() {
       m.status === "Surveying" ||
       (m.status === "Chatting" && m.agreed === false)
   );
+  const cancelledList = matchList.filter(
+    (m) => m.status === "Survey_Cancelled" || m.status === "Chat_Cancelled"
+  );
 
   const handleChatClick = (match: MatchData) => {
     navigate(`/chat/${match.roomId}`, {
@@ -93,6 +110,21 @@ function ChatListPage() {
         sessionId: match.sessionId,
       },
     });
+  };
+
+  const handleReviewClick = (match: MatchData) => {
+    // TODO: 후기 작성 페이지로 이동
+    console.log("후기 작성:", match);
+  };
+
+  const handleProfileClick = async (opponentId: number) => {
+    try {
+      const userData = await fetchUserById(opponentId);
+      setSelectedUser(userData);
+      setShowProfileModal(true);
+    } catch (error) {
+      console.error("사용자 정보 조회 실패:", error);
+    }
   };
 
   return (
@@ -119,6 +151,8 @@ function ChatListPage() {
                 chat.user1Id === myId ? chat.user2Nickname : chat.user1Nickname;
               const opponentImage =
                 chat.user1Id === myId ? chat.user2ImageUrl : chat.user1ImageUrl;
+              const opponentId =
+                chat.user1Id === myId ? chat.user2Id : chat.user1Id;
               return (
                 <div
                   key={chat.id}
@@ -130,9 +164,8 @@ function ChatListPage() {
                     username={opponentNickname}
                     time={chat.lastMessageAt ?? chat.matchedAt}
                     lastMessage={chat.lastMessage}
-                    opponentId={
-                      chat.user1Id === myId ? chat.user2Id : chat.user1Id
-                    }
+                    opponentId={opponentId}
+                    onProfileClick={() => handleProfileClick(opponentId)}
                   />
                 </div>
               );
@@ -154,6 +187,8 @@ function ChatListPage() {
                 survey.user1Id === myId
                   ? survey.user2ImageUrl
                   : survey.user1ImageUrl;
+              const opponentId =
+                survey.user1Id === myId ? survey.user2Id : survey.user1Id;
               return (
                 <div
                   key={survey.id}
@@ -164,6 +199,50 @@ function ChatListPage() {
                     profileImageUrl={opponentImage ?? undefined}
                     username={opponentNickname}
                     time={survey.matchedAt}
+                    opponentId={opponentId}
+                    onProfileClick={() => handleProfileClick(opponentId)}
+                  />
+                </div>
+              );
+            })}
+          </>
+        )}
+
+        {cancelledList.length > 0 && (
+          <>
+            <h2 className="text-xl font-GanwonEduAll_Bold text-center mt-6 mb-2">
+              종료된 만남
+            </h2>
+            {cancelledList.map((cancelled) => {
+              const opponentNickname =
+                cancelled.user1Id === myId
+                  ? cancelled.user2Nickname
+                  : cancelled.user1Nickname;
+              const opponentImage =
+                cancelled.user1Id === myId
+                  ? cancelled.user2ImageUrl
+                  : cancelled.user1ImageUrl;
+              const opponentId =
+                cancelled.user1Id === myId
+                  ? cancelled.user2Id
+                  : cancelled.user1Id;
+              return (
+                <div key={cancelled.id} className="cursor-pointer">
+                  <ItemCard
+                    profileImageUrl={opponentImage ?? undefined}
+                    username={opponentNickname}
+                    time={cancelled.matchedAt}
+                    opponentId={opponentId}
+                    status={cancelled.status}
+                    onProfileClick={() => handleProfileClick(opponentId)}
+                    onClickReview={() => handleReviewClick(cancelled)}
+                    onClick={() => {
+                      if (cancelled.status === "Survey_Cancelled") {
+                        handleSurveyClick(cancelled);
+                      } else if (cancelled.status === "Chat_Cancelled") {
+                        handleChatClick(cancelled);
+                      }
+                    }}
                   />
                 </div>
               );
@@ -171,6 +250,14 @@ function ChatListPage() {
           </>
         )}
       </div>
+
+      {showProfileModal && selectedUser && (
+        <ProfileModal
+          isOpen={showProfileModal}
+          onClose={() => setShowProfileModal(false)}
+          user={selectedUser}
+        />
+      )}
     </>
   );
 }

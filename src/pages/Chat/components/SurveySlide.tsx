@@ -26,6 +26,7 @@ interface SurveySlideProps {
   setEditedContent: (content: string) => void;
   setIsEditing: (isEditing: boolean) => void;
   matchData: MatchData | null;
+  onProfileClick: (opponentId: number) => void;
 }
 
 const SurveySlide: React.FC<SurveySlideProps> = ({
@@ -42,6 +43,7 @@ const SurveySlide: React.FC<SurveySlideProps> = ({
   setEditedContent,
   setIsEditing,
   matchData,
+  onProfileClick,
 }) => {
   const myAnswer = allAnswers.find((a) => Number(a.userId) === myId);
   const otherAnswer = allAnswers.find((a) => Number(a.userId) !== myId);
@@ -138,13 +140,20 @@ const SurveySlide: React.FC<SurveySlideProps> = ({
 
       {/* 상대방 답변 (수정 중이면 숨김) */}
       {showOther && (
-        <div
-          className={
-            "bg-white rounded min-h-[100px] p-4 shadow-sm border border-gray-200 mb-3"
-          }
-        >
+        <div className="bg-white rounded min-h-[100px] p-4 shadow-sm border border-gray-200 mb-3">
           <div className="flex justify-between items-center mb-1 w-full">
-            <p className="text-sm font-semibold text-gray-800">
+            <p
+              className="text-sm font-semibold text-gray-800 cursor-pointer"
+              onClick={() => {
+                const opponentId =
+                  myId === matchData?.user1Id
+                    ? matchData?.user2Id
+                    : matchData?.user1Id;
+                if (opponentId) {
+                  onProfileClick(opponentId);
+                }
+              }}
+            >
               {otherNickname}
             </p>
           </div>

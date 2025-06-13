@@ -1,8 +1,9 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import NavBar from "../../components/NavBar";
+import imageCompression from "browser-image-compression";
 
 import { RootState, AppDispatch } from "../../Utils/store";
 import { fetchUser, UserState, resetUser } from "../../Utils/userSlice";
@@ -15,6 +16,7 @@ import cameraIcon from "../../assets/img/icons/Profile/pic_change.svg";
 function ProfileEditPage() {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const user = useSelector(
     (state: RootState) => state.user
   ) as UserState | null;
@@ -81,6 +83,78 @@ function ProfileEditPage() {
     }
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // 파일 타입 검사: 이미지 파일인지 확인
+    if (!file.type.startsWith("image/")) {
+      alert("이미지 파일만 선택할 수 있습니다.");
+      if (e.target) {
+        e.target.value = "";
+      }
+      return;
+    }
+
+    try {
+      const options = {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1920,
+        useWebWorker: true,
+        initialQuality: 0.8,
+        alwaysKeepResolution: true,
+        fileType: file.type,
+      };
+
+      console.log("이미지 압축 시작");
+      const compressedFile = await imageCompression(file, options);
+      console.log("압축된 파일 타입:", compressedFile.type);
+
+      // 압축된 파일을 새로운 File 객체로 변환
+      const finalFile = new File([compressedFile], file.name, {
+        type: file.type,
+        lastModified: Date.now(),
+      });
+
+      // 이미지 서버 업로드
+      const formData = new FormData();
+      formData.append("multipartFile", finalFile);
+
+      console.log("이미지 서버 업로드 시작");
+      const response = await axios.post(
+        "https://www.mannamdeliveries.link/api/file/profile",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          withCredentials: true,
+        }
+      );
+      console.log("이미지 서버 업로드 성공:", response.data);
+      const imageUrl = response.data;
+
+      // 프로필 URL 업데이트
+      await axios.patch(
+        "https://www.mannamdeliveries.link/api/user",
+        { imgUrl: imageUrl },
+        { withCredentials: true }
+      );
+      console.log("프로필 URL 업데이트 성공");
+
+      // 사용자 정보 새로고침
+      dispatch(fetchUser());
+      alert("프로필 사진이 변경되었습니다.");
+    } catch (error) {
+      console.error("이미지 처리 중 오류 발생:", error);
+      alert("이미지 업로드에 실패했습니다.");
+    } finally {
+      if (e.target) {
+        e.target.value = "";
+      }
+    }
+  };
+
   return (
     <>
       <NavBar />
@@ -91,7 +165,7 @@ function ProfileEditPage() {
           {/* 프로필 이미지 영역 */}
           <div
             className="relative w-[100px] h-[100px] mb-4 cursor-pointer"
-            onClick={() => alert("프로필 사진 변경 기능 개발 예정")}
+            onClick={() => fileInputRef.current?.click()}
           >
             <div
               className="absolute inset-0"
@@ -108,8 +182,8 @@ function ProfileEditPage() {
             />
             <button
               onClick={(e) => {
-                e.stopPropagation(); // 부모의 onClick 무시
-                alert("프로필 사진 변경 기능 개발 예정");
+                e.stopPropagation();
+                fileInputRef.current?.click();
               }}
               className="absolute bottom-0 right-0 bg-white rounded-full shadow-md w-8 h-8 flex items-center justify-center"
             >
@@ -120,6 +194,14 @@ function ProfileEditPage() {
               />
             </button>
           </div>
+
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleImageUpload}
+            accept="image/*"
+            className="hidden"
+          />
 
           {/* 닉네임 */}
           <div className="w-full bg-white rounded-xl px-5 py-4 shadow-sm">

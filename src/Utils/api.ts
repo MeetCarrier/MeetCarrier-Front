@@ -1,6 +1,18 @@
 import axios from "axios";
 
-export const fetchUserById = async (userId: number) => {
+export interface UserProfileData {
+  age: number;
+  gender: string;
+  footprint: number;
+  imgUrl?: string;
+  interests?: string;
+  question?: string;
+  nickname: string;
+}
+
+export const fetchUserById = async (
+  userId: number
+): Promise<UserProfileData> => {
   try {
     const res = await axios.get(
       `https://www.mannamdeliveries.link/api/user/${userId}`,

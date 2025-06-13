@@ -10,6 +10,7 @@ import bellIcon from "../../assets/img/icons/NavIcon/bell_default.svg";
 import arrowIcon from "../../assets/img/icons/HobbyIcon/back_arrow.svg";
 import stampImage from "../../assets/img/stamp.svg";
 import defaultProfileImg from "../../assets/img/sample/sample_profile.svg";
+import backgroundImage from "../../assets/img/background/profile_bg.webp";
 
 import PsychTestList from "./PsychTestList";
 import ReviewList from "./ReviewList";

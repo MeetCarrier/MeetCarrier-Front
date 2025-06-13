@@ -1,6 +1,7 @@
 import navbg from "../../../assets/img/nav_bg.webp";
 import navbg2 from "../../../assets/img/nav_bg2.webp";
 import { useState, useRef } from "react";
+import { Client } from "@stomp/stompjs";
 
 import ReportModal from "../../../components/ReportModal";
 import InviteLetterModal from "../Invite/InviteLetterModal";
@@ -31,6 +32,7 @@ interface ChatBarProps {
   receiverId: number;
   roomId: number;
   onEndMeeting: () => void;
+  stompClient: Client | null;
 }
 
 function ChatBar({
@@ -46,6 +48,7 @@ function ChatBar({
   receiverId,
   roomId,
   onEndMeeting,
+  stompClient,
 }: ChatBarProps) {
   const [message, setMessage] = useState("");
   const [showReportModal, setShowReportModal] = useState(false);
@@ -284,19 +287,34 @@ function ChatBar({
       <EndModal
         isOpen={showEndModal}
         onClose={() => setShowEndModal(false)}
-        onSubmit={async (reason) => {
-          console.log("만남 종료 사유: ", reason);
+        onSubmit={async (reasonCodes, customReason) => {
+          console.log("[만남 종료 사유 전송]", {
+            roomId,
+            reasonCodes,
+            customReason,
+          });
+
           try {
-            await axios.post(
-              `https://www.mannamdeliveries.link/api/matches/${matchId}/end`,
-              { reason },
-              { withCredentials: true }
-            );
-            alert("만남 종료 사유가 전송되었습니다.");
-            onEndMeeting();
+            const endChatBody = {
+              roomId: roomId,
+              reasonCodes: reasonCodes.join(","), // 배열을 쉼표로 구분된 문자열로 변환
+              customReason: customReason || null, // 빈 문자열이면 null로 처리
+            };
+
+            // WebSocket을 통해 만남 종료 사유 전송
+            if (stompClient && stompClient.connected) {
+              stompClient.publish({
+                destination: "/app/api/chat/leave",
+                body: JSON.stringify(endChatBody),
+              });
+              console.log("[만남 종료 사유 전송 성공]");
+              onEndMeeting();
+            } else {
+              throw new Error("WebSocket 연결이 없습니다.");
+            }
           } catch (error) {
-            console.error("만남 종료 요청 실패:", error);
-            alert("만남 종료 요청에 실패했습니다.");
+            console.error("[만남 종료 사유 전송 실패]", error);
+            alert("만남 종료 처리 중 오류가 발생했습니다.");
           }
           setShowEndModal(false);
         }}
