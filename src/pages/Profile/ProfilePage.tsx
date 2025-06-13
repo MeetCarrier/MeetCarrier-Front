@@ -12,6 +12,7 @@ import stampImage from "../../assets/img/stamp.svg";
 import defaultProfileImg from "../../assets/img/sample/sample_profile.svg";
 
 import PsychTestList from "./PsychTestList";
+import ReviewList from "./ReviewList";
 
 function ProfilePage() {
   const dispatch = useDispatch<AppDispatch>();
@@ -29,7 +30,7 @@ function ProfilePage() {
     userId: 0,
     socialType: "KAKAO",
     nickname: "밥만 잘먹더라",
-    gender: "MALE",
+    gender: "Male",
     latitude: 0,
     longitude: 0,
     age: 21,
@@ -49,43 +50,22 @@ function ProfilePage() {
   const footprintGoal = 1000;
   const percentage = Math.min((footprint / footprintGoal) * 100, 100);
 
-  const handleLogout = async () => {
-    try {
-      await axios.post(
-        "https://www.mannamdeliveries.link/api/user/logout",
-        {},
-        {
-          withCredentials: true,
-        }
-      );
-
-      // localStorage에서 설문 관련 데이터 삭제
-      const keysToRemove = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (
-          key &&
-          (key.startsWith("survey_") || key.startsWith("chatRoomId_"))
-        ) {
-          keysToRemove.push(key);
-        }
-      }
-      keysToRemove.forEach((key) => localStorage.removeItem(key));
-
-      dispatch(resetUser());
-      navigate("/login");
-    } catch (error) {
-      console.error("로그아웃 중 오류가 발생했습니다:", error);
-    }
-  };
+  useEffect(() => {
+    console.log("닉네임:", displayUser.nickname);
+    console.log("성별:", displayUser.gender);
+  }, [displayUser]);
 
   return (
     <>
       <NavBar />
 
-      <div className="w-[80%] max-w-md flex flex-col items-center space-y-3 mb-4">
+      <div className="w-[100%] px-4 max-w-md h-[calc(100vh-100px)] overflow-y-auto flex flex-col items-center space-y-3 mt-26">
+        {" "}
         {/* 내 정보 요약 */}
-        <div className="flex items-center justify-between w-full px-4 py-2">
+        <button
+          onClick={() => navigate("/profile/edit")}
+          className="flex items-center justify-between w-full px-4 py-2 cursor-pointer"
+        >
           {/* 우표형 프로필 */}
           <div className="flex items-center gap-3">
             <div
@@ -103,12 +83,14 @@ function ProfilePage() {
               />
             </div>
 
-            {/* 닉네임 + 나이 */}
-            <div className="flex flex-col">
-              <div className="text-[16px] text-[#333] font-semibold">
-                {displayUser.nickname}, {displayUser.age}
+            <div className="flex flex-col text-left">
+              <div className="text-[16px] text-[#333] font-GanwonEduAll_Bold">
+                {displayUser.nickname}
               </div>
-              <div className="text-sm text-[#999999]">내 정보 · 계정 관리</div>
+              <div className="text-sm text-[#999999] font-GanwonEduAll_Light">
+                {displayUser.age}세 ·{" "}
+                {displayUser.gender === "Male" ? "남성" : "여성"}
+              </div>
             </div>
           </div>
 
@@ -118,16 +100,15 @@ function ProfilePage() {
             alt="arrow"
             className="w-4 h-4 transform scale-x-[-1]"
           />
-        </div>
-
+        </button>
         {/* 만남 발자국 */}
         <div className="w-full bg-white rounded-xl px-5 py-4 shadow-sm">
           <div className="flex items-center justify-between mb-1">
-            <div className="text-sm text-[#666666]">
+            <div className="text-sm text-[#666666] font-GanwonEduAll_Light">
               만남 발자국 <span className="text-[#bbb] text-xs">ⓘ</span>
             </div>
-            <div className="text-sm text-[#BD4B2C] font-semibold">
-              {footprint} 보
+            <div className="text-sm text-[#BD4B2C] font-GanwonEduAll_Bold">
+              {Math.floor(footprint)}보
             </div>
           </div>
           <div className="w-full h-2 bg-gray-300 rounded-full">
@@ -137,26 +118,24 @@ function ProfilePage() {
             />
           </div>
         </div>
-
         <PsychTestList />
+        <ReviewList
+          reviews={[
+            { content: "친절하고 배려심 있어요", count: 11 },
+            { content: "재밌어요", count: 9 },
+            { content: "말이 잘 통해요", count: 1 },
+          ]}
+        />
+      </div>
 
-        {/* 로그아웃 버튼 */}
-        <button
-          onClick={handleLogout}
-          className="w-full bg-[#BD4B2C] text-white py-3 rounded-xl font-semibold hover:bg-[#a33d22] transition-colors"
-        >
-          로그아웃
-        </button>
-
-        {/* 상단 제목 */}
-        <div className="absolute top-[50px] text-[#333333] left-0 right-0 px-6 text-center">
-          <p className="text-[20px] font-MuseumClassic_L italic">만남 배달부</p>
-          <img
-            src={bellIcon}
-            alt="bell_default"
-            className="absolute top-1/2 -translate-y-1/2 right-6 w-[20px] h-[20px]"
-          />
-        </div>
+      {/* 상단 제목 */}
+      <div className="absolute top-[50px] text-[#333333] left-0 right-0 px-6 text-center">
+        <p className="text-[20px] font-MuseumClassic_L italic">마이페이지</p>
+        <img
+          src={bellIcon}
+          alt="bell_default"
+          className="absolute top-1/2 -translate-y-1/2 right-6 w-[20px] h-[20px]"
+        />
       </div>
     </>
   );
