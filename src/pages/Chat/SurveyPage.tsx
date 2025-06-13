@@ -28,6 +28,8 @@ import Modal from "../../components/Modal";
 import exitIcon from "../../assets/img/icons/Survey/exit.svg";
 import reportIcon from "../../assets/img/icons/Survey/report.svg";
 import ReportModal from "../../components/ReportModal";
+import largeNextButton from "../../assets/img/icons/Login/l_btn_fill.svg";
+import lockIcon from "../../assets/img/icons/Survey/lock.svg";
 
 interface Question {
   questionId: number;
@@ -144,7 +146,7 @@ function SurveyPage() {
             setSurveyState({
               sessionId: realSessionId,
               isSubmitted: isSubmitted || Object.keys(serverAnswers).length > 0,
-              isOtherSubmitted,
+              isOtherSubmitted: isOtherSubmitted, // localStorage의 값 사용
               hasJoinedChat,
               answers: mergedAnswers,
             })
@@ -156,7 +158,7 @@ function SurveyPage() {
             setSurveyState({
               sessionId: realSessionId,
               isSubmitted,
-              isOtherSubmitted,
+              isOtherSubmitted: isOtherSubmitted, // localStorage의 값 사용
               hasJoinedChat,
               answers,
             })
@@ -238,23 +240,33 @@ function SurveyPage() {
                 `https://www.mannamdeliveries.link/api/matches`,
                 { withCredentials: true }
               );
-              const updatedMatch = response.data;
+              const updatedMatchDataArray = response.data;
+              const currentSessionMatch = updatedMatchDataArray.find(
+                (m: MatchData) => m.sessionId === Number(realSessionId)
+              );
 
-              // 상태 업데이트
-              setChatRoomId(data.roomId);
-              setShowCompleteModal(true);
+              if (currentSessionMatch) {
+                setMatchData(currentSessionMatch); // 매치 데이터 상태 업데이트
+                setChatRoomId(data.roomId);
+                setShowCompleteModal(true);
 
-              // location state 업데이트
-              navigate(`/survey/${realSessionId}`, {
-                state: {
-                  ...state,
-                  status: "Chatting",
-                  agreed: updatedMatch.agreed,
-                  matchedAt: updatedMatch.matchedAt,
-                  sessionId: realSessionId,
-                },
-                replace: true,
-              });
+                // location state 업데이트 (matchData에서 정확한 상태 정보 사용)
+                navigate(`/survey/${realSessionId}`, {
+                  state: {
+                    ...state,
+                    status: "Chatting",
+                    agreed: currentSessionMatch.agreed,
+                    matchedAt: currentSessionMatch.matchedAt,
+                    sessionId: realSessionId,
+                  },
+                  replace: true,
+                });
+
+                // 상대방 답변 제출 후 answers 상태 갱신
+                await fetchAnswers();
+              } else {
+                console.error("현재 세션에 대한 매치를 찾을 수 없습니다.");
+              }
             } catch (error) {
               console.error("매치 상태 업데이트 실패:", error);
             }
@@ -345,14 +357,27 @@ function SurveyPage() {
           );
         }
 
-        // 상대방 답변이 있는지 확인 (userId가 2개 이상이면 상대방도 답변한 것)
-        if (uniqueUserIds.size >= 2) {
-          dispatch(
-            setOtherSubmitted({
-              sessionId: realSessionId,
-              isOtherSubmitted: true,
-            })
+        // 상대방 답변이 있는지 확인 (다시 추가)
+        if (myId !== undefined) {
+          const hasOtherUser = response.data.some(
+            (a: Answer) => Number(a.userId) !== myId
           );
+
+          if (hasOtherUser) {
+            dispatch(
+              setOtherSubmitted({
+                sessionId: realSessionId,
+                isOtherSubmitted: true,
+              })
+            );
+          } else {
+            dispatch(
+              setOtherSubmitted({
+                sessionId: realSessionId,
+                isOtherSubmitted: false,
+              })
+            );
+          }
         }
       } catch (error) {
         console.error("답변 목록 조회 실패:", error);
@@ -394,6 +419,23 @@ function SurveyPage() {
       swiperRef.current.update();
     }
   }, [isEditing]);
+
+  // isOtherSubmitted를 위한 전용 useEffect (재도입 및 개선)
+  useEffect(() => {
+    if (!realSessionId || myId === undefined || !answers) return;
+
+    // answers 배열 내에서 나의 userId가 아닌 다른 userId의 답변이 있는지 확인
+    const hasOtherUserAnswer = answers.some(
+      (a: Answer) => Number(a.userId) !== myId
+    );
+
+    dispatch(
+      setOtherSubmitted({
+        sessionId: realSessionId,
+        isOtherSubmitted: hasOtherUserAnswer,
+      })
+    );
+  }, [realSessionId, myId, dispatch, answers]);
 
   const handleBackClick = () => {
     if (isEditing) {
@@ -491,7 +533,10 @@ function SurveyPage() {
     });
 
     if (!realSessionId || !myId) {
-      console.error("필수 정보 누락:", { realSessionId, myId });
+      console.error("필수 정보 누락:", {
+        realSessionId,
+        myId,
+      });
       alert("필수 정보가 누락되었습니다.");
       return;
     }
@@ -634,9 +679,7 @@ function SurveyPage() {
         </div>
       )}
 
-      <div className="w-full h-[calc(100%-170px)] px-4 z-0 font-GanwonEduAll_Light overflow-y-auto">
-        <FootPrintCheck currentStep={currentStep + 1} />
-
+      <div className="w-full h-[calc(100%-200px)] relative min-h-0 px-4 z-0 font-GanwonEduAll_Light">
         <Swiper
           spaceBetween={16}
           slidesPerView={1}
@@ -648,7 +691,7 @@ function SurveyPage() {
             setEditedContent("");
           }}
           onSwiper={(swiper) => (swiperRef.current = swiper)}
-          className="py-6"
+          className="h-full min-h-0 py-6"
         >
           {questions.map((question, index) => {
             const allAnswers = answers.filter(
@@ -667,90 +710,132 @@ function SurveyPage() {
               "";
 
             return (
-              <SwiperSlide key={question.questionId}>
-                <p className="mt-6 text-md font-GanwonEduAll_Bold mb-1 text-[#333]">
-                  {question.content}
-                </p>
-
-                <div className="flex justify-between items-end mb-4">
-                  <div className="flex items-center text-sm text-[#333] font-GanwonEduAll_Bold">
-                    {getLabeledQuestionTitle(index, questions.length)
-                      .split("")
-                      .map((char, i) =>
-                        char === "-" ? (
-                          <span key={i} className="mx-[2px]">
-                            {char}
-                          </span>
-                        ) : (
-                          <span
-                            key={i}
-                            className="border border-[#BD4B2C] px-2 py-[4px] mx-[1px] tracking-wide"
-                          >
-                            {char}
-                          </span>
-                        )
-                      )}
-                  </div>
-                  <p className="text-xs text-gray-400">
-                    {matchData?.matchedAt
-                      ? new Date(matchData.matchedAt).toLocaleDateString(
-                          "ko-KR"
-                        )
-                      : ""}
+              <SwiperSlide
+                key={question.questionId}
+                className="h-full flex flex-col min-h-0"
+              >
+                {/* SwiperSlide 내의 모든 콘텐츠를 감싸는 스크롤 가능한 컨테이너 */}
+                <div className="flex-1 flex flex-col h-full">
+                  <p className="mt-6 text-md font-GanwonEduAll_Bold mb-1 text-[#333]">
+                    {question.content}
                   </p>
-                </div>
 
-                {/* 내 답변 */}
-                <div
-                  className={`bg-white rounded p-4 shadow-sm border border-gray-200 mb-3 min-h-[150px] overflow-y-auto ${
-                    !surveyState?.isSubmitted ? "cursor-pointer" : ""
-                  }`}
-                  onClick={() => {
-                    if (!isEditing && !surveyState?.isSubmitted) {
-                      setIsEditing(true);
-                      setEditedContent(currentAnswer);
-                    }
-                  }}
-                >
-                  <div className="flex justify-between items-center mb-1">
-                    <p className="text-sm font-semibold text-gray-800">
-                      {myNickname}
+                  <div className="flex justify-between items-end mb-4">
+                    <div className="flex items-center text-sm text-[#333] font-GanwonEduAll_Bold">
+                      {getLabeledQuestionTitle(index, questions.length)
+                        .split("")
+                        .map((char, i) =>
+                          char === "-" ? (
+                            <span key={i} className="mx-[2px]">
+                              {char}
+                            </span>
+                          ) : (
+                            <span
+                              key={i}
+                              className="border border-[#BD4B2C] px-2 py-[4px] mx-[1px] tracking-wide"
+                            >
+                              {char}
+                            </span>
+                          )
+                        )}
+                    </div>
+                    <p className="text-xs text-gray-400">
+                      {matchData?.matchedAt
+                        ? new Date(matchData.matchedAt).toLocaleDateString(
+                            "ko-KR"
+                          )
+                        : ""}
                     </p>
                   </div>
-                  {isEditing ? (
-                    <textarea
-                      className="w-full h-32 border rounded p-2 text-sm"
-                      value={editedContent}
-                      onChange={(e) => setEditedContent(e.target.value)}
-                    />
-                  ) : (
-                    <p className="text-xs text-gray-600 whitespace-pre-line">
-                      {currentAnswer ? (
-                        currentAnswer
-                      ) : (
-                        <>
-                          이곳을 눌러 떠오르는 생각을 남겨보세요.
-                          <br />
-                          친구는 답변을 통해 당신을 알아가게 될 거예요.
-                        </>
-                      )}
-                    </p>
-                  )}
-                </div>
 
-                {/* 상대방 답변 (수정 중이면 숨김) */}
-                {showOther && (
-                  <div className="bg-white rounded p-4 shadow-sm border border-gray-200 mb-3 min-h-[150px] overflow-y-auto">
+                  {/* 내 답변 */}
+                  <div
+                    className={`bg-white rounded min-h-[100px] p-4 shadow-sm border border-gray-200 mb-3 ${
+                      !surveyState?.isSubmitted ? "cursor-pointer" : ""
+                    }`}
+                    onClick={() => {
+                      if (!isEditing && !surveyState?.isSubmitted) {
+                        setIsEditing(true);
+                        setEditedContent(currentAnswer);
+                      }
+                    }}
+                  >
                     <div className="flex justify-between items-center mb-1">
                       <p className="text-sm font-semibold text-gray-800">
-                        {otherNickname}
+                        {myNickname}
                       </p>
                     </div>
-                    <p className="text-xs text-gray-600 whitespace-pre-line">
-                      {otherAnswer?.content ?? "아직 작성하지 않았어요."}
-                    </p>
+
+                    {isEditing ? (
+                      <div className="relative">
+                        <textarea
+                          maxLength={150}
+                          rows={5}
+                          className="w-full h-[120px] border rounded p-2 text-sm resize-none"
+                          value={editedContent}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (value.length <= 150) {
+                              setEditedContent(value);
+                            }
+                          }}
+                        />
+                        <div className="absolute bottom-1 right-2 text-xs text-gray-400">
+                          {editedContent.length}/150
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-gray-600 line-clamp-5 break-words">
+                        {currentAnswer ? (
+                          currentAnswer
+                        ) : (
+                          <>
+                            이곳을 눌러 떠오르는 생각을 남겨보세요.
+                            <br />
+                            친구는 답변을 통해 당신을 알아가게 될 거예요.
+                          </>
+                        )}
+                      </p>
+                    )}
                   </div>
-                )}
+
+                  {/* 상대방 답변 (수정 중이면 숨김) */}
+                  {showOther && (
+                    <div
+                      className={
+                        "bg-white rounded min-h-[100px] p-4 shadow-sm border border-gray-200 mb-3"
+                      }
+                    >
+                      <div className="flex justify-between items-center mb-1 w-full">
+                        <p className="text-sm font-semibold text-gray-800">
+                          {otherNickname}
+                        </p>
+                      </div>
+                      {surveyState?.isSubmitted ? (
+                        <p className="text-xs text-gray-600 w-full">
+                          {otherAnswer?.content ?? "아직 작성하지 않았어요."}
+                        </p>
+                      ) : otherAnswer?.content ? (
+                        <div className="flex flex-col items-center justify-center text-center py-4">
+                          <img
+                            src={lockIcon}
+                            alt="lock"
+                            className="w-7 h-7 mb-1"
+                          />
+                          <p className="text-sm font-GanwonEduAll_Bold text-[#333] mb-1">
+                            상대방의 답변을 보고 싶다면? <br /> 나도 답변을
+                            작성해야 해요!
+                          </p>
+                          <p className="text-xs text-gray-500"></p>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-gray-600 w-full">
+                          아직 작성하지 않았어요.
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
               </SwiperSlide>
             );
           })}
@@ -761,14 +846,24 @@ function SurveyPage() {
           isAllQuestionsAnswered() && (
             <div className="fixed bottom-[90px] left-0 right-0 flex justify-center z-30">
               <button
-                className="px-6 py-2 bg-[#C67B5A] text-white text-sm font-GanwonEduAll_Bold rounded-md"
                 onClick={() => setShowSubmitModal(true)}
+                className={
+                  "relative w-full max-w-[400px] h-[45px] flex items-center justify-center overflow-hidden transition-opacity duration-200"
+                }
               >
-                제출하기
+                <img
+                  src={largeNextButton}
+                  alt="제출하기"
+                  className="absolute inset-0 w-full h-full object-fill"
+                />
+                <span className="relative z-10 font-GanwonEduAll_Bold text-[#333]">
+                  제출하기
+                </span>
               </button>
             </div>
           )}
       </div>
+      <FootPrintCheck currentStep={currentStep + 1} />
 
       {/* 제출 확인 모달 */}
       <Modal isOpen={showSubmitModal} onClose={() => setShowSubmitModal(false)}>
@@ -801,8 +896,8 @@ function SurveyPage() {
         isOpen={showCompleteModal}
         onClose={() => {
           setShowCompleteModal(false);
-          // 설문 완료 모달이 닫힐 때 채팅방 입장 요청
-          handleJoinChat();
+          // 설문 완료 모달이 닫힐 때 채팅방 입장 요청 (삭제)
+          // handleJoinChat(); // 이 부분은 이제 '채팅방 참가하기' 버튼 클릭 시에만 호출됨
         }}
       >
         <div className="flex flex-col items-center">

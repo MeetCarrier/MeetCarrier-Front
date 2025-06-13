@@ -79,7 +79,7 @@ const ReportModal = ({
           허위 신고일 경우 신고자가 제재받을 수 있어요.
         </p>
 
-        <div className="space-y-2 max-h-[160px] overflow-y-auto">
+        <div className="space-y-2 ">
           {REPORT_REASONS.map((reason) => (
             <label
               key={reason}
@@ -102,8 +102,8 @@ const ReportModal = ({
 
         <textarea
           placeholder="자세한 내용을 입력해주세요."
-          className="w-full border rounded p-2 text-sm resize-none font-GanwonEduAll_Light"
-          rows={3}
+          className="w-full border rounded p-1 text-sm resize-none font-GanwonEduAll_Light"
+          rows={2}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
@@ -117,7 +117,11 @@ const ReportModal = ({
           </button>
           <button
             onClick={handleSubmit}
-            className={`text-sm px-4 py-1.5 rounded ${selectedReasons.length > 0 ? 'bg-[#D1582C] text-white' : 'bg-[#F1C4B5] text-[#714E45]'}`}
+            className={`text-sm px-4 py-1.5 rounded ${
+              selectedReasons.length > 0
+                ? "bg-[#D1582C] text-white"
+                : "bg-[#F1C4B5] text-white"
+            }`}
             disabled={selectedReasons.length === 0}
           >
             신고

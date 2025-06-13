@@ -43,7 +43,7 @@ const ChatNotificationBar: FC<ChatNotificationBarProps> = ({
   };
 
   return (
-    <div className="absolute top-[100px] left-0 right-0 px-6 mx-auto w-[calc(100%-48px)] z-10">
+    <div className="absolute top-[100px] left-0 right-0 mx-auto w-[calc(100%-48px)] z-10">
       <div
         className="flex items-center justify-start py-3 bg-[#D9CDBF] rounded-lg shadow-md cursor-pointer"
         onClick={handleBarClick}
