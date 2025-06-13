@@ -41,8 +41,8 @@ const Login: React.FC = () => {
 
   return (
     <>
-      <div className="flex flex-col items-left justify-center w-[90%] h-screen px-6">
-        <div className="text-left mb-10">
+      <div className="flex flex-col items-left justify-between w-[90%] h-screen px-6">
+        <div className="text-left mt-40">
           <p className="text-md font-GanwonEduAll_Light text-gray-600 mt-2">
             <span className="text-[30px] font-MuseumClassic_B text-[#BD4B2C] leading-none">
               만남 배달부
@@ -62,36 +62,38 @@ const Login: React.FC = () => {
           </p>
         </div>
 
-        <button
-          onClick={() => handleLogin("google")}
-          className="relative w-[100%] max-w-xs py-3 mb-4 rounded-lg bg-white shadow font-GanwonEduAll_Bold text-[#333] border border-gray-200 text-lg cursor-pointer hover:bg-[#f0f0f0] hover:shadow-md transition text-center"
-        >
-          <img
-            src={googleIcon}
-            alt="Google"
-            className="absolute left-5 top-1/2 -translate-y-1/2 w-[18px] h-[18px]"
-          />
-          구글로 시작하기
-        </button>
+        <div className="flex flex-col items-center mb-[90px] w-full">
+          <button
+            onClick={() => handleLogin("google")}
+            className="relative w-[100%] max-w-xs py-2 mb-4 rounded-lg bg-white shadow font-GanwonEduAll_Bold text-[#333] border border-gray-200 text-lg cursor-pointer hover:bg-[#f0f0f0] hover:shadow-md transition text-center"
+          >
+            <img
+              src={googleIcon}
+              alt="Google"
+              className="absolute left-5 top-1/2 -translate-y-1/2 w-[18px] h-[18px]"
+            />
+            구글로 시작하기
+          </button>
 
-        <button
-          onClick={() => handleLogin("kakao")}
-          className="relative w-[100%] max-w-xs py-3 rounded-lg bg-[#FEE500] shadow font-GanwonEduAll_Bold text-[#3C1E1E] border border-gray-200 text-lg cursor-pointer hover:bg-[#e6cc00] hover:shadow-md transition text-center"
-        >
-          <img
-            src={kakaoIcon}
-            alt="Kakao"
-            className="absolute left-5 top-1/2 -translate-y-1/2 w-[18px] h-[18px]"
-          />
-          카카오톡으로 시작하기
-        </button>
+          <button
+            onClick={() => handleLogin("kakao")}
+            className="relative w-[100%] max-w-xs py-2 rounded-lg bg-[#FEE500] shadow font-GanwonEduAll_Bold text-[#3C1E1E] border border-gray-200 text-lg cursor-pointer hover:bg-[#e6cc00] hover:shadow-md transition text-center"
+          >
+            <img
+              src={kakaoIcon}
+              alt="Kakao"
+              className="absolute left-5 top-1/2 -translate-y-1/2 w-[18px] h-[18px]"
+            />
+            카카오톡으로 시작하기
+          </button>
 
-        <button
-          onClick={handleTestLogin}
-          className="w-[100%] max-w-xs py-3 mt-4 rounded-lg bg-blue-500 shadow font-GanwonEduAll_Bold text-white text-lg cursor-pointer hover:bg-blue-600 hover:shadow-md transition"
-        >
-          테스트 유저로 로그인
-        </button>
+          <button
+            onClick={handleTestLogin}
+            className="w-[100%] max-w-xs py-2 mt-4 rounded-lg bg-blue-500 shadow font-GanwonEduAll_Bold text-white text-lg cursor-pointer hover:bg-blue-600 hover:shadow-md transition"
+          >
+            테스트 유저로 로그인
+          </button>
+        </div>
       </div>
     </>
   );
