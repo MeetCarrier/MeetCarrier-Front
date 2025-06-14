@@ -23,6 +23,7 @@ import AlarmPage from "./pages/AlarmPage";
 import InviteWritePage from "./pages/Chat/Invite/InviteWritePage";
 import MeetingSchedulePage from "./pages/MeetingSchedule/MeetingSchedulePage";
 import ProfileEditPage from "./pages/Profile/ProfileEditPage";
+import PsychTestResult from "./pages/Profile/PsychTestResult";
 
 import MatchResultWatcher from "./components/MatchResultWatcher";
 
@@ -74,6 +75,7 @@ function App() {
               />
               <Route path="review" element={<ReviewPage />} />
               <Route path="Profile/edit" element={<ProfileEditPage />} />
+              <Route path="PsychTestResult" element={<PsychTestResult />} />
 
               {/* <Route path="*" element={<NotFoundPage />} /> */}
             </Route>

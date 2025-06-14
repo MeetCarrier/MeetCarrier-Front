@@ -1,12 +1,12 @@
-import { useNavigate } from 'react-router-dom';
-import arrowIcon from '../../assets/img/icons/HobbyIcon/back_arrow.svg';
+import { useNavigate } from "react-router-dom";
+import arrowIcon from "../../assets/img/icons/HobbyIcon/back_arrow.svg";
 
 function PsychTestList() {
   const navigate = useNavigate();
 
   const tests = [
-    { title: '테스트', onClick: () => navigate('/SelfEvaluation') },
-    { title: '결과 이력', onClick: () => alert('결과 이력으로 이동 예정') },
+    { title: "테스트", onClick: () => navigate("/SelfEvaluation") },
+    { title: "결과 이력", onClick: () => navigate("/PsychTestResult") },
   ];
 
   return (

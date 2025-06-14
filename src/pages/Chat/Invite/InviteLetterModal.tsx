@@ -1,5 +1,7 @@
 import type { FC } from "react";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import axios from "axios";
 import Modal from "../../../components/Modal";
 import stamp from "../../../assets/img/stamp.svg";
 import letterBg from "../../../assets/img/icons/Letter/letter.svg";
@@ -27,8 +29,37 @@ const InviteLetterModal: FC<InviteLetterModalProps> = ({
   roomId,
 }) => {
   const navigate = useNavigate();
+  const [invitationExists, setInvitationExists] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const checkInvitation = async () => {
+      try {
+        const res = await axios.get(
+          `https://www.mannamdeliveries.link/api/invitation/${matchId}`,
+          { withCredentials: true }
+        );
+        if (res.status === 200) {
+          setInvitationExists(true);
+          console.log("초대장 조회 코드:", res.status);
+          console.log("초대장 조회 응답:", res.data);
+        }
+      } catch (error: any) {
+        if (error.response?.status === 404) {
+          setInvitationExists(false);
+        } else {
+          console.error("초대장 확인 실패:", error);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (isOpen) checkInvitation();
+  }, [isOpen, matchId]);
 
   const handleSubmit = () => {
+    if (invitationExists) return;
     navigate("/invite-write", {
       state: {
         senderName,
@@ -67,14 +98,11 @@ const InviteLetterModal: FC<InviteLetterModalProps> = ({
 
           {/* 우표 + 보낸이 프로필 이미지 */}
           <div className="absolute top-6 right-7 w-[48px] h-[48px]">
-            {/* stamp 이미지 (배경) */}
             <img
               src={stamp}
               alt="stamp"
               className="w-full h-full rounded-md object-cover"
             />
-
-            {/* senderProfile 이미지 (중앙 오버레이) */}
             <img
               src={senderProfile}
               alt="보낸이 프로필"
@@ -88,6 +116,12 @@ const InviteLetterModal: FC<InviteLetterModalProps> = ({
           친구와 실제로 만남을 가져보세요!
         </p>
 
+        {invitationExists && (
+          <p className="text-sm text-red-500 mt-2">
+            이미 초대장을 보냈어요! 더 이상 작성할 수 없습니다.
+          </p>
+        )}
+
         <div className="flex justify-between gap-4 w-full mt-2">
           <button
             className="flex-1 py-2 bg-gray-200 rounded-md hover:bg-gray-300 transition"
@@ -96,8 +130,13 @@ const InviteLetterModal: FC<InviteLetterModalProps> = ({
             취소
           </button>
           <button
-            className="flex-1 py-2 bg-[#D45A4B] text-white rounded-md hover:bg-[#bf4a3c] transition"
+            className={`flex-1 py-2 rounded-md transition ${
+              invitationExists
+                ? "bg-gray-300 text-white cursor-not-allowed"
+                : "bg-[#D45A4B] text-white hover:bg-[#bf4a3c]"
+            }`}
             onClick={handleSubmit}
+            disabled={invitationExists}
           >
             초대장쓰기
           </button>

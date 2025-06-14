@@ -47,7 +47,7 @@ const ChatNotificationBar: FC<ChatNotificationBarProps> = ({
   };
 
   return (
-    <div className="absolute top-[100px] left-0 right-0 mx-auto w-[calc(100%-48px)] z-10">
+    <div className="absolute top-[100px] px-2 mx-auto w-full z-10">
       <div
         className={`flex items-center justify-start py-3 ${
           isRoomActive ? "bg-[#D9CDBF]" : "bg-gray-400"

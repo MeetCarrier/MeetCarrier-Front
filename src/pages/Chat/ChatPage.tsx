@@ -446,17 +446,18 @@ function ChatPage() {
 
     const lowerCaseQuery = searchQuery.toLowerCase();
     const newSearchResults: number[] = [];
-    messages.forEach((msg, index) => {
-      // 메시지 내용에 검색어가 포함되어 있는지 확인
+    // 메시지를 역순으로 탐색하여 최신 메시지부터 검색합니다.
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const msg = messages[i];
       if (msg.message.toLowerCase().includes(lowerCaseQuery)) {
-        newSearchResults.push(index);
+        newSearchResults.push(i);
       }
-    });
+    }
 
     setSearchResults(newSearchResults);
     if (newSearchResults.length > 0) {
-      setCurrentSearchIndex(0);
-      // 첫 번째 검색 결과로 스크롤
+      setCurrentSearchIndex(0); // 맨 아래(최신) 결과부터 시작
+      // 첫 번째 검색 결과로 스크롤 (맨 아래 결과)
       const firstResultIndex = newSearchResults[0];
       if (messageRefs.current[firstResultIndex]) {
         messageRefs.current[firstResultIndex]?.scrollIntoView({
@@ -475,9 +476,10 @@ function ChatPage() {
 
     let newIndex = currentSearchIndex;
     if (direction === "next") {
+      // ▲ (위로 이동, 더 오래된 메시지)
       newIndex = (currentSearchIndex + 1) % searchResults.length;
     } else {
-      // 'prev'
+      // ▼ (아래로 이동, 더 최신 메시지)
       newIndex =
         (currentSearchIndex - 1 + searchResults.length) % searchResults.length;
     }
@@ -610,6 +612,11 @@ function ChatPage() {
         }}
         stompClient={stompClientRef.current}
         isRoomActive={roomInfo?.status === "Activate"}
+        isSearchMode={showSearchBar}
+        searchResults={searchResults}
+        currentSearchIndex={currentSearchIndex}
+        onNavigateSearchResults={navigateSearchResults}
+        searchQuery={searchQuery}
       />
 
       {!showSearchBar && (
@@ -637,7 +644,9 @@ function ChatPage() {
       <div
         className="flex flex-col w-full overflow-y-auto p-4 z-0"
         style={{
-          height: `calc(100% - 240px - ${emojiHeight}px)`,
+          height: showSearchBar
+            ? `calc(100% - 180px)`
+            : `calc(100% - ${emojiOpen ? 432 : 232}px)`,
           transition: "height 0.3s ease",
         }}
       >
@@ -739,7 +748,7 @@ function ChatPage() {
                 <div className={`max-w-[70%] flex flex-col`}>
                   {/* 닉네임은 첫 메시지일 때만 */}
                   {!isMine && !isPrevSameSender && (
-                    <span className="text-sm text-gray-700 mb-1 font-GanwonEduAll_Light">
+                    <span className="text-base text-gray-700 mb-1 font-GanwonEduAll_Light">
                       {nickname}
                     </span>
                   )}
@@ -767,13 +776,13 @@ function ChatPage() {
                         />
                       ) : (
                         <span
-                          className={
+                          className={`text-base ${
                             isHighlighted
                               ? isCurrent
-                                ? "bg-[#EADCCB] text-[#333] font-bold" // 현재 선택된 메시지
-                                : "bg-[#EADCCB]" // 나머지 검색된 메시지
+                                ? "bg-[#EADCCB] text-[#333] font-bold"
+                                : "bg-[#EADCCB] text-[#333]"
                               : ""
-                          }
+                          }`}
                         >
                           {msg.message}
                         </span>
@@ -783,7 +792,7 @@ function ChatPage() {
                     {/* 시간/읽음 상태 컨테이너 - 버블 아래에 위치 */}
                     {shouldDisplayTime && (
                       <div
-                        className={`flex flex-col gap-y-0.5 text-[10px] text-gray-400 leading-tight font-GanwonEduAll_Light ${
+                        className={`flex flex-col gap-y-0.5 text-xs text-gray-400 leading-tight font-GanwonEduAll_Light ${
                           isMine ? "items-end mr-1" : "items-start ml-1"
                         }`}
                       >
