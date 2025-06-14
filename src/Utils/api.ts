@@ -4,6 +4,7 @@ export interface UserProfileData {
   userId: number;
   nickname: string;
   imageUrl: string | null;
+  imgUrl?: string | null;
   age?: number;
   gender?: string;
   footprint?: number;

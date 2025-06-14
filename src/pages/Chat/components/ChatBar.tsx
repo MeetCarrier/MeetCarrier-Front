@@ -50,6 +50,7 @@ interface ChatBarProps {
   roomId: number;
   onEndMeeting: () => void;
   stompClient: Client | null;
+  isRoomActive: boolean;
 }
 
 function ChatBar({
@@ -65,6 +66,7 @@ function ChatBar({
   roomId,
   onEndMeeting,
   stompClient,
+  isRoomActive,
 }: ChatBarProps) {
   const [message, setMessage] = useState("");
   const [showReportModal, setShowReportModal] = useState(false);
@@ -95,6 +97,10 @@ function ChatBar({
   ];
 
   const handleSendMessage = () => {
+    if (!isRoomActive) {
+      alert("비활성화된 채팅방에서는 메시지를 보낼 수 없습니다.");
+      return;
+    }
     if (message.trim() && onSendMessage) {
       onSendMessage(message.trim());
       setMessage("");
@@ -205,12 +211,16 @@ function ChatBar({
                   <div
                     className="w-20 h-20 flex items-center justify-center cursor-pointer"
                     onClick={() => {
+                      if (!isRoomActive) {
+                        alert(
+                          "비활성화된 채팅방에서는 이모지를 보낼 수 없습니다."
+                        );
+                        return;
+                      }
                       if (selectedEmojiUrl === emojiSrc) {
-                        // 이미 선택된 이모지를 다시 클릭하면 전송
                         onSendMessage("", emojiSrc);
                         setSelectedEmojiUrl(null);
                       } else {
-                        // 다른 이모지를 클릭하거나 처음 클릭하는 경우 미리보기
                         setSelectedEmojiUrl(emojiSrc);
                       }
                     }}
@@ -231,36 +241,53 @@ function ChatBar({
                 {
                   icon: album_icon,
                   label: "앨범",
-                  onClick: () => fileInputRef.current?.click(),
+                  onClick: () => {
+                    if (!isRoomActive) {
+                      alert(
+                        "비활성화된 채팅방에서는 이미지를 보낼 수 없습니다."
+                      );
+                      return;
+                    }
+                    fileInputRef.current?.click();
+                  },
+                  disabled: !isRoomActive,
                 },
                 {
                   icon: invite_icon,
                   label: "대면초대장",
                   onClick: () => setShowInviteModal(true),
+                  disabled: !isRoomActive,
                 },
                 {
                   icon: end_icon,
                   label: "만남종료",
                   onClick: () => setShowEndModal(true),
+                  disabled: !isRoomActive,
                 },
                 {
                   icon: report_icon,
                   label: "신고",
                   onClick: () => setShowReportModal(true),
+                  disabled: !isRoomActive,
                 },
                 {
                   icon: survey_icon,
                   label: "비대면설문지",
                   onClick: onSurveyClick,
+                  disabled: false,
                 },
-              ].map(({ icon, label, onClick }, index) => (
+              ].map(({ icon, label, onClick, disabled }, index) => (
                 <div
                   key={`utility-${index}`}
                   className="flex flex-col items-center"
                 >
                   <div
-                    className="w-12 h-12 rounded-full bg-[#722518] flex items-center justify-center cursor-pointer"
-                    onClick={onClick}
+                    className={`w-12 h-12 rounded-full ${
+                      disabled ? "bg-gray-400" : "bg-[#722518]"
+                    } flex items-center justify-center ${
+                      disabled ? "cursor-not-allowed" : "cursor-pointer"
+                    }`}
+                    onClick={disabled ? undefined : onClick}
                   >
                     <img src={icon} alt={label} className="w-6 h-6" />
                   </div>
@@ -274,11 +301,11 @@ function ChatBar({
         </div>
       </div>
       {selectedEmojiUrl && (
-        <div className="absolute bottom-[285px] right-2 z-40">
+        <div className="absolute bottom-[285px] right-2 z-40 bg-[rgba(255,255,255,0.5)] rounded-lg">
           <img
             src={selectedEmojiUrl}
             alt="Selected Emoji"
-            className="w-30 h-30 bg-white p-2 rounded-lg shadow-lg"
+            className="w-30 h-30 p-2 shadow-lg"
           />
         </div>
       )}
@@ -288,11 +315,12 @@ function ChatBar({
       >
         <div className="flex items-center w-full gap-2">
           <button
-            className="w-9 h-9 rounded-full bg-[#A34027] flex items-center justify-center flex-shrink-0"
-            onClick={() => {
-              onEmojiToggle(); // 상위 컴포넌트의 emojiOpen 상태 토글
-              setCurrentMenuType("general"); // + 버튼 클릭 시 항상 일반 메뉴로 설정
-            }}
+            className={`w-9 h-9 rounded-full ${
+              isRoomActive ? "bg-[#743120]" : "bg-gray-400"
+            } flex items-center justify-center flex-shrink-0 ${
+              !isRoomActive ? "cursor-not-allowed" : ""
+            }`}
+            onClick={isRoomActive ? onEmojiToggle : undefined}
           >
             <img
               src={plus_icon}
@@ -300,33 +328,38 @@ function ChatBar({
               className={`w-5 h-5 transform transition-transform duration-300 ${
                 emojiOpen && currentMenuType === "general"
                   ? "rotate-45"
-                  : "rotate-0" // 메뉴가 열려있고 일반 메뉴일 때만 회전
+                  : "rotate-0"
               }`}
             />
           </button>
 
-          <div className="flex items-center flex-1 bg-[#A34027] rounded-full px-3 py-2">
+          <div className="flex items-center flex-1 bg-[#743120] rounded-full px-3 py-2">
             <input
               type="text"
-              placeholder="전할 말 입력"
+              placeholder={
+                isRoomActive ? "전할 말 입력" : "비활성화된 채팅방입니다"
+              }
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyPress={handleKeyPress}
-              className={`flex-1 bg-transparent text-white text-sm placeholder:text-white outline-none`}
+              disabled={!isRoomActive}
+              className={`flex-1 bg-transparent text-white text-sm placeholder:text-white outline-none ${
+                !isRoomActive ? "cursor-not-allowed" : ""
+              }`}
             />
             <button
               onClick={() => {
+                if (!isRoomActive) {
+                  alert("비활성화된 채팅방에서는 이모지를 사용할 수 없습니다.");
+                  return;
+                }
                 if (!emojiOpen) {
-                  // 메뉴가 닫혀있으면 메뉴를 열고 이모지 타입으로 설정
                   onEmojiToggle();
                   setCurrentMenuType("emoji");
                 } else {
-                  // 메뉴가 열려있으면
                   if (currentMenuType === "general") {
-                    // 일반 메뉴가 활성화되어 있으면 이모지 메뉴로 전환
                     setCurrentMenuType("emoji");
                   } else {
-                    // 이모지 메뉴가 활성화되어 있으면 일반 메뉴로 전환
                     setCurrentMenuType("general");
                   }
                 }
@@ -336,18 +369,24 @@ function ChatBar({
             </button>
           </div>
 
-          <button className="w-9 h-9 rounded-full bg-[#A34027] flex items-center justify-center flex-shrink-0">
-            <img src={questionmark_icon} alt="?" className="w-5 h-5" />
-          </button>
-
           <button
             onClick={handleSendMessage}
-            className={`w-9 h-9 rounded-full bg-[#A34027] flex items-center justify-center flex-shrink-0 ${
-              message.trim() ? "" : "opacity-50 cursor-not-allowed"
+            className={`w-9 h-9 rounded-full ${
+              isRoomActive
+                ? message.trim()
+                  ? "bg-gray-400"
+                  : "bg-[#743120]"
+                : "bg-gray-400"
+            } flex items-center justify-center flex-shrink-0 ${
+              !isRoomActive || !message.trim() ? "cursor-not-allowed" : ""
             }`}
-            disabled={!message.trim()}
+            disabled={!isRoomActive || !message.trim()}
           >
-            <img src={arrow_icon} alt="send" className="w-5 h-5" />
+            <img
+              src={message.trim() ? arrow_icon : questionmark_icon}
+              alt={message.trim() ? "send" : "?"}
+              className="w-5 h-5"
+            />
           </button>
         </div>
       </div>
