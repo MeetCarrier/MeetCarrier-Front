@@ -1,7 +1,7 @@
 import NavBar from '../../components/NavBar';
 import calendar_icon from '../../assets/img/icons/Calendar/ic_calendar.svg';
-import comming_dage from '../../assets/img/calendar/comming_date.svg';
-import dairy_button from '../../assets/img/calendar/dairy.svg';
+import comming_dage from '../../assets/img/calendar/comming_date.webp';
+import dairy_button from '../../assets/img/calendar/dairy.webp';
 import today_check from '../../assets/img/calendar/today_check.svg';
 import calendar_base from '../../assets/img/calendar/Calendar_base.png';
 import { useNavigate } from 'react-router-dom';
@@ -418,7 +418,11 @@ function Calendar() {
             </p>
           </div>
           <button onClick={handleDiaryClick} className="cursor-pointer">
-            <img src={dairy_button} alt="일기 등록" />
+            <img
+              src={dairy_button}
+              alt="일기 등록"
+              className="w-[60px] h-[60px]"
+            />
           </button>
         </div>
       </div>

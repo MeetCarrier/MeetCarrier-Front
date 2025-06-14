@@ -58,15 +58,17 @@ function Main() {
   // 페이지 진입 시 유저 정보 요청 실패 시 로그인 요청
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        await dispatch(fetchUser()).unwrap();
-        console.log('로그인 성공');
-        await dispatch(fetchSelfTestList()).unwrap();
-      } catch (error) {
-        console.warn('유저 정보 불러오기 실패 → 로그인 페이지로 이동', error);
-        navigate('/Login');
-        return;
-      }
+      // try {
+      //   await dispatch(fetchUser()).unwrap();
+      //   console.log('로그인 성공');
+      //   await dispatch(fetchSelfTestList()).unwrap();
+      // } catch (error) {
+      //   console.warn('유저 정보 불러오기 실패 → 로그인 페이지로 이동', error);
+      //   navigate('/Login');
+      //   return;
+      // }
+      await dispatch(fetchUser());
+      await dispatch(fetchSelfTestList());
 
       if (!navigator.geolocation) {
         console.error('위치 정보 지원 안됨');
@@ -112,7 +114,7 @@ function Main() {
 
     const timeoutId = window.setTimeout(() => {
       console.log('매칭 시간 초과');
-      dispatch(setStatus('fail'));
+      dispatch(setStatus('fail2'));
       dispatch(clearMatchingTimeout());
     }, 600000);
 

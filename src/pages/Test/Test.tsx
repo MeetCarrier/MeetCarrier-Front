@@ -11,6 +11,7 @@ import back_arrow from '../../assets/img/icons/HobbyIcon/back_arrow.svg';
 import btn1 from '../../assets/img/button/btn1.webp';
 import btn3 from '../../assets/img/button/btn3.webp';
 import btn4 from '../../assets/img/button/btn4.webp';
+import toast from 'react-hot-toast';
 
 function Test() {
   const navigate = useNavigate();
@@ -37,7 +38,7 @@ function Test() {
     if (answeredCount === 15) {
       navigate('/Test?modal=true');
     } else {
-      alert('모두 작성해주세요.');
+      toast('모두 작성해주세요.');
     }
   };
 

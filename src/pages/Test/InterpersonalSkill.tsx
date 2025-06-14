@@ -1,8 +1,8 @@
 import { useAppDispatch, useAppSelector } from '../../Utils/hooks';
 import { saveAnswer } from '../../Utils/testSlice';
-import yes_icon from '../../assets/img/icons/Test/yes_icon.svg';
-import normal_icon from '../../assets/img/icons/Test/normal_icon.svg';
-import no_icon from '../../assets/img/icons/Test/no_icon.svg';
+import yes_icon from '../../assets/img/icons/Test/yes_icon.webp';
+import normal_icon from '../../assets/img/icons/Test/normal_icon.webp';
+import no_icon from '../../assets/img/icons/Test/no_icon.webp';
 
 interface Question {
   id: number;

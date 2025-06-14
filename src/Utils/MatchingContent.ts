@@ -1,6 +1,7 @@
 import ch_default from '../assets/img/character/MeetCarrier_character.gif';
 import ch_matching from '../assets/img/character/MeetCarrier_character2.gif';
 import ch_success from '../assets/img/character/MeetCarrier_character3.gif';
+import ch_fail from '../assets/img/character/MeetCarrier_character4.gif';
 
 export type MatchingStatus =
   | 'default'
@@ -30,13 +31,13 @@ export const MatchingContent = {
   },
   fail: {
     text: '맞춤 친구를 찾지 못했어요...',
-    image: ch_default,
+    image: ch_fail,
     buttonText1: '매칭 추천 친구 고르기',
     buttonText2: '다음에 다시 시도하기',
   },
   fail2: {
     text: '근처에 아무도 없어요...',
-    image: ch_default,
+    image: ch_fail,
     buttonText1: '다시 찾기',
     buttonText2: '다음에 다시 시도하기',
   },
