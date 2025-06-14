@@ -79,54 +79,53 @@ const ReviewPage = () => {
         />
       </div>
 
-      <div className="w-full px-4">
+      <div className="w-full flex flex-col items-center px-4">
         {/* 리뷰 카드 */}
-        <div className="mb-4 mx-auto max-w-md bg-white rounded-xl shadow p-1 flex flex-col items-center w-full" style={{ minHeight: 'unset', height: 'auto' }}>
-          <div className="relative mb-2">
-            <img src={stamp} alt="스탬프" className="w-16 h-16" />
-            <img
-              src={sampleProfile}
-              alt="상대방 프로필"
-              className="absolute top-1 left-1 w-14 h-14 rounded-md"
-            />
+        <div className="mb-2 bg-white rounded-xl shadow p-1 flex flex-col items-center w-full max-w-md" style={{ minHeight: 'unset', height: 'auto' }}>
+          <div className="relative m-2">
+            <div className="relative w-12 h-12">
+              <img src={stamp} alt="스탬프" className="w-full h-full" />
+              <img
+                src={sampleProfile}
+                alt="상대방 프로필"
+                className="absolute top-1/2 left-1/2 w-10 h-10 rounded-md -translate-x-1/2 -translate-y-1/2"
+              />
+            </div>
           </div>
-          <p className="text-center text-xl mb-2 font-GanwonEduAll_Bold">
+          <p className="text-center text-l mb-2 font-GanwonEduAll_Bold">
             '커피'은(는) 어떤 친구였나요?
           </p>
-
-          {/* 별점 */}
           <div className="flex space-x-1 mb-4">
             {[1, 2, 3, 4, 5].map((i) => (
               <img
                 key={i}
                 src={rating >= i ? star_1 : star_0}
                 alt={`star_${i}`}
-                className="w-10 h-10 cursor-pointer"
+                className="w-7 h-7 cursor-pointer"
                 onClick={() => setRating(i)}
               />
             ))}
           </div>
         </div>
 
-        <div className="mx-auto max-w-md bg-white rounded-xl shadow px-6 py-1 w-full" style={{ minHeight: 'unset', height: 'auto' }}>
+        <div className="bg-white rounded-xl shadow px-6 py-1 w-full max-w-md" style={{ minHeight: 'unset', height: 'auto' }}>
           {/* 키워드 선택 안내 */}
           <p className="text-sm font-semibold mb-2 font-GanwonEduAll_Bold">
             친구의 어떤 점이 좋았나요?{" "}
             <span className="text-gray-400">(1개~5개)</span>
           </p>
-
           <Swiper spaceBetween={12} slidesPerView={1} className="mb-4">
             {categories.map((category) => (
               <SwiperSlide key={category.title}>
+                <div>
                   <p className="text-sm font-semibold mb-2">{category.title}</p>
                   <div className="flex flex-wrap gap-2">
                     {category.tags.map((tag) => (
                       <button
                         key={tag.text}
-                        className={`inline-flex items-center text-sm px-3 py-1 rounded-[4px] border transition whitespace-nowrap shadow-sm ${
-                          selectedTags.includes(tag.text)
-                            ? "bg-[#BD4B2C]/20 border-[#BD4B2C] text-[#BD4B2C] shadow-md"
-                            : "bg-white text-gray-700 border-gray-300 shadow font-GanwonEduAll_Bold"
+                        className={`inline-flex items-center text-sm px-3 py-1 rounded-[4px] border transition whitespace-nowrap shadow-sm ${selectedTags.includes(tag.text)
+                          ? "bg-[#BD4B2C]/20 border-[#BD4B2C] text-[#BD4B2C] shadow-md"
+                          : "bg-white text-gray-700 border-gray-300 shadow font-GanwonEduAll_Bold"
                         }`}
                         style={selectedTags.includes(tag.text) ? { boxShadow: '0 2px 8px 0 rgba(189,75,44,0.10)' } : {}}
                         onClick={() => toggleTag(tag.text)}
@@ -136,6 +135,7 @@ const ReviewPage = () => {
                       </button>
                     ))}
                   </div>
+                </div>
               </SwiperSlide>
             ))}
           </Swiper>
@@ -143,12 +143,12 @@ const ReviewPage = () => {
 
         {/* 완료 버튼 */}
         <button
-          className="relative w-full mt-4 mb-4 h-[45px] flex items-center justify-center overflow-hidden transition-opacity duration-200 max-w-[400px] mx-auto"
+          className="relative w-full max-w-md my-4 h-[45px] flex items-center justify-center overflow-hidden transition-opacity duration-200 mx-auto"
         >
           <img
             src={largeNextButton}
             alt="완료"
-            className="absolute inset-0 w-full h-full object-fill"
+            className="absolute inset-0 w-full h-full object-fill "
           />
           <span className="relative z-10 font-GanwonEduAll_Bold text-[#333]">
             완료
