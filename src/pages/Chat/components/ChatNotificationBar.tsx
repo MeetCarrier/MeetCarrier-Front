@@ -12,6 +12,7 @@ interface ChatNotificationBarProps {
   memo?: string;
   isScheduled: boolean; // 일정이 등록되었는지 여부
   onModifyClick?: () => void;
+  isRoomActive: boolean;
 }
 
 const ChatNotificationBar: FC<ChatNotificationBarProps> = ({
@@ -22,6 +23,7 @@ const ChatNotificationBar: FC<ChatNotificationBarProps> = ({
   memo,
   isScheduled,
   onModifyClick,
+  isRoomActive,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -33,7 +35,9 @@ const ChatNotificationBar: FC<ChatNotificationBarProps> = ({
   const displayText = isScheduled
     ? `만남 일정 : ${scheduleDate}`
     : type === "time"
-    ? `채팅 활성화 시간: ${time}`
+    ? isRoomActive
+      ? `채팅 활성화 시간: ${time}`
+      : "채팅이 비활성화되었습니다"
     : `${scheduleDate}까지 만남 일정을 등록해주세요!!!`;
 
   const handleBarClick = () => {
@@ -43,9 +47,11 @@ const ChatNotificationBar: FC<ChatNotificationBarProps> = ({
   };
 
   return (
-    <div className="absolute top-[100px] left-0 right-0 mx-auto w-[calc(100%-48px)] z-10">
+    <div className="absolute top-[100px] px-2 mx-auto w-full z-10">
       <div
-        className="flex items-center justify-start py-3 bg-[#D9CDBF] rounded-lg shadow-md cursor-pointer"
+        className={`flex items-center justify-start py-3 ${
+          isRoomActive ? "bg-[#D9CDBF]" : "bg-gray-400"
+        } rounded-lg shadow-md cursor-pointer`}
         onClick={handleBarClick}
       >
         <img
@@ -81,7 +87,12 @@ const ChatNotificationBar: FC<ChatNotificationBarProps> = ({
           <div className="flex justify-end">
             <button
               onClick={onModifyClick}
-              className="bg-[#D45A4B] text-white px-4 py-2 rounded-md text-sm font-semibold hover:bg-[#bf4a3c]"
+              className={`${
+                isRoomActive
+                  ? "bg-[#D45A4B] hover:bg-[#bf4a3c]"
+                  : "bg-gray-400 cursor-not-allowed"
+              } text-white px-4 py-2 rounded-md text-sm font-semibold`}
+              disabled={!isRoomActive}
             >
               수정
             </button>

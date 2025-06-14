@@ -50,6 +50,12 @@ interface ChatBarProps {
   roomId: number;
   onEndMeeting: () => void;
   stompClient: Client | null;
+  isRoomActive: boolean;
+  isSearchMode: boolean;
+  searchResults: number[];
+  currentSearchIndex: number;
+  onNavigateSearchResults: (direction: "prev" | "next") => void;
+  searchQuery: string;
 }
 
 function ChatBar({
@@ -65,6 +71,12 @@ function ChatBar({
   roomId,
   onEndMeeting,
   stompClient,
+  isRoomActive,
+  isSearchMode,
+  searchResults,
+  currentSearchIndex,
+  onNavigateSearchResults,
+  searchQuery,
 }: ChatBarProps) {
   const [message, setMessage] = useState("");
   const [showReportModal, setShowReportModal] = useState(false);
@@ -74,6 +86,7 @@ function ChatBar({
   const [currentMenuType, setCurrentMenuType] = useState<"general" | "emoji">(
     "general"
   );
+  const [selectedEmojiUrl, setSelectedEmojiUrl] = useState<string | null>(null);
 
   const emojis = [
     emoji1,
@@ -94,6 +107,10 @@ function ChatBar({
   ];
 
   const handleSendMessage = () => {
+    if (!isRoomActive) {
+      alert("비활성화된 채팅방에서는 메시지를 보낼 수 없습니다.");
+      return;
+    }
     if (message.trim() && onSendMessage) {
       onSendMessage(message.trim());
       setMessage("");
@@ -188,144 +205,240 @@ function ChatBar({
 
   return (
     <>
-      <div
-        className={`w-full overflow-y-auto transition-all duration-300 ease-in-out`}
-        style={{
-          height: emojiOpen ? 200 : 0,
-          backgroundImage: `url(${navbg2})`,
-        }}
-      >
-        <div className="grid grid-cols-4 gap-y-4 px-6 pt-4">
-          {currentMenuType === "emoji"
-            ? // 이모티콘 메뉴
-              emojis.map((emojiSrc, index) => (
-                <div key={index} className="flex flex-col items-center">
-                  <div
-                    className="w-20 h-20 flex items-center justify-center cursor-pointer bg-white"
-                    onClick={() => console.log(`Emoji ${index + 1} clicked`)} // 이모티콘 클릭 시 동작 추가 예정
-                  >
-                    <img
-                      src={emojiSrc}
-                      alt={`emoji-${index + 1}`}
-                      className="w-15 h-15"
-                    />
-                  </div>
-                </div>
-              ))
-            : // 일반 메뉴
-              [
-                {
-                  icon: album_icon,
-                  label: "앨범",
-                  onClick: () => fileInputRef.current?.click(),
-                },
-                {
-                  icon: invite_icon,
-                  label: "대면초대장",
-                  onClick: () => setShowInviteModal(true),
-                },
-                {
-                  icon: end_icon,
-                  label: "만남종료",
-                  onClick: () => setShowEndModal(true),
-                },
-                {
-                  icon: report_icon,
-                  label: "신고",
-                  onClick: () => setShowReportModal(true),
-                },
-                {
-                  icon: survey_icon,
-                  label: "비대면설문지",
-                  onClick: onSurveyClick,
-                },
-              ].map(({ icon, label, onClick }, index) => (
-                <div
-                  key={`utility-${index}`}
-                  className="flex flex-col items-center"
-                >
-                  <div
-                    className="w-12 h-12 rounded-full bg-[#722518] flex items-center justify-center cursor-pointer"
-                    onClick={onClick}
-                  >
-                    <img src={icon} alt={label} className="w-6 h-6" />
-                  </div>
-                  <span className="text-white text-xs mt-1 text-center">
-                    {label}
-                  </span>
-                </div>
-              ))}
+      {isSearchMode && (
+        <div
+          className="w-full h-[82px] overflow-y-auto transition-all duration-300 ease-in-out"
+          style={{ backgroundImage: `url(${navbg})`, backgroundSize: "cover" }}
+        >
+          <div className="flex items-center w-full max-w-md h-full px-2">
+            <div className="flex-1 text-center text-white font-GanwonEduAll_Light text-base">
+              {searchQuery.trim() === ""
+                ? ""
+                : searchResults.length > 0
+                ? `${currentSearchIndex + 1}/${searchResults.length}`
+                : "결과 없음"}
+            </div>
+            <div className="flex items-center ml-auto">
+              <button
+                onClick={() => onNavigateSearchResults("next")}
+                className="w-9 h-9 flex items-center justify-center rounded-full bg-[#743120] text-white mr-2 hover:bg-transparent"
+              >
+                <span className="relative -top-[1px]">▲</span>
+              </button>
+              <button
+                onClick={() => onNavigateSearchResults("prev")}
+                className="w-9 h-9 flex items-center justify-center rounded-full bg-[#743120]  text-white hover:bg-transparent"
+              >
+                <span className="relative -top-[1px]">▼</span>
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
-      <div
-        className="w-full h-[82px] px-2 flex items-center"
-        style={{ backgroundImage: `url(${navbg})` }}
-      >
-        <div className="flex items-center w-full gap-2">
-          <button
-            className="w-9 h-9 rounded-full bg-[#A34027] flex items-center justify-center flex-shrink-0"
-            onClick={() => {
-              onEmojiToggle(); // 상위 컴포넌트의 emojiOpen 상태 토글
-              setCurrentMenuType("general"); // + 버튼 클릭 시 항상 일반 메뉴로 설정
-            }}
-          >
-            <img
-              src={plus_icon}
-              alt="plus"
-              className={`w-5 h-5 transform transition-transform duration-300 ${
-                emojiOpen && currentMenuType === "general"
-                  ? "rotate-45"
-                  : "rotate-0" // 메뉴가 열려있고 일반 메뉴일 때만 회전
-              }`}
-            />
-          </button>
+      )}
 
-          <div className="flex items-center flex-1 bg-[#A34027] rounded-full px-3 py-2">
-            <input
-              type="text"
-              placeholder="전할 말 입력"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              className={`flex-1 bg-transparent text-white text-sm placeholder:text-white outline-none`}
-            />
+      {!isSearchMode && (
+        <div
+          className={`w-full overflow-y-auto transition-all duration-300 ease-in-out`}
+          style={{
+            height: emojiOpen ? 200 : 0,
+            backgroundImage: `url(${navbg2})`,
+          }}
+        >
+          <div className="h-full overflow-y-auto">
+            {currentMenuType === "emoji" ? (
+              // 이모티콘 메뉴
+              <div className="grid grid-cols-4 px-2 bg-white m-4 rounded-lg">
+                {emojis.map((emojiSrc, index) => (
+                  <div key={index} className="flex flex-col items-center">
+                    <div
+                      className="w-20 h-20 flex items-center justify-center cursor-pointer"
+                      onClick={() => {
+                        if (!isRoomActive) {
+                          alert(
+                            "비활성화된 채팅방에서는 이모지를 보낼 수 없습니다."
+                          );
+                          return;
+                        }
+                        if (selectedEmojiUrl === emojiSrc) {
+                          onSendMessage("", emojiSrc);
+                          setSelectedEmojiUrl(null);
+                        } else {
+                          setSelectedEmojiUrl(emojiSrc);
+                        }
+                      }}
+                    >
+                      <img
+                        src={emojiSrc}
+                        alt={`emoji-${index + 1}`}
+                        className="w-15 h-15"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              // 일반 메뉴
+              <div className="grid grid-cols-4 gap-y-4 px-6 pt-4">
+                {[
+                  {
+                    icon: album_icon,
+                    label: "앨범",
+                    onClick: () => {
+                      if (!isRoomActive) {
+                        alert(
+                          "비활성화된 채팅방에서는 이미지를 보낼 수 없습니다."
+                        );
+                        return;
+                      }
+                      fileInputRef.current?.click();
+                    },
+                    disabled: !isRoomActive,
+                  },
+                  {
+                    icon: invite_icon,
+                    label: "대면초대장",
+                    onClick: () => setShowInviteModal(true),
+                    disabled: !isRoomActive,
+                  },
+                  {
+                    icon: end_icon,
+                    label: "만남종료",
+                    onClick: () => setShowEndModal(true),
+                    disabled: !isRoomActive,
+                  },
+                  {
+                    icon: report_icon,
+                    label: "신고",
+                    onClick: () => setShowReportModal(true),
+                    disabled: !isRoomActive,
+                  },
+                  {
+                    icon: survey_icon,
+                    label: "비대면설문지",
+                    onClick: onSurveyClick,
+                    disabled: false,
+                  },
+                ].map(({ icon, label, onClick, disabled }, index) => (
+                  <div
+                    key={`utility-${index}`}
+                    className="flex flex-col items-center"
+                  >
+                    <div
+                      className={`w-12 h-12 rounded-full ${
+                        disabled ? "bg-gray-400" : "bg-[#722518]"
+                      } flex items-center justify-center ${
+                        disabled ? "cursor-not-allowed" : "cursor-pointer"
+                      }`}
+                      onClick={disabled ? undefined : onClick}
+                    >
+                      <img src={icon} alt={label} className="w-6 h-6" />
+                    </div>
+                    <span className="text-white text-xs mt-1 text-center">
+                      {label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {selectedEmojiUrl && !isSearchMode && (
+        <div className="absolute bottom-[285px] right-2 z-40 bg-[rgba(255,255,255,0.5)] rounded-lg">
+          <img
+            src={selectedEmojiUrl}
+            alt="Selected Emoji"
+            className="w-30 h-30 p-2 shadow-lg"
+          />
+        </div>
+      )}
+
+      {!isSearchMode && (
+        <div
+          className="w-full h-[82px] px-2 flex items-center"
+          style={{ backgroundImage: `url(${navbg})` }}
+        >
+          <div className="flex items-center w-full gap-2">
             <button
-              onClick={() => {
-                if (!emojiOpen) {
-                  // 메뉴가 닫혀있으면 메뉴를 열고 이모지 타입으로 설정
-                  onEmojiToggle();
-                  setCurrentMenuType("emoji");
-                } else {
-                  // 메뉴가 열려있으면
-                  if (currentMenuType === "general") {
-                    // 일반 메뉴가 활성화되어 있으면 이모지 메뉴로 전환
+              className={`w-9 h-9 rounded-full ${
+                isRoomActive ? "bg-[#743120]" : "bg-gray-400"
+              } flex items-center justify-center flex-shrink-0 ${
+                !isRoomActive ? "cursor-not-allowed" : ""
+              }`}
+              onClick={isRoomActive ? onEmojiToggle : undefined}
+            >
+              <img
+                src={plus_icon}
+                alt="plus"
+                className={`w-5 h-5 transform transition-transform duration-300 ${
+                  emojiOpen && currentMenuType === "general"
+                    ? "rotate-45"
+                    : "rotate-0"
+                }`}
+              />
+            </button>
+
+            <div className="flex items-center flex-1 bg-[#743120] rounded-full px-3 py-2">
+              <input
+                type="text"
+                placeholder={
+                  isRoomActive ? "전할 말 입력" : "비활성화된 채팅방입니다"
+                }
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                disabled={!isRoomActive}
+                className={`flex-1 bg-transparent text-white text-sm placeholder:text-white outline-none ${
+                  !isRoomActive ? "cursor-not-allowed" : ""
+                }`}
+              />
+              <button
+                onClick={() => {
+                  if (!isRoomActive) {
+                    alert(
+                      "비활성화된 채팅방에서는 이모지를 사용할 수 없습니다."
+                    );
+                    return;
+                  }
+                  if (!emojiOpen) {
+                    onEmojiToggle();
                     setCurrentMenuType("emoji");
                   } else {
-                    // 이모지 메뉴가 활성화되어 있으면 일반 메뉴로 전환
-                    setCurrentMenuType("general");
+                    if (currentMenuType === "general") {
+                      setCurrentMenuType("emoji");
+                    } else {
+                      setCurrentMenuType("general");
+                    }
                   }
-                }
-              }}
+                }}
+              >
+                <img src={face_icon} alt="face" className="w-5 h-5 ml-2" />
+              </button>
+            </div>
+
+            <button
+              onClick={handleSendMessage}
+              className={`w-9 h-9 rounded-full ${
+                isRoomActive
+                  ? message.trim()
+                    ? "bg-gray-400"
+                    : "bg-[#743120]"
+                  : "bg-gray-400"
+              } flex items-center justify-center flex-shrink-0 ${
+                !isRoomActive || !message.trim() ? "cursor-not-allowed" : ""
+              }`}
+              disabled={!isRoomActive || !message.trim()}
             >
-              <img src={face_icon} alt="face" className="w-5 h-5 ml-2" />
+              <img
+                src={message.trim() ? arrow_icon : questionmark_icon}
+                alt={message.trim() ? "send" : "?"}
+                className="w-5 h-5"
+              />
             </button>
           </div>
-
-          <button className="w-9 h-9 rounded-full bg-[#A34027] flex items-center justify-center flex-shrink-0">
-            <img src={questionmark_icon} alt="?" className="w-5 h-5" />
-          </button>
-
-          <button
-            onClick={handleSendMessage}
-            className={`w-9 h-9 rounded-full bg-[#A34027] flex items-center justify-center flex-shrink-0 ${
-              message.trim() ? "" : "opacity-50 cursor-not-allowed"
-            }`}
-            disabled={!message.trim()}
-          >
-            <img src={arrow_icon} alt="send" className="w-5 h-5" />
-          </button>
         </div>
-      </div>
+      )}
 
       <input
         type="file"

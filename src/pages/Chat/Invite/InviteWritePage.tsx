@@ -4,6 +4,7 @@ import axios from "axios";
 import letterBg from "../../../assets/img/icons/Letter/letterWrite.svg";
 import NavBar from "../../../components/NavBar";
 import back_arrow from "../../../assets/img/icons/HobbyIcon/back_arrow.svg";
+import largeNextButton from "../../../assets/img/icons/Login/l_btn_fill.svg";
 
 interface LocationState {
   senderName: string;
@@ -81,17 +82,24 @@ function InviteWritePage() {
       </div>
 
       {/* 전송 버튼 */}
-      <button
-        onClick={handleSubmit}
-        disabled={!message.trim()}
-        className={`w-full max-w-[320px] py-2 rounded-md font-semibold transition mb-6 ${
-          message.trim()
-            ? "bg-[#D45A4B] text-white hover:bg-[#bf4a3c]"
-            : "bg-gray-300 text-gray-500 cursor-not-allowed"
-        }`}
-      >
-        대면 초대장 보내기
-      </button>
+      <div className="fixed bottom-[90px] left-0 right-0 flex justify-center z-30">
+        <button
+          onClick={handleSubmit}
+          disabled={!message.trim()}
+          className={`relative w-full max-w-[400px] h-[45px] flex items-center justify-center overflow-hidden transition-opacity duration-200 ${
+            !message.trim() ? "opacity-50 cursor-not-allowed" : ""
+          }`}
+        >
+          <img
+            src={largeNextButton}
+            alt="대면 초대장 보내기"
+            className="absolute inset-0 w-full h-full object-fill"
+          />
+          <span className="relative z-10 font-GanwonEduAll_Bold text-[#333]">
+            대면 초대장 보내기
+          </span>
+        </button>
+      </div>
 
       <div
         className="relative w-full max-w-[350px] h-[480px] bg-contain bg-no-repeat bg-center p-6"

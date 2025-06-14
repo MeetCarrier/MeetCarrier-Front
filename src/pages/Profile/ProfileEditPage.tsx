@@ -67,7 +67,7 @@ function ProfileEditPage() {
     }
   };
 
-  const handleWithdrawal = async () => {
+  const handleWithdraw = async () => {
     if (
       window.confirm("정말로 회원 탈퇴하시겠습니까? 모든 정보가 삭제됩니다.")
     ) {
@@ -277,7 +277,7 @@ function ProfileEditPage() {
             </button>
 
             <button
-              onClick={handleWithdrawal}
+              onClick={handleWithdraw}
               className="w-full flex justify-between items-center mt-4"
             >
               <span className="text-sm text-[#BD4B2C] font-medium">

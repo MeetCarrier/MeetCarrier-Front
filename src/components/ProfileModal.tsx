@@ -6,7 +6,7 @@ import defaultProfileImg from "../assets/img/sample/sample_profile.svg";
 export type UserProfileData = {
   userId: number;
   nickname: string;
-  imageUrl: string | null;
+  imgUrl?: string | null;
   age?: number;
   gender?: string;
   footprint?: number;
@@ -25,10 +25,12 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
   onClose,
   user,
 }) => {
-  const { nickname, age, gender, footprint, imageUrl, interests, question } =
+  const { nickname, age, gender, footprint, imgUrl, interests, question } =
     user;
   const footprintGoal = 1000;
   const percentage = Math.min(((footprint ?? 0) / footprintGoal) * 100, 100);
+
+  const profileImageUrl = imgUrl || defaultProfileImg;
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -44,7 +46,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
             }}
           >
             <img
-              src={imageUrl || defaultProfileImg}
+              src={profileImageUrl}
               alt="profile"
               className="absolute top-[6%] left-[6%] w-[88%] h-[88%] object-cover rounded-[2px]"
             />
@@ -68,7 +70,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
               {Math.floor(footprint ?? 0)}보
             </span>
           </div>
-          <div className="w-full h-2 bg-gray-300 rounded-full">
+          <div className="w-full h-2 bg-gray-300 rounded-full overflow-hidden">
             <div
               className="h-2 bg-[#BD4B2C] rounded-full"
               style={{ width: `${percentage}%` }}

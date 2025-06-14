@@ -92,10 +92,16 @@ const SurveySlide: React.FC<SurveySlideProps> = ({
       {/* 내 답변 */}
       <div
         className={`bg-white rounded min-h-[100px] p-4 shadow-sm border border-gray-200 mb-3 ${
-          !surveyState?.isSubmitted ? "cursor-pointer" : ""
+          !surveyState?.isSubmitted && matchData?.status === "Surveying"
+            ? "cursor-pointer"
+            : ""
         }`}
         onClick={() => {
-          if (!isEditing && !surveyState?.isSubmitted) {
+          if (
+            !isEditing &&
+            !surveyState?.isSubmitted &&
+            matchData?.status === "Surveying"
+          ) {
             setIsEditing(true);
             setEditedContent(currentAnswer);
           }

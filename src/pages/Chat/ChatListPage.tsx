@@ -1,16 +1,18 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '../../Utils/store';
-import { fetchUser, UserState } from '../../Utils/userSlice';
-import { fetchUserById, UserProfileData } from '../../Utils/api';
-import { useUnreadAlarm } from '../../Utils/useUnreadAlarm';
+import { useEffect, useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../../Utils/store";
+import { fetchUser, UserState } from "../../Utils/userSlice";
+import { fetchUserById, UserProfileData } from "../../Utils/api";
+import { useUnreadAlarm } from "../../Utils/useUnreadAlarm";
+import SockJS from "sockjs-client";
+import { Client } from "@stomp/stompjs";
 
-import NavBar from '../../components/NavBar';
-import ItemCard from './components/ItemCard';
-import ProfileModal from '../../components/ProfileModal';
-import bell_default from '../../assets/img/icons/NavIcon/bell_default.svg';
-import bell_alarm from '../../assets/img/icons/NavIcon/bell_alarm.svg';
+import NavBar from "../../components/NavBar";
+import ItemCard from "./components/ItemCard";
+import ProfileModal from "../../components/ProfileModal";
+import bell_default from "../../assets/img/icons/NavIcon/bell_default.svg";
+import bell_alarm from "../../assets/img/icons/NavIcon/bell_alarm.svg";
 
 type MatchData = {
   id: number;
@@ -19,6 +21,7 @@ type MatchData = {
   agreed: boolean;
   lastMessage: string;
   lastMessageAt: string;
+  unreadCount: number;
 
   sessionId: number;
   roomId: number;
@@ -41,6 +44,7 @@ function ChatListPage() {
   const [selectedUser, setSelectedUser] = useState<UserProfileData | null>(
     null
   );
+  const stompClientRef = useRef<Client | null>(null);
   const user = useSelector(
     (state: RootState) => state.user
   ) as UserState | null;
@@ -51,13 +55,13 @@ function ChatListPage() {
 
     const fetchMatches = async () => {
       try {
-        console.log('[매치 불러오기] API 호출 시작...');
+        console.log("[매치 불러오기] API 호출 시작...");
         const res = await fetch(
-          'https://www.mannamdeliveries.link/api/matches',
+          "https://www.mannamdeliveries.link/api/matches",
           {
-            credentials: 'include',
+            credentials: "include",
             headers: {
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json",
             },
           }
         );
@@ -69,26 +73,80 @@ function ChatListPage() {
         }
 
         const data = await res.json();
-        console.log('[매치 불러오기] 성공:', data);
+        console.log("[매치 불러오기] 성공:", data);
         setMatchList(data);
       } catch (e) {
-        console.error('[매치 불러오기] 실패:', e);
+        console.error("[매치 불러오기] 실패:", e);
       }
     };
 
     fetchMatches();
   }, [dispatch]);
 
+  useEffect(() => {
+    if (!myId) return;
+
+    console.log("[웹소켓] 연결 시작...");
+    const socket = new SockJS(
+      "https://www.mannamdeliveries.link/api/connection"
+    );
+    const stompClient = new Client({
+      webSocketFactory: () => socket,
+      onConnect: () => {
+        console.log("[웹소켓] 연결 성공");
+        stompClient.subscribe(`/topic/user/${myId}/chats`, (message) => {
+          console.log("[웹소켓] 메시지 수신:", message);
+          const lastChat = JSON.parse(message.body);
+
+          setMatchList((prev) =>
+            prev.map((match) =>
+              match.roomId === lastChat.roomId
+                ? {
+                    ...match,
+                    lastMessage: lastChat.lastMessage,
+                    lastMessageAt: lastChat.lastMessageAt,
+                    unreadCount: lastChat.unreadCount,
+                  }
+                : match
+            )
+          );
+        });
+      },
+      onDisconnect: () => {
+        console.log("[웹소켓] 연결 해제");
+      },
+      onStompError: (frame) => {
+        console.error("[웹소켓] STOMP 에러:", frame);
+      },
+      onWebSocketError: (event) => {
+        console.error("[웹소켓] 에러:", event);
+      },
+      debug: (str) => {
+        console.log("[웹소켓] 디버그:", str);
+      },
+    });
+
+    stompClientRef.current = stompClient;
+    stompClient.activate();
+
+    return () => {
+      console.log("[웹소켓] 연결 해제");
+      if (stompClientRef.current) {
+        stompClientRef.current.deactivate();
+      }
+    };
+  }, [myId]);
+
   const chattingList = matchList.filter(
-    (m) => m.status === 'Chatting' && m.agreed === true
+    (m) => m.status === "Chatting" && m.agreed === true
   );
   const surveyList = matchList.filter(
     (m) =>
-      m.status === 'Surveying' ||
-      (m.status === 'Chatting' && m.agreed === false)
+      m.status === "Surveying" ||
+      (m.status === "Chatting" && m.agreed === false)
   );
   const cancelledList = matchList.filter(
-    (m) => m.status === 'Survey_Cancelled' || m.status === 'Chat_Cancelled'
+    (m) => m.status === "Survey_Cancelled" || m.status === "Chat_Cancelled"
   );
 
   const handleChatClick = (match: MatchData) => {
@@ -109,7 +167,7 @@ function ChatListPage() {
 
   const handleReviewClick = (match: MatchData) => {
     // TODO: 후기 작성 페이지로 이동
-    console.log('후기 작성:', match);
+    console.log("후기 작성:", match);
   };
 
   const handleProfileClick = async (opponentId: number) => {
@@ -118,19 +176,19 @@ function ChatListPage() {
       setSelectedUser({
         ...userData,
         footprint:
-          typeof userData.footprint === 'string'
+          typeof userData.footprint === "string"
             ? Number(userData.footprint)
             : userData.footprint,
         imageUrl: userData.imageUrl ?? null,
       });
       setShowProfileModal(true);
     } catch (error) {
-      console.error('사용자 정보 조회 실패:', error);
+      console.error("사용자 정보 조회 실패:", error);
     }
   };
 
   const handlebellClick = () => {
-    navigate('/Alarm');
+    navigate("/Alarm");
   };
 
   return (
@@ -172,6 +230,7 @@ function ChatListPage() {
                     time={chat.lastMessageAt ?? chat.matchedAt}
                     lastMessage={chat.lastMessage}
                     onProfileClick={() => handleProfileClick(opponentId)}
+                    unreadCount={chat.unreadCount}
                   />
                 </div>
               );
@@ -241,9 +300,9 @@ function ChatListPage() {
                     onProfileClick={() => handleProfileClick(opponentId)}
                     onClickReview={() => handleReviewClick(cancelled)}
                     onClick={() => {
-                      if (cancelled.status === 'Survey_Cancelled') {
+                      if (cancelled.status === "Survey_Cancelled") {
                         handleSurveyClick(cancelled);
-                      } else if (cancelled.status === 'Chat_Cancelled') {
+                      } else if (cancelled.status === "Chat_Cancelled") {
                         handleChatClick(cancelled);
                       }
                     }}
