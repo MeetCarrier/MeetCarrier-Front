@@ -95,8 +95,8 @@ function InviteWritePage() {
       console.log("[초대장 전송 응답]", response.data);
       navigate(`/chat/${roomId}`, { state: { roomId } });
     } catch (error) {
-      console.error("[초대장 전송 실패]", error);
-      alert("초대장 전송에 실패했습니다.");
+      console.error("초대장 전송 실패:", error);
+      toast.error("초대장 전송에 실패했습니다.");
     }
   };
 

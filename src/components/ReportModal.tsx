@@ -2,6 +2,8 @@ import { useState } from "react";
 import Modal from "./Modal";
 import checkBoxIcon from "../assets/img/icons/Report/check_box.svg";
 import uncheckBoxIcon from "../assets/img/icons/Report/uncheck_box.svg";
+import axios from "axios";
+import toast from "react-hot-toast";
 
 interface ReportModalProps {
   isOpen: boolean;
@@ -65,36 +67,25 @@ const ReportModal = ({
       reportDescription: description,
     });
 
+    const reportData = {
+      reportType,
+      targetUser: targetUser || null,
+      reportContent: enumReasons.join(","),
+      reportDescription: description,
+    };
+
     try {
-      const res = await fetch(
-        "https://www.mannamdeliveries.link/api/reports/register",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            reportType,
-            targetUser: targetUser || null,
-            reportContent: enumReasons.join(","),
-            reportDescription: description,
-          }),
-        }
+      await axios.post(
+        "https://www.mannamdeliveries.link/api/reports",
+        reportData,
+        { withCredentials: true }
       );
-
-      if (!res.ok) throw new Error(`신고 실패: ${res.status}`);
-
-      // 서버 응답 로깅
-      const responseData = await res.json();
-      console.log("[신고 응답]", responseData);
-
-      alert("신고가 접수되었습니다.");
+      toast.success("신고가 접수되었습니다.");
       onSubmit(selectedReasons, description);
       onClose();
     } catch (error) {
-      console.error("[신고 실패]", error);
-      alert("신고 처리에 실패했습니다.");
+      console.error("신고 처리 실패:", error);
+      toast.error("신고 처리에 실패했습니다.");
     }
   };
 

@@ -19,6 +19,7 @@ import {
   setHasJoinedChat,
 } from "../../Utils/surveySlice";
 import { fetchUserById, UserProfileData } from "../../Utils/api";
+import toast from "react-hot-toast";
 
 import back_arrow from "../../assets/img/icons/HobbyIcon/back_arrow.svg";
 import NavBar from "../../components/NavBar";
@@ -519,7 +520,7 @@ function SurveyPage() {
       setShowSubmittedModal(true);
     } catch (error) {
       console.error("설문 제출 실패:", error);
-      alert("설문 제출에 실패했습니다.");
+      toast.error("설문 제출에 실패했습니다.");
     }
   };
 
@@ -542,13 +543,13 @@ function SurveyPage() {
         realSessionId,
         myId,
       });
-      alert("필수 정보가 누락되었습니다.");
+      toast.error("필수 정보가 누락되었습니다.");
       return;
     }
 
     if (!matchData?.id) {
       console.error("매치 ID가 없습니다.");
-      alert("매치 정보를 찾을 수 없습니다.");
+      toast.error("매치 정보를 찾을 수 없습니다.");
       return;
     }
 
@@ -573,7 +574,7 @@ function SurveyPage() {
       // navigate 호출 전에 필요한 모든 정보가 있는지 확인
       if (!matchData) {
         console.error("매치 데이터가 없습니다.");
-        alert("채팅방 정보를 찾을 수 없습니다.");
+        toast.error("채팅방 정보를 찾을 수 없습니다.");
         return;
       }
 
@@ -594,7 +595,7 @@ function SurveyPage() {
       });
     } catch (error) {
       console.error("채팅방 입장 요청 실패:", error);
-      alert("채팅방에 입장할 수 없습니다.");
+      toast.error("채팅방에 입장할 수 없습니다.");
     }
   };
 
@@ -673,7 +674,7 @@ function SurveyPage() {
       }
     } catch (error) {
       console.error("만남 종료 처리 실패:", error);
-      alert("만남 종료 처리 중 오류가 발생했습니다.");
+      toast.error("만남 종료 처리 중 오류가 발생했습니다.");
     }
   };
 
@@ -928,11 +929,16 @@ function SurveyPage() {
             };
             console.log("[설문 신고 전송]", reportBody);
 
-            alert("신고가 접수되었습니다.");
+            await axios.post(
+              "https://www.mannamdeliveries.link/api/reports",
+              reportBody,
+              { withCredentials: true }
+            );
+            toast.success("신고가 접수되었습니다.");
             setShowReportModal(false);
           } catch (error) {
             console.error("신고 처리 실패:", error);
-            alert("신고 처리 중 오류가 발생했습니다.");
+            toast.error("신고 처리 중 오류가 발생했습니다.");
           }
         }}
       />

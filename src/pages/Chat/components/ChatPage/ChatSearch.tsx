@@ -1,5 +1,5 @@
-import search_icon from "../../../../../assets/img/icons/ChatIcon/search.svg";
-import delete_icon from "../../../../../assets/img/icons/Chat/delete.svg";
+import search_icon from "../../../../assets/img/icons/ChatIcon/search.svg";
+import delete_icon from "../../../../assets/img/icons/Chat/delete.svg";
 
 interface ChatSearchProps {
   showSearchBar: boolean;

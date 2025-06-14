@@ -2,6 +2,9 @@ import navbg from "../../../assets/img/nav_bg.webp";
 import navbg2 from "../../../assets/img/nav_bg2.webp";
 import { useState, useRef } from "react";
 import { Client } from "@stomp/stompjs";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import toast from "react-hot-toast";
 
 import ReportModal from "../../../components/ReportModal";
 import InviteLetterModal from "../Invite/InviteLetterModal";
@@ -17,7 +20,6 @@ import end_icon from "../../../assets/img/icons/ChatIcon/ic_end.svg";
 import report_icon from "../../../assets/img/icons/ChatIcon/ic_report.svg";
 import survey_icon from "../../../assets/img/icons/ChatIcon/ic_survey.svg";
 import imageCompression from "browser-image-compression";
-import axios from "axios";
 
 // 이모티콘 이미지 임포트
 import emoji1 from "../../../assets/img/icons/Chat/1.svg";
@@ -93,6 +95,7 @@ function ChatBar({
     "general"
   );
   const [selectedEmojiUrl, setSelectedEmojiUrl] = useState<string | null>(null);
+  const [isVisibleToOpponent, setIsVisibleToOpponent] = useState(false);
 
   const emojis = [
     emoji1,
@@ -114,7 +117,7 @@ function ChatBar({
 
   const handleSendMessage = () => {
     if (!isRoomActive) {
-      alert("비활성화된 채팅방에서는 메시지를 보낼 수 없습니다.");
+      toast.error("비활성화된 채팅방에서는 메시지를 보낼 수 없습니다.");
       return;
     }
     if (message.trim() && onSendMessage) {
@@ -152,7 +155,7 @@ function ChatBar({
         console.error("서버 응답 상태:", error.response?.status);
         console.error("서버 응답 헤더:", error.response?.headers);
       }
-      alert("이미지 업로드에 실패했습니다.");
+      toast.error("이미지 업로드에 실패했습니다.");
     }
   };
 
@@ -171,7 +174,7 @@ function ChatBar({
 
     // 파일 타입 검사: 이미지 파일인지 확인
     if (!file.type.startsWith("image/")) {
-      alert("이미지 파일만 선택할 수 있습니다.");
+      toast.error("이미지 파일만 선택할 수 있습니다.");
       if (e.target) {
         e.target.value = "";
       }
@@ -201,7 +204,7 @@ function ChatBar({
       uploadImageAndSendMessage(finalFile);
     } catch (error) {
       console.error("이미지 처리 중 오류 발생:", error);
-      alert("이미지 처리에 실패했습니다.");
+      toast.error("이미지 처리에 실패했습니다.");
     } finally {
       if (e.target) {
         e.target.value = "";
@@ -231,7 +234,7 @@ function ChatBar({
         setBotInput("");
       } else {
         console.error("WebSocket 연결이 없습니다.");
-        alert("챗봇 메시지 전송에 실패했습니다.");
+        toast.error("챗봇 메시지 전송에 실패했습니다.");
       }
     }
   };
@@ -296,7 +299,7 @@ function ChatBar({
                       className="w-20 h-20 flex items-center justify-center cursor-pointer"
                       onClick={() => {
                         if (!isRoomActive) {
-                          alert(
+                          toast.error(
                             "비활성화된 채팅방에서는 이모지를 보낼 수 없습니다."
                           );
                           return;
@@ -327,7 +330,7 @@ function ChatBar({
                     label: "앨범",
                     onClick: () => {
                       if (!isRoomActive) {
-                        alert(
+                        toast.error(
                           "비활성화된 채팅방에서는 이미지를 보낼 수 없습니다."
                         );
                         return;
@@ -387,12 +390,23 @@ function ChatBar({
       )}
 
       {selectedEmojiUrl && !isSearchMode && (
-        <div className="absolute bottom-[285px] right-2 z-40 bg-[rgba(255,255,255,0.5)] rounded-lg">
-          <img
-            src={selectedEmojiUrl}
-            alt="Selected Emoji"
-            className="w-30 h-30 p-2 shadow-lg"
-          />
+        <div className="absolute bottom-[282px] z-40  bg-white/50 w-full">
+          <div className="bg-white rounded-lg ml-auto w-fit relative">
+            {/* ✕ 닫기 버튼 */}
+            <button
+              onClick={() => setSelectedEmojiUrl(null)}
+              className="absolute top-1 right-1 text-gray-400 hover:text-black"
+              aria-label="미리보기 닫기"
+            >
+              ✕
+            </button>
+
+            <img
+              src={selectedEmojiUrl}
+              alt="Selected Emoji"
+              className="w-30 h-30 p-2 shadow-lg rounded-lg "
+            />
+          </div>
         </div>
       )}
 
@@ -442,7 +456,7 @@ function ChatBar({
                   <button
                     onClick={() => {
                       if (!isRoomActive) {
-                        alert(
+                        toast.error(
                           "비활성화된 채팅방에서는 이모지를 사용할 수 없습니다."
                         );
                         return;
@@ -561,7 +575,7 @@ function ChatBar({
         onClose={() => setShowReportModal(false)}
         reportType="User"
         onSubmit={(reasons, content) => {
-          alert(
+          toast.success(
             `신고가 접수되었습니다.\n사유: ${reasons.join(
               " / "
             )}\n내용: ${content}`
@@ -611,7 +625,7 @@ function ChatBar({
             }
           } catch (error) {
             console.error("[만남 종료 사유 전송 실패]", error);
-            alert("만남 종료 처리 중 오류가 발생했습니다.");
+            toast.error("만남 종료 처리 중 오류가 발생했습니다.");
           }
           setShowEndModal(false);
         }}

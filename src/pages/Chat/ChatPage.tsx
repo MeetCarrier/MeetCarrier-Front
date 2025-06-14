@@ -24,10 +24,8 @@ import {
   RoomInfo,
 } from "./components/ChatPage/types";
 
-import back_arrow from "../../assets/img/icons/HobbyIcon/back_arrow.svg";
-import search_icon from "../../assets/img/icons/ChatIcon/search.svg";
-import delete_icon from "../../assets/img/icons/Chat/delete.svg";
 import chatBot from "../../assets/img/icons/Chat/chatBot.svg";
+import toast from "react-hot-toast";
 
 interface ChatMessage {
   type: string;
@@ -36,7 +34,8 @@ interface ChatMessage {
   sender: number;
   sentAt: string;
   read: boolean;
-  isBot?: boolean;
+  visible: boolean;
+  chatbot: boolean;
 }
 
 function ChatPage() {
@@ -223,14 +222,10 @@ function ChatPage() {
         console.log("채팅 기록 조회 결과:", response.data);
 
         // UTC 시간을 한국 시간으로 변환
-        const convertedMessages = response.data.map((msg: ChatMessage) => {
-          const utcDate = new Date(msg.sentAt);
-          return {
-            ...msg,
-            sentAt: utcDate.toISOString(),
-            isBot: msg.type === "CHATBOT",
-          };
-        });
+        const convertedMessages = response.data.map((msg: ChatMessage) => ({
+          ...msg,
+          sentAt: new Date(msg.sentAt).toISOString(),
+        }));
 
         setMessages(convertedMessages);
       } catch (error) {
@@ -254,9 +249,17 @@ function ChatPage() {
           console.log("[파싱된 메시지]", newMessage);
 
           // 내 메시지는 이미 로컬에서 띄웠으므로 무시
-          if (Number(newMessage.sender) === Number(myId)) {
+          if (
+            Number(newMessage.sender) === Number(myId) &&
+            !newMessage.chatbot
+          ) {
             console.log("[무시된 내 메시지]", newMessage);
             return;
+          }
+
+          // 챗봇 메시지인 경우 chatbot 속성을 true로 설정
+          if (newMessage.type === "CHATBOT") {
+            newMessage.chatbot = true;
           }
 
           setMessages((prev) => [...prev, newMessage]);
@@ -307,11 +310,12 @@ function ChatPage() {
   const sendMessage = (message: string, imageUrl?: string) => {
     if (!myId) {
       console.error("사용자 ID가 없습니다.");
+      toast.error("사용자 ID가 없습니다.");
       return;
     }
 
     if (roomInfo?.status === "Deactivate" && matchData?.status !== "Meeting") {
-      alert("채팅이 비활성화되어 메시지를 보낼 수 없습니다.");
+      toast.error("채팅이 비활성화되어 메시지를 보낼 수 없습니다.");
       return;
     }
 
@@ -326,9 +330,8 @@ function ChatPage() {
         imageUrl: imageUrl || null,
       };
 
-      // 로컬에서 바로 화면에 띄울 메시지 (내가 보낸 것이므로 sender와 sentAt 명시)
+      // 로컬에서 바로 화면에 띄울 메시지
       const now = new Date();
-      // 현재 시간을 UTC로 변환 (한국 시간에서 9시간을 빼서 UTC로 만듦)
       const utcSentAt = new Date(now.getTime()).toISOString();
       const localMessage: ChatMessage = {
         type: imageUrl ? "IMAGE" : "TEXT",
@@ -337,20 +340,12 @@ function ChatPage() {
         sender: Number(myId),
         sentAt: utcSentAt,
         read: false,
-        isBot: false,
+        visible: true,
+        chatbot: false,
       };
 
-      // 1. 화면에 즉시 표시
-      console.log("[보낼 메시지]", {
-        headers: {
-          destination: "/app/api/chat/send",
-          contentType: "application/json",
-        },
-        body: outgoingMessage,
-      });
-
       try {
-        // 2. 서버에 전송
+        // 서버에 전송
         stompClientRef.current.publish({
           destination: "/app/api/chat/send",
           body: JSON.stringify(outgoingMessage),
@@ -377,17 +372,18 @@ function ChatPage() {
       console.error("사용자 ID가 없습니다. 챗봇 질문을 처리할 수 없습니다.");
       return;
     }
-    // 챗봇에게 보낸 메시지를 로컬에 표시 (나의 메시지처럼 보이지만 챗봇 아이콘과 함께)
+
     const now = new Date();
     const utcSentAt = new Date(now.getTime()).toISOString();
     const botQuestionMessage: ChatMessage = {
-      type: "TEXT",
+      type: "CHATBOT",
       message: question,
       imageUrl: null,
-      sender: Number(myId), // 내가 챗봇에게 보낸 메시지이므로 sender는 나의 ID
+      sender: Number(myId),
       sentAt: utcSentAt,
-      read: true, // 내가 보낸 메시지이므로 바로 읽음 처리
-      isBot: true, // 챗봇 메시지로 구분
+      read: true,
+      visible: true,
+      chatbot: false, // 사용자의 챗봇 질문은 chatbot: false
     };
     setMessages((prev) => [...prev, botQuestionMessage]);
   };
@@ -560,7 +556,7 @@ function ChatPage() {
             roomInfo?.status === "Deactivate" &&
             matchData?.status !== "Meeting"
           ) {
-            alert("비활성화된 채팅방에서는 초대할 수 없습니다.");
+            toast.error("비활성화된 채팅방에서는 초대할 수 없습니다.");
             return;
           }
           navigate("/invite-write", {
@@ -590,7 +586,7 @@ function ChatPage() {
             roomInfo?.status === "Deactivate" &&
             matchData?.status !== "Meeting"
           ) {
-            alert("이미 비활성화된 채팅방입니다.");
+            toast.error("이미 비활성화된 채팅방입니다.");
             return;
           }
           navigate("/ChatList");
@@ -641,104 +637,130 @@ function ChatPage() {
           transition: "height 0.3s ease",
         }}
       >
-        {messages.map((msg, index) => {
-          const isChatbot = msg.type === "CHATBOT";
-          const isMine = msg.sender === myId;
-          let currentNickname = "나";
-          let currentOpponentNickname = "상대방";
-          let currentProfileUrl = sampleProfile;
+        {messages
+          .filter(
+            (msg) =>
+              msg.visible ||
+              (msg.sender === myId && (msg.chatbot || msg.type === "CHATBOT"))
+          )
+          .map((msg, index) => {
+            const isChatbot = msg.type === "CHATBOT";
+            const isMine = msg.sender === myId;
+            let currentNickname = "나";
+            let currentOpponentNickname = "상대방";
+            let currentProfileUrl = sampleProfile;
+            let messageType = "";
 
-          if (isChatbot) {
-            currentNickname = "만남배달부 봇";
-            currentProfileUrl = chatBot;
-          } else {
-            if (msg.isBot) {
-              currentNickname = myNickname;
-              currentProfileUrl = user?.imgUrl || sampleProfile;
-            } else if (isMine) {
-              currentNickname = myNickname;
-              currentProfileUrl = user?.imgUrl || sampleProfile;
+            // 메시지 유형 결정
+            if (isMine) {
+              if (isChatbot) {
+                messageType = "my-chatbot-question";
+                currentNickname = myNickname;
+                currentProfileUrl = user?.imgUrl || sampleProfile;
+              } else if (msg.chatbot) {
+                messageType = "chatbot-response-to-me";
+                currentNickname = "만남배달부 봇";
+                currentProfileUrl = chatBot;
+              } else {
+                messageType = "my-normal-message";
+                currentNickname = myNickname;
+                currentProfileUrl = user?.imgUrl || sampleProfile;
+              }
             } else {
-              currentNickname = otherNickname;
-              currentProfileUrl =
-                myId === matchData?.user1Id
-                  ? matchData?.user2ImageUrl || sampleProfile
-                  : matchData?.user1ImageUrl || sampleProfile;
+              if (isChatbot) {
+                messageType = "opponent-chatbot-question";
+                currentNickname = otherNickname;
+                currentProfileUrl =
+                  myId === matchData?.user1Id
+                    ? matchData?.user2ImageUrl || sampleProfile
+                    : matchData?.user1ImageUrl || sampleProfile;
+              } else if (msg.chatbot) {
+                messageType = "chatbot-response-to-opponent";
+                currentNickname = "만남배달부 봇";
+                currentProfileUrl = chatBot;
+              } else {
+                messageType = "opponent-normal-message";
+                currentNickname = otherNickname;
+                currentProfileUrl =
+                  myId === matchData?.user1Id
+                    ? matchData?.user2ImageUrl || sampleProfile
+                    : matchData?.user1ImageUrl || sampleProfile;
+              }
             }
-          }
 
-          const isPrevSameSender =
-            index > 0 &&
-            messages[index - 1].sender === msg.sender &&
-            !isChatbot &&
-            !messages[index - 1].isBot;
-          const isNextDifferentSender =
-            index === messages.length - 1 ||
-            messages[index + 1].sender !== msg.sender ||
-            messages[index + 1].type === "CHATBOT" ||
-            messages[index + 1].isBot;
+            const isPrevSameSender =
+              index > 0 &&
+              messages[index - 1].sender === msg.sender &&
+              messages[index - 1].type === msg.type &&
+              messages[index - 1].chatbot === msg.chatbot;
+            const isNextDifferentSender =
+              index === messages.length - 1 ||
+              messages[index + 1].sender !== msg.sender ||
+              messages[index + 1].type !== msg.type ||
+              messages[index + 1].chatbot !== msg.chatbot;
 
-          const messageDate = new Date(msg.sentAt);
-          const koreanTime = new Date(messageDate.getTime());
+            const messageDate = new Date(msg.sentAt);
+            const koreanTime = new Date(messageDate.getTime());
 
-          const showDateDivider =
-            index === 0 ||
-            new Date(messages[index - 1].sentAt).toDateString() !==
-              messageDate.toDateString();
+            const showDateDivider =
+              index === 0 ||
+              new Date(messages[index - 1].sentAt).toDateString() !==
+                messageDate.toDateString();
 
-          let shouldDisplayTime = false;
-          if (index === messages.length - 1) {
-            shouldDisplayTime = true;
-          } else {
-            const nextMessage = messages[index + 1];
-            const nextMessageDate = new Date(nextMessage.sentAt);
-            const timeDifferenceInSeconds = Math.abs(
-              (nextMessageDate.getTime() - messageDate.getTime()) / 1000
-            );
-
-            if (
-              nextMessage.sender !== msg.sender ||
-              timeDifferenceInSeconds > 60 ||
-              nextMessage.type === "CHATBOT" ||
-              nextMessage.isBot
-            ) {
+            let shouldDisplayTime = false;
+            if (index === messages.length - 1) {
               shouldDisplayTime = true;
+            } else {
+              const nextMessage = messages[index + 1];
+              const nextMessageDate = new Date(nextMessage.sentAt);
+              const timeDifferenceInSeconds = Math.abs(
+                (nextMessageDate.getTime() - messageDate.getTime()) / 1000
+              );
+
+              if (
+                nextMessage.sender !== msg.sender ||
+                nextMessage.type !== msg.type ||
+                nextMessage.chatbot !== msg.chatbot ||
+                timeDifferenceInSeconds > 60
+              ) {
+                shouldDisplayTime = true;
+              }
             }
-          }
 
-          const isHighlighted = searchResults.includes(index);
-          const isCurrent =
-            isHighlighted &&
-            currentSearchIndex === searchResults.indexOf(index);
+            const isHighlighted = searchResults.includes(index);
+            const isCurrent =
+              isHighlighted &&
+              currentSearchIndex === searchResults.indexOf(index);
 
-          return (
-            <div key={`${msg.sentAt}-${index}`}>
-              {showDateDivider && (
-                <div className="flex justify-center items-center my-4">
-                  <div className="bg-gray-200 text-gray-600 text-xs px-3 py-1 rounded-full">
-                    {formatDate(koreanTime)}
+            return (
+              <div key={`${msg.sentAt}-${index}`}>
+                {showDateDivider && (
+                  <div className="flex justify-center items-center my-4">
+                    <div className="bg-gray-200 text-gray-600 text-xs px-3 py-1 rounded-full">
+                      {formatDate(koreanTime)}
+                    </div>
                   </div>
-                </div>
-              )}
-              <ChatMessage
-                msg={msg}
-                isMine={isMine}
-                isPrevSameSender={isPrevSameSender}
-                isNextDifferentSender={isNextDifferentSender}
-                currentNickname={currentNickname}
-                currentProfileUrl={currentProfileUrl}
-                koreanTime={koreanTime}
-                shouldDisplayTime={shouldDisplayTime}
-                isHighlighted={isHighlighted}
-                isCurrent={isCurrent}
-                onProfileClick={handleProfileClick}
-                messageRef={(el) => {
-                  messageRefs.current[index] = el;
-                }}
-              />
-            </div>
-          );
-        })}
+                )}
+                <ChatMessage
+                  msg={msg}
+                  isMine={isMine}
+                  isPrevSameSender={isPrevSameSender}
+                  isNextDifferentSender={isNextDifferentSender}
+                  currentNickname={currentNickname}
+                  currentProfileUrl={currentProfileUrl}
+                  koreanTime={koreanTime}
+                  shouldDisplayTime={shouldDisplayTime}
+                  isHighlighted={isHighlighted}
+                  isCurrent={isCurrent}
+                  onProfileClick={handleProfileClick}
+                  messageRef={(el) => {
+                    messageRefs.current[index] = el;
+                  }}
+                  messageType={messageType}
+                />
+              </div>
+            );
+          })}
         <div ref={messagesEndRef} />
       </div>
 

@@ -5,6 +5,7 @@ import axios from "axios";
 import NavBar from "../../components/NavBar";
 import imageCompression from "browser-image-compression";
 import Modal from "../../components/Modal";
+import toast from "react-hot-toast";
 
 import { RootState, AppDispatch } from "../../Utils/store";
 import { fetchUser, UserState, resetUser } from "../../Utils/userSlice";
@@ -78,12 +79,12 @@ function ProfileEditPage() {
             withCredentials: true,
           }
         );
-        alert("회원 탈퇴가 완료되었습니다.");
+        toast.success("회원 탈퇴가 완료되었습니다.");
         dispatch(resetUser());
         navigate("/login");
       } catch (error) {
         console.error("회원 탈퇴 중 오류가 발생했습니다:", error);
-        alert("회원 탈퇴에 실패했습니다.");
+        toast.error("회원 탈퇴에 실패했습니다.");
       }
     }
   };
@@ -94,7 +95,7 @@ function ProfileEditPage() {
 
     // 파일 타입 검사: 이미지 파일인지 확인
     if (!file.type.startsWith("image/")) {
-      alert("이미지 파일만 선택할 수 있습니다.");
+      toast.error("이미지 파일만 선택할 수 있습니다.");
       if (e.target) {
         e.target.value = "";
       }
@@ -149,10 +150,10 @@ function ProfileEditPage() {
 
       // 사용자 정보 새로고침
       dispatch(fetchUser());
-      alert("프로필 사진이 변경되었습니다.");
+      toast.success("프로필 사진이 변경되었습니다.");
     } catch (error) {
       console.error("이미지 처리 중 오류 발생:", error);
-      alert("이미지 업로드에 실패했습니다.");
+      toast.error("이미지 업로드에 실패했습니다.");
     } finally {
       if (e.target) {
         e.target.value = "";
@@ -184,10 +185,11 @@ function ProfileEditPage() {
       setShowNicknameModal(false);
       setNewNickname("");
       setNicknameError("");
-      alert("닉네임이 변경되었습니다.");
+      toast.success("닉네임이 변경되었습니다.");
     } catch (error) {
       console.error("닉네임 변경 중 오류 발생:", error);
       setNicknameError("닉네임 변경에 실패했습니다.");
+      toast.error("닉네임 변경에 실패했습니다.");
     }
   };
 

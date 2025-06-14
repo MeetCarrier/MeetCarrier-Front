@@ -5,7 +5,8 @@ export interface ChatMessage {
   sender: number;
   sentAt: string;
   read: boolean;
-  isBot?: boolean;
+  visible: boolean;
+  chatbot: boolean;
 }
 
 export interface LocationState {

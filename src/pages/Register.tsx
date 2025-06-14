@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 import doneIcon from "../assets/img/icons/Login/done.svg"; // 완료 페이지에 사용할 이미지 경로
 import largeNextButton from "../assets/img/icons/Login/l_btn_fill.svg";
@@ -74,7 +75,7 @@ const Register: React.FC = () => {
     } else if (currentStep === 1) {
       // 성별 단계 유효성 검사
       if (!formData.gender) {
-        alert("성별을 선택해주세요.");
+        toast.error("성별을 선택해주세요.");
         return;
       }
     } else if (currentStep === 2) {
@@ -133,7 +134,7 @@ const Register: React.FC = () => {
 
       // 나이가 0보다 작거나 100보다 크면 에러
       if (age < 0 || age > 100) {
-        alert("유효하지 않은 생년월일입니다.");
+        toast.error("유효하지 않은 생년월일입니다.");
         return;
       }
 
@@ -150,7 +151,7 @@ const Register: React.FC = () => {
       console.log("계산된 나이:", age);
       console.log("전송할 데이터:", submitData);
 
-      await axios.post(
+      const response = await axios.post(
         "https://www.mannamdeliveries.link/api/oauth/signup/detail",
         submitData,
         {
@@ -160,11 +161,16 @@ const Register: React.FC = () => {
           },
         }
       );
-      alert("회원가입 완료!");
-      navigate("/main"); // 회원가입 완료 후 메인 페이지로 이동
+
+      if (response.status === 200) {
+        toast.success("회원가입 완료!");
+        navigate("/login");
+      } else {
+        toast.error("회원가입에 실패했습니다.");
+      }
     } catch (error) {
       console.error(error);
-      alert("회원가입에 실패했습니다.");
+      toast.error("회원가입에 실패했습니다.");
     }
   };
 
