@@ -689,54 +689,60 @@ function SurveyPage() {
           onClick={handleBackClick}
         />
         <p className="text-[20px] font-MuseumClassic_L italic">질문 센터</p>
-        {matchData?.status === "Survey" && !isEditing && (
-          <img
-            ref={menuButtonRef}
-            src={menuIcon}
-            alt="메뉴"
-            className="absolute top-1/2 -translate-y-1/2 right-6 w-[20px] h-[20px] cursor-pointer"
-            onClick={() => setIsMenuOpen((prev) => !prev)}
-          />
-        )}
-        {matchData?.status === "Survey" && isEditing && (
-          <img
-            ref={menuButtonRef}
-            src={checkIcon}
-            alt="저장"
-            className="absolute top-1/2 -translate-y-1/2 right-6 w-[20px] h-[20px] cursor-pointer"
-            onClick={handleSave}
-          />
-        )}
+        {(matchData?.status === "Surveying" ||
+          (matchData?.status === "Chatting" && !matchData?.agreed)) &&
+          !isEditing && (
+            <img
+              ref={menuButtonRef}
+              src={menuIcon}
+              alt="메뉴"
+              className="absolute top-1/2 -translate-y-1/2 right-6 w-[20px] h-[20px] cursor-pointer"
+              onClick={() => setIsMenuOpen((prev) => !prev)}
+            />
+          )}
+        {(matchData?.status === "Surveying" ||
+          (matchData?.status === "Chatting" && !matchData?.agreed)) &&
+          isEditing && (
+            <img
+              ref={menuButtonRef}
+              src={checkIcon}
+              alt="저장"
+              className="absolute top-1/2 -translate-y-1/2 right-6 w-[20px] h-[20px] cursor-pointer"
+              onClick={handleSave}
+            />
+          )}
       </div>
 
-      {isMenuOpen && matchData?.status === "Survey" && (
-        <div
-          ref={menuRef}
-          className="absolute top-[90px] right-6 bg-white shadow-md rounded-xl  z-50 flex flex-col w-32 py-2"
-          style={{ minWidth: "120px" }}
-        >
-          <button
-            className="flex items-center gap-2 px-4 py-2 text-sm text-[#333] hover:bg-gray-100 w-full text-left font-GanwonEduAll_Light"
-            onClick={() => {
-              setIsMenuOpen(false);
-              setShowEndModal(true);
-            }}
+      {isMenuOpen &&
+        (matchData?.status === "Surveying" ||
+          (matchData?.status === "Chatting" && !matchData?.agreed)) && (
+          <div
+            ref={menuRef}
+            className="absolute top-[90px] right-6 bg-white shadow-md rounded-xl  z-50 flex flex-col w-32 py-2"
+            style={{ minWidth: "120px" }}
           >
-            <img src={exitIcon} alt="만남 종료" className="w-5 h-5 mr-1" />
-            <span>만남 종료</span>
-          </button>
-          <button
-            className="flex items-center gap-2 px-4 py-2 text-sm text-[#BD4B2C] hover:bg-gray-100 w-full text-left font-GanwonEduAll_Light"
-            onClick={() => {
-              setIsMenuOpen(false);
-              setShowReportModal(true);
-            }}
-          >
-            <img src={reportIcon} alt="신고" className="w-5 h-5 mr-1" />
-            <span>신고</span>
-          </button>
-        </div>
-      )}
+            <button
+              className="flex items-center gap-2 px-4 py-2 text-sm text-[#333] hover:bg-gray-100 w-full text-left font-GanwonEduAll_Light"
+              onClick={() => {
+                setIsMenuOpen(false);
+                setShowEndModal(true);
+              }}
+            >
+              <img src={exitIcon} alt="만남 종료" className="w-5 h-5 mr-1" />
+              <span>만남 종료</span>
+            </button>
+            <button
+              className="flex items-center gap-2 px-4 py-2 text-sm text-[#BD4B2C] hover:bg-gray-100 w-full text-left font-GanwonEduAll_Light"
+              onClick={() => {
+                setIsMenuOpen(false);
+                setShowReportModal(true);
+              }}
+            >
+              <img src={reportIcon} alt="신고" className="w-5 h-5 mr-1" />
+              <span>신고</span>
+            </button>
+          </div>
+        )}
 
       <div className="w-full h-[calc(100%-200px)] relative min-h-0 px-4 z-0 font-GanwonEduAll_Light">
         <Swiper
@@ -777,7 +783,8 @@ function SurveyPage() {
           ))}
         </Swiper>
 
-        {!surveyState?.isSubmitted &&
+        {matchData?.status === "Surveying" &&
+          !surveyState?.isSubmitted &&
           !isEditing &&
           isAllQuestionsAnswered() && (
             <div className="fixed bottom-[90px] left-0 right-0 flex justify-center z-30">
@@ -887,10 +894,19 @@ function SurveyPage() {
         !surveyState?.hasJoinedChat && (
           <div className="fixed bottom-[90px] left-0 right-0 flex justify-center z-30">
             <button
-              className="px-6 py-3 bg-[#C67B5A] text-white text-sm font-GanwonEduAll_Bold rounded-full shadow-lg"
               onClick={handleJoinChat}
+              className={
+                "relative w-full max-w-[400px] h-[45px] flex items-center justify-center overflow-hidden transition-opacity duration-200"
+              }
             >
-              채팅방 참가하기
+              <img
+                src={largeNextButton}
+                alt="채팅방 참가하기"
+                className="absolute inset-0 w-full h-full object-fill"
+              />
+              <span className="relative z-10 font-GanwonEduAll_Bold text-[#333]">
+                채팅방 참가하기
+              </span>
             </button>
           </div>
         )}

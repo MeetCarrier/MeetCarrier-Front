@@ -12,6 +12,7 @@ interface ItemCardProps {
   onProfileClick?: () => void;
   status?: string; // 추가
   onClick?: () => void; // 추가
+  unreadCount?: number; // 안 읽은 메시지 개수
 }
 
 function formatMessageTime(messageDateStr: string): string {
@@ -50,6 +51,7 @@ const ItemCard: React.FC<ItemCardProps> = ({
   onProfileClick,
   status,
   onClick,
+  unreadCount = 0,
 }) => {
   const actualImageUrl = profileImageUrl || sampleProfile;
 
@@ -83,6 +85,11 @@ const ItemCard: React.FC<ItemCardProps> = ({
                 e.currentTarget.src = sampleProfile;
               }}
             />
+            {unreadCount > 0 && (
+              <div className="absolute -top-1 -right-1 bg-[#BD4B2C] text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-GanwonEduAll_Bold z-20">
+                {unreadCount > 99 ? "99+" : unreadCount}
+              </div>
+            )}
           </div>
           <div className="flex flex-col">
             <p className="font-GanwonEduAll_Bold text-sm text-gray-800">
