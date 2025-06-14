@@ -33,13 +33,12 @@ function InviteWritePage() {
   } = location.state as LocationState;
 
   // Redux에서 사용자 정보 가져오기
-  const user = useSelector((state: RootState) => state.user);
+  const user = useSelector((state: RootState) => state.user) as { userId?: number } | null;
   const myId = propMyId || user?.userId;
 
   const [message, setMessage] = useState('');
   const [isInvitationExists, setIsInvitationExists] = useState(false);
   const [isReceiver, setIsReceiver] = useState(false);
-  const [invitationId, setInvitationId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
 
   console.log('[InviteWritePage] 현재 사용자 ID:', myId);
@@ -55,7 +54,6 @@ function InviteWritePage() {
         if (res.status === 200) {
           const invitation = res.data;
           setMessage(invitation.message);
-          setInvitationId(invitation.id);
           setIsInvitationExists(true);
           setIsReceiver(myId === invitation.receiverId);
         }

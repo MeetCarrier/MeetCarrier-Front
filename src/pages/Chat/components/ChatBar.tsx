@@ -2,7 +2,6 @@ import navbg from '../../../assets/img/nav_bg.webp';
 import navbg2 from '../../../assets/img/nav_bg2.webp';
 import { useState, useRef } from 'react';
 import { Client } from '@stomp/stompjs';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
@@ -477,7 +476,7 @@ function ChatBar({
 
                 {/* 우측: 전송 / 챗봇 진입 버튼 */}
                 <button
-                  onClick={(e) => {
+                  onClick={() => {
                     if (!isRoomActive) return;
 
                     if (message.trim()) {

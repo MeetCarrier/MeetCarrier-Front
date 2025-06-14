@@ -1,4 +1,3 @@
-import React from "react";
 import { ResponsiveRadar } from "@nivo/radar";
 import selfefficacy_icon from "../../assets/img/icons/Test/selfefficacy_icon.svg";
 import interpersonalskill_icon from "../../assets/img/icons/Test/interpersonalskill_icon.svg";

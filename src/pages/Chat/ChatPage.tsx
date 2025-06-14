@@ -18,7 +18,6 @@ import { ChatMessage } from './components/ChatPage/ChatMessage';
 import { ChatSearch } from './components/ChatPage/ChatSearch';
 import { ChatHeader } from './components/ChatPage/ChatHeader';
 import {
-  ChatMessage as ChatMessageType,
   LocationState,
   MatchData,
   RoomInfo,
@@ -94,8 +93,6 @@ function ChatPage() {
 
     return () => clearInterval(intervalId); // 컴포넌트 언마운트 시 인터벌 정리
   }, []);
-
-  const emojiHeight = emojiOpen ? 200 : 0;
 
   // 매치 데이터 가져오기
   useEffect(() => {
@@ -268,7 +265,6 @@ function ChatPage() {
         // 읽음 확인 구독
         stompClient.subscribe(`/topic/room/${state.roomId}/read`, (message) => {
           console.log('[읽음 확인 수신]', message);
-          const readerId = JSON.parse(message.body);
 
           // 내가 보낸 메시지들의 읽음 상태 업데이트
           setMessages((prev) =>
@@ -647,7 +643,6 @@ function ChatPage() {
             const isChatbot = msg.type === 'CHATBOT';
             const isMine = msg.sender === myId;
             let currentNickname = '나';
-            let currentOpponentNickname = '상대방';
             let currentProfileUrl = sampleProfile;
             let messageType = '';
 
@@ -693,11 +688,6 @@ function ChatPage() {
               messages[index - 1].sender === msg.sender &&
               messages[index - 1].type === msg.type &&
               messages[index - 1].chatbot === msg.chatbot;
-            const isNextDifferentSender =
-              index === messages.length - 1 ||
-              messages[index + 1].sender !== msg.sender ||
-              messages[index + 1].type !== msg.type ||
-              messages[index + 1].chatbot !== msg.chatbot;
 
             const messageDate = new Date(msg.sentAt);
             const koreanTime = new Date(messageDate.getTime());
@@ -745,7 +735,6 @@ function ChatPage() {
                   msg={msg}
                   isMine={isMine}
                   isPrevSameSender={isPrevSameSender}
-                  isNextDifferentSender={isNextDifferentSender}
                   currentNickname={currentNickname}
                   currentProfileUrl={currentProfileUrl}
                   koreanTime={koreanTime}
