@@ -97,6 +97,8 @@ function ChatListPage() {
         stompClient.subscribe(`/topic/user/${myId}/chats`, (message) => {
           console.log("[웹소켓] 메시지 수신:", message);
           const lastChat = JSON.parse(message.body);
+          console.log("[서버에서 받은 lastChat]", lastChat);
+          console.log("[서버에서 받은 unreadCount]", lastChat.unreadCount);
 
           setMatchList((prev) =>
             prev.map((match) =>

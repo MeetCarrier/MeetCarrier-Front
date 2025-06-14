@@ -55,6 +55,8 @@ const ItemCard: React.FC<ItemCardProps> = ({
 }) => {
   const actualImageUrl = profileImageUrl || sampleProfile;
 
+  console.log("[ItemCard] unreadCount:", unreadCount);
+
   const handleProfileClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // 이벤트 버블링 방지
     if (onProfileClick) {
