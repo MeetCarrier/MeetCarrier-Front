@@ -1,26 +1,27 @@
-import React, { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import axios from "axios";
-import NavBar from "../../components/NavBar";
-import imageCompression from "browser-image-compression";
-import Modal from "../../components/Modal";
+import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import axios from 'axios';
+import NavBar from '../../components/NavBar';
+import imageCompression from 'browser-image-compression';
+import Modal from '../../components/Modal';
 
-import { RootState, AppDispatch } from "../../Utils/store";
-import { fetchUser, UserState, resetUser } from "../../Utils/userSlice";
+import { RootState, AppDispatch } from '../../Utils/store';
+import { fetchUser, UserState, resetUser } from '../../Utils/userSlice';
 
-import arrowIcon from "../../assets/img/icons/HobbyIcon/back_arrow.svg";
-import stampImage from "../../assets/img/stamp.svg";
-import defaultProfileImg from "../../assets/img/sample/sample_profile.svg";
-import cameraIcon from "../../assets/img/icons/Profile/pic_change.svg";
+import arrowIcon from '../../assets/img/icons/HobbyIcon/back_arrow.svg';
+import stampImage from '../../assets/img/stamp.svg';
+import defaultProfileImg from '../../assets/img/sample/sample_profile.svg';
+import cameraIcon from '../../assets/img/icons/Profile/pic_change.svg';
+import toast from 'react-hot-toast';
 
 function ProfileEditPage() {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showNicknameModal, setShowNicknameModal] = useState(false);
-  const [newNickname, setNewNickname] = useState("");
-  const [nicknameError, setNicknameError] = useState("");
+  const [newNickname, setNewNickname] = useState('');
+  const [nicknameError, setNicknameError] = useState('');
 
   const user = useSelector(
     (state: RootState) => state.user
@@ -31,16 +32,16 @@ function ProfileEditPage() {
   }, [dispatch, user]);
 
   const displayUser = user || {
-    nickname: "로딩 중",
-    imgUrl: "",
+    nickname: '로딩 중',
+    imgUrl: '',
     age: 0,
-    gender: "",
+    gender: '',
   }; // 로딩 또는 에러 시 표시할 더미 데이터
 
   const handleLogout = async () => {
     try {
       await axios.post(
-        "https://www.mannamdeliveries.link/api/user/logout",
+        'https://www.mannamdeliveries.link/api/user/logout',
         {},
         {
           withCredentials: true,
@@ -53,7 +54,7 @@ function ProfileEditPage() {
         const key = localStorage.key(i);
         if (
           key &&
-          (key.startsWith("survey_") || key.startsWith("chatRoomId_"))
+          (key.startsWith('survey_') || key.startsWith('chatRoomId_'))
         ) {
           keysToRemove.push(key);
         }
@@ -61,29 +62,29 @@ function ProfileEditPage() {
       keysToRemove.forEach((key) => localStorage.removeItem(key));
 
       dispatch(resetUser());
-      navigate("/login");
+      navigate('/login');
     } catch (error) {
-      console.error("로그아웃 중 오류가 발생했습니다:", error);
+      console.error('로그아웃 중 오류가 발생했습니다:', error);
     }
   };
 
   const handleWithdraw = async () => {
     if (
-      window.confirm("정말로 회원 탈퇴하시겠습니까? 모든 정보가 삭제됩니다.")
+      window.confirm('정말로 회원 탈퇴하시겠습니까? 모든 정보가 삭제됩니다.')
     ) {
       try {
         await axios.delete(
-          "https://www.mannamdeliveries.link/api/user/withdrawal",
+          'https://www.mannamdeliveries.link/api/user/withdrawal',
           {
             withCredentials: true,
           }
         );
-        alert("회원 탈퇴가 완료되었습니다.");
+        toast.success('회원 탈퇴가 완료되었습니다.');
         dispatch(resetUser());
-        navigate("/login");
+        navigate('/login');
       } catch (error) {
-        console.error("회원 탈퇴 중 오류가 발생했습니다:", error);
-        alert("회원 탈퇴에 실패했습니다.");
+        console.error('회원 탈퇴 중 오류가 발생했습니다:', error);
+        toast.error('회원 탈퇴에 실패했습니다.');
       }
     }
   };
@@ -93,10 +94,10 @@ function ProfileEditPage() {
     if (!file) return;
 
     // 파일 타입 검사: 이미지 파일인지 확인
-    if (!file.type.startsWith("image/")) {
-      alert("이미지 파일만 선택할 수 있습니다.");
+    if (!file.type.startsWith('image/')) {
+      toast.success('이미지 파일만 선택할 수 있습니다.');
       if (e.target) {
-        e.target.value = "";
+        e.target.value = '';
       }
       return;
     }
@@ -111,9 +112,9 @@ function ProfileEditPage() {
         fileType: file.type,
       };
 
-      console.log("이미지 압축 시작");
+      console.log('이미지 압축 시작');
       const compressedFile = await imageCompression(file, options);
-      console.log("압축된 파일 타입:", compressedFile.type);
+      console.log('압축된 파일 타입:', compressedFile.type);
 
       // 압축된 파일을 새로운 File 객체로 변환
       const finalFile = new File([compressedFile], file.name, {
@@ -123,71 +124,71 @@ function ProfileEditPage() {
 
       // 이미지 서버 업로드
       const formData = new FormData();
-      formData.append("multipartFile", finalFile);
+      formData.append('multipartFile', finalFile);
 
-      console.log("이미지 서버 업로드 시작");
+      console.log('이미지 서버 업로드 시작');
       const response = await axios.post(
-        "https://www.mannamdeliveries.link/api/file/profile",
+        'https://www.mannamdeliveries.link/api/file/profile',
         formData,
         {
           headers: {
-            "Content-Type": "multipart/form-data",
+            'Content-Type': 'multipart/form-data',
           },
           withCredentials: true,
         }
       );
-      console.log("이미지 서버 업로드 성공:", response.data);
+      console.log('이미지 서버 업로드 성공:', response.data);
       const imageUrl = response.data;
 
       // 프로필 URL 업데이트
       await axios.patch(
-        "https://www.mannamdeliveries.link/api/user",
+        'https://www.mannamdeliveries.link/api/user',
         { imgUrl: imageUrl },
         { withCredentials: true }
       );
-      console.log("프로필 URL 업데이트 성공");
+      console.log('프로필 URL 업데이트 성공');
 
       // 사용자 정보 새로고침
       dispatch(fetchUser());
-      alert("프로필 사진이 변경되었습니다.");
+      toast.success('프로필 사진이 변경되었습니다.');
     } catch (error) {
-      console.error("이미지 처리 중 오류 발생:", error);
-      alert("이미지 업로드에 실패했습니다.");
+      console.error('이미지 처리 중 오류 발생:', error);
+      toast.error('이미지 업로드에 실패했습니다.');
     } finally {
       if (e.target) {
-        e.target.value = "";
+        e.target.value = '';
       }
     }
   };
 
   const handleNicknameChange = async () => {
     if (!newNickname.trim()) {
-      setNicknameError("닉네임을 입력해주세요.");
+      setNicknameError('닉네임을 입력해주세요.');
       return;
     }
 
     if (newNickname.length > 10) {
-      setNicknameError("닉네임은 10자 이내로 입력해주세요.");
+      setNicknameError('닉네임은 10자 이내로 입력해주세요.');
       return;
     }
 
     try {
       await axios.patch(
-        "https://www.mannamdeliveries.link/api/user",
+        'https://www.mannamdeliveries.link/api/user',
         { nickname: newNickname },
         { withCredentials: true }
       );
-      console.log("닉네임 업데이트 성공");
+      console.log('닉네임 업데이트 성공');
 
       // 사용자 정보 새로고침
       dispatch(fetchUser());
       setShowNicknameModal(false);
-      setNewNickname("");
-      setNicknameError("");
-      alert("닉네임이 변경되었습니다.");
+      setNewNickname('');
+      setNicknameError('');
+      toast.success('닉네임이 변경되었습니다.');
     } catch (error) {
-      console.error("닉네임 변경 중 오류 발생:", error);
-      setNicknameError("닉네임 변경에 실패했습니다.");
+      console.error('닉네임 변경 중 오류 발생:', error);
+      setNicknameError('닉네임 변경에 실패했습니다.');
     }
   };
 
@@ -207,8 +208,8 @@ function ProfileEditPage() {
               className="absolute inset-0"
               style={{
                 backgroundImage: `url(${stampImage})`,
-                backgroundSize: "cover",
-                backgroundRepeat: "no-repeat",
+                backgroundSize: 'cover',
+                backgroundRepeat: 'no-repeat',
               }}
             ></div>
             <img
@@ -315,7 +316,7 @@ function ProfileEditPage() {
             value={newNickname}
             onChange={(e) => {
               setNewNickname(e.target.value);
-              setNicknameError("");
+              setNicknameError('');
             }}
             placeholder="새로운 닉네임을 입력하세요"
             className="w-full px-3 py-2 border border-gray-300 rounded-lg mb-2 focus:outline-none focus:border-[#BD4B2C]"
@@ -329,8 +330,8 @@ function ProfileEditPage() {
               className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded"
               onClick={() => {
                 setShowNicknameModal(false);
-                setNewNickname("");
-                setNicknameError("");
+                setNewNickname('');
+                setNicknameError('');
               }}
             >
               취소

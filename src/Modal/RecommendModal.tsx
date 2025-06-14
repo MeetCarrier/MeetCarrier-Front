@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 
 interface RecommendModalProps {
   userIds: number[];
+  status?: string;
 }
 
 interface UserInfo {
@@ -30,7 +31,7 @@ interface UserInfo {
   maxMatchingDistance: number;
 }
 
-const RecommendModal: FC<RecommendModalProps> = ({ userIds }) => {
+const RecommendModal: FC<RecommendModalProps> = ({ userIds, status }) => {
   const [users, setUsers] = useState<UserInfo[]>([]);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -49,8 +50,8 @@ const RecommendModal: FC<RecommendModalProps> = ({ userIds }) => {
         );
         setUsers(results);
       } catch (error) {
-        console.error('추천 유저 정보 로딩 실패:', error);
-        toast.error('문제가 발생했습니다');
+        console.error('상대 유저 정보 로딩 실패:', error);
+        toast.error('유저 정보에 문제가 발생했습니다');
       }
     };
 
@@ -98,12 +99,14 @@ const RecommendModal: FC<RecommendModalProps> = ({ userIds }) => {
               {user.gender} · {user.age}세
             </p>
           </div>
-          <button
-            onClick={() => handleMatchRequest(user.userId)}
-            className="text-xs bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded-lg"
-          >
-            매칭 요청
-          </button>
+          {status !== 'success' && (
+            <button
+              onClick={() => handleMatchRequest(user.userId)}
+              className="text-xs font-GanwonEduAll_Bold bg-blue-500 hover:bg-blue-300 text-white px-2 py-1 rounded-lg"
+            >
+              매칭 요청
+            </button>
+          )}
         </div>
       ))}
     </div>

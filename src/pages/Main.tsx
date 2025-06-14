@@ -191,7 +191,12 @@ function Main() {
       dispatch(setSocketConnected(false));
     },
     success: () => {
-      navigate(`/survey/${successData?.surveySessionId}`);
+      dispatch(setStatus('default'));
+      navigate(`/survey/${successData?.surveySessionId}`, {
+        state: {
+          sessionId: successData?.surveySessionId,
+        },
+      });
     },
     fail: () => {
       const ids = failData?.recommendedUserIds;
@@ -243,7 +248,14 @@ function Main() {
       navigate('/main?modal=true', { state: { fromMatching: true } });
     },
     success: () => {
-      navigate('/main?modal=true');
+      const id = successData?.matchedUserId;
+      console.log('성공', id);
+      if (typeof id === 'number') {
+        setRecommendedUser([id]);
+        setIsRecommendModalOpen(true);
+      } else {
+        toast.error('유저에 정보에 문제가 생겼어요');
+      }
     },
     fail: () => {
       const client = getMatchingClient();
@@ -331,7 +343,7 @@ function Main() {
         isOpen={isRecommendModalOpen}
         onClose={() => setIsRecommendModalOpen(false)}
       >
-        <RecommendModal userIds={recommededUser} />
+        <RecommendModal userIds={recommededUser} status={status} />
       </Modal>
     </>
   );

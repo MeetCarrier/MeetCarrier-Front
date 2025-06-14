@@ -1,10 +1,11 @@
-import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import axios from "axios";
-import letterBg from "../../../assets/img/icons/Letter/letterWrite.svg";
-import NavBar from "../../../components/NavBar";
-import back_arrow from "../../../assets/img/icons/HobbyIcon/back_arrow.svg";
-import largeNextButton from "../../../assets/img/icons/Login/l_btn_fill.svg";
+import { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import axios from 'axios';
+import letterBg from '../../../assets/img/icons/Letter/letterWrite.svg';
+import NavBar from '../../../components/NavBar';
+import back_arrow from '../../../assets/img/icons/HobbyIcon/back_arrow.svg';
+import largeNextButton from '../../../assets/img/icons/Login/l_btn_fill.svg';
+import toast from 'react-hot-toast';
 
 interface LocationState {
   senderName: string;
@@ -22,21 +23,21 @@ function InviteWritePage() {
 
   //console.log("[InviteWritePage] Received location.state:", location.state);
 
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState('');
 
   const handleSubmit = async () => {
     if (!message.trim()) return;
 
     try {
       // 1. 초대장 전송
-      console.log("[초대장 전송 요청]", {
+      console.log('[초대장 전송 요청]', {
         matchId,
         receiverId,
         message: message.trim(),
       });
 
       const response = await axios.post(
-        "https://www.mannamdeliveries.link/api/invitation",
+        'https://www.mannamdeliveries.link/api/invitation',
         {
           matchId,
           receiverId,
@@ -45,12 +46,12 @@ function InviteWritePage() {
         {
           withCredentials: true,
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
         }
       );
 
-      console.log("[초대장 전송 응답]", response.data);
+      console.log('[초대장 전송 응답]', response.data);
 
       // 3. 채팅 페이지로 이동
       navigate(`/chat/${roomId}`, {
@@ -59,11 +60,11 @@ function InviteWritePage() {
         },
       });
     } catch (error) {
-      console.error("[초대장 전송 실패]", error);
+      console.error('[초대장 전송 실패]', error);
       if (axios.isAxiosError(error)) {
-        console.error("서버 응답:", error.response?.data);
+        console.error('서버 응답:', error.response?.data);
       }
-      alert("초대장 전송에 실패했습니다.");
+      toast.error('초대장 전송에 실패했습니다.');
     }
   };
 
@@ -87,7 +88,7 @@ function InviteWritePage() {
           onClick={handleSubmit}
           disabled={!message.trim()}
           className={`relative w-full max-w-[400px] h-[45px] flex items-center justify-center overflow-hidden transition-opacity duration-200 ${
-            !message.trim() ? "opacity-50 cursor-not-allowed" : ""
+            !message.trim() ? 'opacity-50 cursor-not-allowed' : ''
           }`}
         >
           <img
