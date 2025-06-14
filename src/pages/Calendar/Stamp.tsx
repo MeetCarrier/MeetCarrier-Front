@@ -6,6 +6,7 @@ import StampModal from '../../Modal/StampModal';
 import NavBar from '../../components/NavBar';
 import btn3 from '../../assets/img/button/btn3.webp';
 import btn4 from '../../assets/img/button/btn4.webp';
+import pen2_icon from '../../assets/img/icons/Calendar/pen2_icon.webp';
 
 import { stampMap } from '../../Utils/StampMap';
 
@@ -32,7 +33,9 @@ function Stamp() {
 
       <div className="flex flex-col w-full h-[calc(100%-200px)] px-4">
         <div className="flex justify-center mb-3">
-          <div className="w-[200px] h-[60px] bg-white" />
+          <div className="flex w-[200px] h-[60px] justify-center items-center">
+            <img src={pen2_icon} alt="pen_icon" className="w-[60px] h-[25px]" />
+          </div>
         </div>
 
         <div className="w-full max-w-md mx-auto flex flex-col flex-1 min-h-0">

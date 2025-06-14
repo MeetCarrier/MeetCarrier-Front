@@ -1,12 +1,10 @@
 import { ChatMessage as ChatMessageType } from "./types";
-import sampleProfile from "../../../../assets/img/sample/sample_profile.svg";
 import chatBot from "../../../../assets/img/icons/Chat/chatBot.svg";
 
 interface ChatMessageProps {
   msg: ChatMessageType;
   isMine: boolean;
   isPrevSameSender: boolean;
-  isNextDifferentSender: boolean;
   currentNickname: string;
   currentProfileUrl: string;
   koreanTime: Date;
@@ -22,7 +20,6 @@ export const ChatMessage = ({
   msg,
   isMine,
   isPrevSameSender,
-  isNextDifferentSender,
   currentNickname,
   currentProfileUrl,
   koreanTime,

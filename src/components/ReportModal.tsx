@@ -1,36 +1,36 @@
-import { useState } from "react";
-import Modal from "./Modal";
-import checkBoxIcon from "../assets/img/icons/Report/check_box.svg";
-import uncheckBoxIcon from "../assets/img/icons/Report/uncheck_box.svg";
-import axios from "axios";
-import toast from "react-hot-toast";
+import { useState } from 'react';
+import Modal from './Modal';
+import checkBoxIcon from '../assets/img/icons/Report/check_box.svg';
+import uncheckBoxIcon from '../assets/img/icons/Report/uncheck_box.svg';
+import axios from 'axios';
+import toast from 'react-hot-toast';
 
 interface ReportModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (reasons: string[], content: string) => void;
-  reportType: "User" | "Question"; // Question 타입 추가
+  reportType: 'User' | 'Question'; // Question 타입 추가
   targetUser?: number; // 선택적으로 변경
 }
 
 type ReportContent =
-  | "INAPPROPRIATE_PROFILE"
-  | "HARASSMENT"
-  | "PROMOTION"
-  | "PRIVACY_INVASION"
-  | "ILLEGAL_REQUEST"
-  | "FORCED_CONVERSATION"
-  | "ETC";
+  | 'INAPPROPRIATE_PROFILE'
+  | 'HARASSMENT'
+  | 'PROMOTION'
+  | 'PRIVACY_INVASION'
+  | 'ILLEGAL_REQUEST'
+  | 'FORCED_CONVERSATION'
+  | 'ETC';
 
 // ✅ 한국어 → ENUM 변환 매핑
 const REASON_MAP: Record<string, ReportContent> = {
-  "부적절한 프로필 사진, 닉네임 사용": "INAPPROPRIATE_PROFILE",
-  "욕설, 비방, 혐오 표현": "HARASSMENT",
-  "종교, 포교 시도": "PROMOTION",
-  "과도한 개인정보 요구": "PRIVACY_INVASION",
-  "약속 미이행": "ILLEGAL_REQUEST",
-  "연애 목적으로 원하지 않는 대화 시도": "FORCED_CONVERSATION",
-  "그 외 다른 것": "ETC",
+  '부적절한 프로필 사진, 닉네임 사용': 'INAPPROPRIATE_PROFILE',
+  '욕설, 비방, 혐오 표현': 'HARASSMENT',
+  '종교, 포교 시도': 'PROMOTION',
+  '과도한 개인정보 요구': 'PRIVACY_INVASION',
+  '약속 미이행': 'ILLEGAL_REQUEST',
+  '연애 목적으로 원하지 않는 대화 시도': 'FORCED_CONVERSATION',
+  '그 외 다른 것': 'ETC',
 };
 
 const REPORT_REASONS = Object.keys(REASON_MAP);
@@ -43,7 +43,7 @@ const ReportModal = ({
   targetUser,
 }: ReportModalProps) => {
   const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
-  const [description, setDescription] = useState("");
+  const [description, setDescription] = useState('');
   const [showReportContentModal, setShowReportContentModal] = useState(false);
 
   const toggleReason = (reason: string) => {
@@ -60,32 +60,32 @@ const ReportModal = ({
     );
 
     // 신고 내용 로깅
-    console.log("[신고 내용]", {
+    console.log('[신고 내용]', {
       reportType,
       targetUser: targetUser || null,
-      reportContent: enumReasons.join(","),
+      reportContent: enumReasons.join(','),
       reportDescription: description,
     });
 
     const reportData = {
       reportType,
       targetUser: targetUser || null,
-      reportContent: enumReasons.join(","),
+      reportContent: enumReasons.join(','),
       reportDescription: description,
     };
 
     try {
       await axios.post(
-        "https://www.mannamdeliveries.link/api/reports",
+        'https://www.mannamdeliveries.link/api/reports',
         reportData,
         { withCredentials: true }
       );
-      toast.success("신고가 접수되었습니다.");
+      toast.success('신고가 접수되었습니다.');
       onSubmit(selectedReasons, description);
       onClose();
     } catch (error) {
-      console.error("신고 처리 실패:", error);
-      toast.error("신고 처리에 실패했습니다.");
+      console.error('신고 처리 실패:', error);
+      toast.error('신고 처리에 실패했습니다.');
     }
   };
 
@@ -111,7 +111,7 @@ const ReportModal = ({
                       ? checkBoxIcon
                       : uncheckBoxIcon
                   }
-                  alt={selectedReasons.includes(reason) ? "체크됨" : "미체크"}
+                  alt={selectedReasons.includes(reason) ? '체크됨' : '미체크'}
                   className="w-5 h-5 mt-0.5"
                 />
                 <span>{reason}</span>
@@ -138,8 +138,8 @@ const ReportModal = ({
               onClick={handleSubmit}
               className={`text-sm px-4 py-1.5 rounded ${
                 selectedReasons.length > 0
-                  ? "bg-[#D1582C] text-white"
-                  : "bg-[#F1C4B5] text-white"
+                  ? 'bg-[#D1582C] text-white'
+                  : 'bg-[#F1C4B5] text-white'
               }`}
               disabled={selectedReasons.length === 0}
             >

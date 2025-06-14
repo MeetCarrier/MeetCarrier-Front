@@ -4,7 +4,7 @@ import { formatDate } from '../Utils/FormatDate';
 import NavBar from '../components/NavBar';
 import back_arrow from '../assets/img/icons/HobbyIcon/back_arrow.svg';
 import btn1 from '../assets/img/button/btn1.webp';
-import character_eva from '../assets/img/character/MeetCarrier_character_eva.svg';
+import character_eva from '../assets/img/character/MeetCarrier_character_eva.webp';
 import { resetTest } from '../Utils/testSlice';
 
 function SelfEvaluation() {

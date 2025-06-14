@@ -33,7 +33,7 @@ const InviteLetterModal: FC<InviteLetterModalProps> = ({
   myId: propMyId,
 }) => {
   const navigate = useNavigate();
-  const user = useSelector((state: RootState) => state.user);
+  const user = useSelector((state: RootState) => state.user) as { userId?: number } | null;
   const myId = propMyId || user?.userId;
 
   const [invitationExists, setInvitationExists] = useState(false);
@@ -42,9 +42,6 @@ const InviteLetterModal: FC<InviteLetterModalProps> = ({
     useState(false);
   const [isReceiverOfExistingInvitation, setIsReceiverOfExistingInvitation] =
     useState(false);
-  const [invitationIdForView, setInvitationIdForView] = useState<number | null>(
-    null
-  );
 
   useEffect(() => {
     const checkInvitation = async () => {
@@ -58,12 +55,11 @@ const InviteLetterModal: FC<InviteLetterModalProps> = ({
           console.log("초대장 조회 코드:", res.status);
           console.log("초대장 조회 응답:", res.data);
 
-          const { senderId, receiverId, id: invitationId } = res.data;
+          const { senderId, receiverId } = res.data;
           if (myId === senderId) {
             setIsSenderOfExistingInvitation(true);
           } else if (myId === receiverId) {
             setIsReceiverOfExistingInvitation(true);
-            setInvitationIdForView(invitationId);
           }
         }
       } catch (error: any) {
@@ -71,7 +67,6 @@ const InviteLetterModal: FC<InviteLetterModalProps> = ({
           setInvitationExists(false);
           setIsSenderOfExistingInvitation(false);
           setIsReceiverOfExistingInvitation(false);
-          setInvitationIdForView(null);
         } else {
           console.error("초대장 확인 실패:", error);
         }
