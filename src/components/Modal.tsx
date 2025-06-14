@@ -1,5 +1,5 @@
-import type { FC, ReactNode } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import type { FC, ReactNode } from "react";
+import { motion, AnimatePresence } from "motion/react";
 
 interface ModalProps {
   isOpen: boolean;
@@ -45,7 +45,7 @@ const Modal: FC<ModalProps> = ({
                   ✕
                 </button>
               )}
-              {children}
+              <div className="max-h-[80vh] overflow-y-auto">{children}</div>
             </div>
           </motion.div>
         </>

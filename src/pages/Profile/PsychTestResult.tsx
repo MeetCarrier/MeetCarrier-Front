@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import NavBar from "../../components/NavBar";
 import arrowIcon from "../../assets/img/icons/HobbyIcon/back_arrow.svg";
+import PsychTestDetail from "./PsychTestDetail";
+import Modal from "../../components/Modal";
 
 function PsychTestResult() {
   const navigate = useNavigate();
@@ -10,6 +12,10 @@ function PsychTestResult() {
   const [testResults, setTestResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [selectedTestResult, setSelectedTestResult] = useState<any | null>(
+    null
+  );
 
   useEffect(() => {
     const fetchTestResults = async () => {
@@ -20,6 +26,8 @@ function PsychTestResult() {
             withCredentials: true,
           }
         );
+
+        console.log("API 응답 데이터:", response.data);
 
         const fetchedResults = response.data.map((result: any) => ({
           ...result,
@@ -59,12 +67,31 @@ function PsychTestResult() {
     fetchTestResults();
   }, []);
 
+  const handleItemClick = (result: any) => {
+    setSelectedTestResult(result.rawResult);
+    setShowDetailModal(true);
+  };
+
   return (
     <>
       <NavBar />
-      <div className="flex flex-col items-center w-full h-[calc(100%-100px)] relative">
-        {/* 결과 이력 내용 */}
-        <div className="flex flex-col items-center w-[90%] max-w-md pt-[100px] space-y-4">
+
+      {/* Fixed Header */}
+      <div className="fixed top-[50px] left-0 right-0 z-10 flex items-center justify-center h-[50px] px-5">
+        <img
+          src={arrowIcon}
+          alt="arrowIcon"
+          className="absolute left-6 w-[9px] h-[20px] cursor-pointer"
+          onClick={() => navigate(-1)}
+        />
+        <p className="text-[20px] font-MuseumClassic_L italic text-[#333333]">
+          결과 이력
+        </p>
+      </div>
+
+      {/* Main Scrollable Content Area */}
+      <div className="flex flex-col items-start w-full mt-[100px] h-[calc(100vh - 100px)] overflow-y-auto">
+        <div className="flex flex-col items-start w-[90%] max-w-md mx-auto py-4 space-y-4">
           {loading ? (
             <p className="text-[#999999] text-base">
               테스트 결과를 불러오는 중...
@@ -78,44 +105,45 @@ function PsychTestResult() {
           ) : (
             <div className="flex flex-col w-full space-y-4">
               {testResults.map((result, idx) => (
-                <div
-                  key={idx}
-                  className="w-full bg-white rounded-xl px-5 shadow-sm cursor-pointer flex items-center min-h-[60px]"
-                  onClick={() => alert(`${result.date} 결과 보기`)} // 나중에 실제 결과 페이지로 이동하도록 수정
-                >
-                  <div className="flex items-center justify-between w-full h-15">
-                    <span className="text-sm text-[#666666] font-GanwonEduAll_Light">
-                      {result.date}
-                    </span>
-                    <div className="flex items-center gap-2">
-                      {result.isLatest && (
-                        <span className="bg-[#71B280] text-lg text-white text-[10px] rounded-full w-10 h-8 flex items-center justify-center font-bold">
-                          New
-                        </span>
-                      )}
-                      <img
-                        src={arrowIcon}
-                        alt="arrow"
-                        className="w-[12px] h-[12px] transform scale-x-[-1]"
-                      />
+                <React.Fragment key={idx}>
+                  <div
+                    className="w-full bg-white rounded-xl px-5 shadow-sm cursor-pointer flex items-center min-h-[60px]"
+                    onClick={() => handleItemClick(result)}
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <span className="text-sm text-[#666666] font-GanwonEduAll_Light">
+                        {result.date}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        {result.isLatest && (
+                          <span className="bg-[#71B280] text-lg text-white text-[10px] rounded-full w-10 h-8 flex items-center justify-center font-bold">
+                            New
+                          </span>
+                        )}
+                        <img
+                          src={arrowIcon}
+                          alt="arrow"
+                          className={`w-[12px] h-[12px] transform scale-x-[-1]`}
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
+                </React.Fragment>
               ))}
             </div>
           )}
         </div>
       </div>
-      {/* 상단 제목 */}
-      <div className="absolute top-[50px] text-[#333333] left-0 right-0 px-5 text-center">
-        <img
-          src={arrowIcon}
-          alt="arrowIcon"
-          className="absolute top-1/2 -translate-y-1/2 left-6 w-[9px] h-[20px] cursor-pointer"
-          onClick={() => navigate(-1)}
-        />
-        <p className="text-[20px] font-MuseumClassic_L italic">결과 이력</p>
-      </div>
+
+      {/* 상세 결과 모달 */}
+      {showDetailModal && selectedTestResult && (
+        <Modal
+          isOpen={showDetailModal}
+          onClose={() => setShowDetailModal(false)}
+        >
+          <PsychTestDetail testResult={selectedTestResult} />
+        </Modal>
+      )}
     </>
   );
 }

@@ -17,6 +17,7 @@ import { fetchUserById, UserProfileData } from "../../Utils/api";
 import back_arrow from "../../assets/img/icons/HobbyIcon/back_arrow.svg";
 import search_icon from "../../assets/img/icons/ChatIcon/search.svg";
 import delete_icon from "../../assets/img/icons/Chat/delete.svg";
+import chatBot from "../../assets/img/icons/Chat/chatBot.svg";
 
 interface ChatMessage {
   messageType: string;
@@ -35,10 +36,10 @@ interface MatchData {
   id: number;
   user1Id: number;
   user1Nickname: string;
-  user1ImageUrl?: string; // 추가
+  user1ImageUrl?: string;
   user2Id: number;
   user2Nickname: string;
-  user2ImageUrl?: string; // 추가
+  user2ImageUrl?: string;
   agreed: boolean;
   matchedAt?: string;
   status: string;
@@ -652,28 +653,35 @@ function ChatPage() {
       >
         {messages.map((msg, index) => {
           const isMine = msg.sender === myId;
+          const isChatbot = msg.messageType === "CHATBOT";
+
           // myId로 내 정보/상대 정보 구분
-          let myNickname = "나";
-          let opponentNickname = "상대방";
-          if (myId === matchData?.user1Id) {
-            myNickname = matchData?.user1Nickname ?? "";
-            opponentNickname = matchData?.user2Nickname ?? "";
-          } else if (myId === matchData?.user2Id) {
-            myNickname = matchData?.user2Nickname ?? "";
-            opponentNickname = matchData?.user1Nickname ?? "";
+          let currentNickname = "나";
+          let currentOpponentNickname = "상대방";
+          let currentProfileUrl = sampleProfile;
+
+          if (isChatbot) {
+            currentNickname = "만남배달부 봇";
+            currentProfileUrl = chatBot;
+          } else if (isMine) {
+            currentNickname = myNickname;
+            currentProfileUrl = user?.imgUrl || sampleProfile;
+          } else {
+            currentNickname = otherNickname;
+            currentProfileUrl =
+              myId === matchData?.user1Id
+                ? matchData?.user2ImageUrl || sampleProfile
+                : matchData?.user1ImageUrl || sampleProfile;
           }
-          const nickname = isMine ? myNickname : opponentNickname;
+
           const isPrevSameSender =
-            index > 0 && messages[index - 1].sender === msg.sender;
+            index > 0 &&
+            messages[index - 1].sender === msg.sender &&
+            !isChatbot; // 챗봇 메시지일 경우 이전 메시지 발신자 동일 여부 무시
           const isNextDifferentSender =
             index === messages.length - 1 ||
-            messages[index + 1].sender !== msg.sender;
-
-          const profileUrl = !isMine
-            ? myId === matchData?.user1Id
-              ? matchData?.user2ImageUrl || sampleProfile
-              : matchData?.user1ImageUrl || sampleProfile
-            : user?.imgUrl || sampleProfile;
+            messages[index + 1].sender !== msg.sender ||
+            messages[index + 1].messageType === "CHATBOT"; // 챗봇 메시지 다음에는 시간 표시
 
           // UTC 시간을 한국 시간으로 변환
           const messageDate = new Date(msg.sentAt);
@@ -696,10 +704,11 @@ function ChatPage() {
               (nextMessageDate.getTime() - messageDate.getTime()) / 1000
             );
 
-            // 다음 메시지가 다른 발신자이거나, 동일 발신자여도 시간 차이가 1분 이상이면 시간 표시
+            // 다음 메시지가 다른 발신자이거나, 동일 발신자여도 시간 차이가 1분 이상이거나, 다음 메시지가 챗봇이면 시간 표시
             if (
               nextMessage.sender !== msg.sender ||
-              timeDifferenceInSeconds > 60
+              timeDifferenceInSeconds > 60 ||
+              nextMessage.messageType === "CHATBOT"
             ) {
               shouldDisplayTime = true;
             }
@@ -724,57 +733,33 @@ function ChatPage() {
                   </div>
                 </div>
               )}
+              {/* Main message container */}
               <div
                 className={`flex ${
                   isMine ? "justify-end" : "justify-start"
                 } mb-1`}
               >
-                {/* 왼쪽 프로필 (처음 메시지일 때만) */}
-                {!isMine && !isPrevSameSender ? (
-                  <div
-                    className="w-8 mr-2 cursor-pointer"
-                    onClick={() => handleProfileClick(msg.sender)}
-                  >
-                    <img
-                      src={profileUrl}
-                      alt="프로필"
-                      className="w-8 h-8 rounded-[2px] bg-white"
-                    />
-                  </div>
-                ) : (
-                  !isMine && <div className="w-8 mr-2 " />
-                )}
-
-                <div className={`max-w-[70%] flex flex-col`}>
-                  {/* 닉네임은 첫 메시지일 때만 */}
-                  {!isMine && !isPrevSameSender && (
-                    <span className="text-base text-gray-700 mb-1 font-GanwonEduAll_Light">
-                      {nickname}
-                    </span>
-                  )}
-                  {/* 메시지 버블 + 시간/읽음 상태를 담는 수평 flex 컨테이너 */}
-                  <div
-                    className={`flex items-end gap-1 ${
-                      isMine ? "flex-row-reverse" : "flex-row"
-                    }`}
-                  >
-                    {/* 메시지 버블 */}
-                    <div
-                      className={`px-3 py-2 rounded-xl whitespace-pre-wrap font-GanwonEduAll_Light ${
-                        msg.imageUrl
-                          ? ""
-                          : isMine
-                          ? "bg-[#BD4B2C] text-[#F2F2F2] rounded-br-none"
-                          : "bg-[#FFFFFF] text-[#333333] rounded-bl-none"
-                      }`}
-                    >
-                      {msg.imageUrl ? (
+                {/* Chatbot Message Layout */}
+                {isChatbot ? (
+                  <div className="flex flex-col items-start max-w-[70%]">
+                    {/* Profile & Nickname Row */}
+                    <div className="flex items-center mb-1">
+                      <div className="w-8 mr-2">
                         <img
-                          src={msg.imageUrl}
-                          alt="전송된 이미지"
-                          className="max-w-full max-h-[150px] rounded-lg"
+                          src={currentProfileUrl}
+                          alt="챗봇 프로필"
+                          className="w-8 h-8 rounded-[2px] bg-white"
                         />
-                      ) : (
+                      </div>
+                      <span className="text-base text-gray-700 font-GanwonEduAll_Light">
+                        {currentNickname}
+                      </span>
+                    </div>
+                    {/* Message Bubble + Time */}
+                    <div className="flex items-end gap-1 ml-[40px]">
+                      <div
+                        className={`px-3 py-2 rounded-xl whitespace-pre-wrap font-GanwonEduAll_Light bg-[#333] text-white rounded-bl-none`}
+                      >
                         <span
                           className={`text-base ${
                             isHighlighted
@@ -786,48 +771,127 @@ function ChatPage() {
                         >
                           {msg.message}
                         </span>
+                      </div>
+                      {shouldDisplayTime && (
+                        <div
+                          className={`flex flex-col gap-y-0.5 text-xs text-gray-400 leading-tight font-GanwonEduAll_Light items-start ml-1`}
+                        >
+                          {/* Time display logic */}
+                          <span>
+                            {koreanTime.toLocaleTimeString("ko-KR", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: true,
+                            })}
+                          </span>
+                        </div>
                       )}
                     </div>
-
-                    {/* 시간/읽음 상태 컨테이너 - 버블 아래에 위치 */}
-                    {shouldDisplayTime && (
+                  </div>
+                ) : (
+                  // Regular User Message Layout
+                  <>
+                    {/* Left Profile (only if not mine and not prev same sender) */}
+                    {!isMine && !isPrevSameSender ? (
                       <div
-                        className={`flex flex-col gap-y-0.5 text-xs text-gray-400 leading-tight font-GanwonEduAll_Light ${
-                          isMine ? "items-end mr-1" : "items-start ml-1"
+                        className="w-8 mr-2 cursor-pointer"
+                        onClick={() => handleProfileClick(msg.sender)}
+                      >
+                        <img
+                          src={currentProfileUrl}
+                          alt="프로필"
+                          className="w-8 h-8 rounded-[2px] bg-white"
+                        />
+                      </div>
+                    ) : (
+                      !isMine && <div className="w-8 mr-2 " />
+                    )}
+
+                    {/* Message Content (Nickname above, then bubble) */}
+                    <div className={`max-w-[70%] flex flex-col`}>
+                      {/* Nickname */}
+                      {!isMine && !isPrevSameSender && (
+                        <span className="text-base text-gray-700 mb-1 font-GanwonEduAll_Light">
+                          {currentNickname}
+                        </span>
+                      )}
+                      {/* Message Bubble + Time */}
+                      <div
+                        className={`flex items-end gap-1 ${
+                          isMine ? "flex-row-reverse" : "flex-row"
                         }`}
                       >
-                        {isMine ? (
-                          <>
-                            {!msg.read && (
-                              <span className="text-[#BD4B2C]">1</span>
-                            )}
-                            <span>
-                              {koreanTime.toLocaleTimeString("ko-KR", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                hour12: true,
-                              })}
+                        {/* Message Bubble */}
+                        <div
+                          className={`px-3 py-2 rounded-xl whitespace-pre-wrap font-GanwonEduAll_Light ${
+                            msg.imageUrl
+                              ? ""
+                              : isMine
+                              ? "bg-[#BD4B2C] text-[#F2F2F2] rounded-br-none"
+                              : "bg-[#FFFFFF] text-[#333333] rounded-bl-none"
+                          }`}
+                        >
+                          {msg.imageUrl ? (
+                            <img
+                              src={msg.imageUrl}
+                              alt="전송된 이미지"
+                              className="max-w-full max-h-[150px] rounded-lg"
+                            />
+                          ) : (
+                            <span
+                              className={`text-base ${
+                                isHighlighted
+                                  ? isCurrent
+                                    ? "bg-[#EADCCB] text-[#333] font-bold"
+                                    : "bg-[#EADCCB] text-[#333]"
+                                  : ""
+                              }`}
+                            >
+                              {msg.message}
                             </span>
-                          </>
-                        ) : (
-                          <>
-                            <span>
-                              {koreanTime.toLocaleTimeString("ko-KR", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                hour12: true,
-                              })}
-                            </span>
-                            {!msg.read && (
-                              <span className="text-[#BD4B2C]">1</span>
+                          )}
+                        </div>
+
+                        {/* Time/Read Status */}
+                        {shouldDisplayTime && (
+                          <div
+                            className={`flex flex-col gap-y-0.5 text-xs text-gray-400 leading-tight font-GanwonEduAll_Light ${
+                              isMine ? "items-end mr-1" : "items-start ml-1"
+                            }`}
+                          >
+                            {isMine ? (
+                              <>
+                                {!msg.read && (
+                                  <span className="text-[#BD4B2C]">1</span>
+                                )}
+                                <span>
+                                  {koreanTime.toLocaleTimeString("ko-KR", {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    hour12: true,
+                                  })}
+                                </span>
+                              </>
+                            ) : (
+                              <>
+                                <span>
+                                  {koreanTime.toLocaleTimeString("ko-KR", {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    hour12: true,
+                                  })}
+                                </span>
+                                {!msg.read && (
+                                  <span className="text-[#BD4B2C]">1</span>
+                                )}
+                              </>
                             )}
-                          </>
+                          </div>
                         )}
                       </div>
-                    )}
-                  </div>{" "}
-                  {/* 수평 flex 컨테이너 끝 */}
-                </div>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           );
