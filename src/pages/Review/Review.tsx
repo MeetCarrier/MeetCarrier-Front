@@ -9,6 +9,7 @@ import star_0 from "../../assets/img/icons/Review/star_0.svg";
 import star_1 from "../../assets/img/icons/Review/star_1.svg";
 import sampleProfile from "../../assets/img/sample/sample_profile.svg";
 import NavBar from "../../components/NavBar";
+import largeNextButton from "../../assets/img/icons/Login/l_btn_fill.svg";
 
 const ReviewPage = () => {
   const navigate = useNavigate();
@@ -80,38 +81,36 @@ const ReviewPage = () => {
 
       <div className="w-full px-4">
         {/* 리뷰 카드 */}
-        <div className="mb-4 mx-auto max-w-md bg-white rounded-xl shadow p-6">
-          <div className="flex flex-col items-center">
-            <div className="relative mb-2">
-              <img src={stamp} alt="스탬프" className="w-16 h-16" />
-              <img
-                src={sampleProfile}
-                alt="상대방 프로필"
-                className="absolute top-1 left-1 w-14 h-14 rounded-md"
-              />
-            </div>
-            <p className="text-center text-sm mb-2">
-              '커피'은(는) 어떤 친구였나요?
-            </p>
+        <div className="mb-4 mx-auto max-w-md bg-white rounded-xl shadow p-1 flex flex-col items-center w-full" style={{ minHeight: 'unset', height: 'auto' }}>
+          <div className="relative mb-2">
+            <img src={stamp} alt="스탬프" className="w-16 h-16" />
+            <img
+              src={sampleProfile}
+              alt="상대방 프로필"
+              className="absolute top-1 left-1 w-14 h-14 rounded-md"
+            />
+          </div>
+          <p className="text-center text-xl mb-2 font-GanwonEduAll_Bold">
+            '커피'은(는) 어떤 친구였나요?
+          </p>
 
-            {/* 별점 */}
-            <div className="flex space-x-1 mb-4">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <img
-                  key={i}
-                  src={rating >= i ? star_1 : star_0}
-                  alt={`star_${i}`}
-                  className="w-10 h-10 cursor-pointer"
-                  onClick={() => setRating(i)}
-                />
-              ))}
-            </div>
+          {/* 별점 */}
+          <div className="flex space-x-1 mb-4">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <img
+                key={i}
+                src={rating >= i ? star_1 : star_0}
+                alt={`star_${i}`}
+                className="w-10 h-10 cursor-pointer"
+                onClick={() => setRating(i)}
+              />
+            ))}
           </div>
         </div>
 
-        <div className="mx-auto max-w-md bg-white rounded-xl shadow p-6">
+        <div className="mx-auto max-w-md bg-white rounded-xl shadow px-6 py-1 w-full" style={{ minHeight: 'unset', height: 'auto' }}>
           {/* 키워드 선택 안내 */}
-          <p className="text-sm font-semibold mb-2">
+          <p className="text-sm font-semibold mb-2 font-GanwonEduAll_Bold">
             친구의 어떤 점이 좋았나요?{" "}
             <span className="text-gray-400">(1개~5개)</span>
           </p>
@@ -119,17 +118,17 @@ const ReviewPage = () => {
           <Swiper spaceBetween={12} slidesPerView={1} className="mb-4">
             {categories.map((category) => (
               <SwiperSlide key={category.title}>
-                <div className="h-65">
                   <p className="text-sm font-semibold mb-2">{category.title}</p>
                   <div className="flex flex-wrap gap-2">
                     {category.tags.map((tag) => (
                       <button
                         key={tag.text}
-                        className={`inline-flex items-center text-sm px-3 py-1 rounded-[4px] border transition whitespace-nowrap ${
+                        className={`inline-flex items-center text-sm px-3 py-1 rounded-[4px] border transition whitespace-nowrap shadow-sm ${
                           selectedTags.includes(tag.text)
-                            ? "bg-[#D45A4B] text-white border-transparent"
-                            : "bg-white text-gray-700 border-gray-300"
+                            ? "bg-[#BD4B2C]/20 border-[#BD4B2C] text-[#BD4B2C] shadow-md"
+                            : "bg-white text-gray-700 border-gray-300 shadow font-GanwonEduAll_Bold"
                         }`}
+                        style={selectedTags.includes(tag.text) ? { boxShadow: '0 2px 8px 0 rgba(189,75,44,0.10)' } : {}}
                         onClick={() => toggleTag(tag.text)}
                       >
                         {tag.icon && <span className="mr-1">{tag.icon}</span>}
@@ -137,15 +136,23 @@ const ReviewPage = () => {
                       </button>
                     ))}
                   </div>
-                </div>
               </SwiperSlide>
             ))}
           </Swiper>
         </div>
 
         {/* 완료 버튼 */}
-        <button className="w-full mt-4 mb-4 py-2 rounded-md bg-[#C0A98D] text-white font-semibold">
-          완료
+        <button
+          className="relative w-full mt-4 mb-4 h-[45px] flex items-center justify-center overflow-hidden transition-opacity duration-200 max-w-[400px] mx-auto"
+        >
+          <img
+            src={largeNextButton}
+            alt="완료"
+            className="absolute inset-0 w-full h-full object-fill"
+          />
+          <span className="relative z-10 font-GanwonEduAll_Bold text-[#333]">
+            완료
+          </span>
         </button>
       </div>
     </>
