@@ -97,6 +97,8 @@ function ChatListPage() {
         stompClient.subscribe(`/topic/user/${myId}/chats`, (message) => {
           console.log("[웹소켓] 메시지 수신:", message);
           const lastChat = JSON.parse(message.body);
+          console.log("[서버에서 받은 lastChat]", lastChat);
+          console.log("[서버에서 받은 unreadCount]", lastChat.unreadCount);
 
           setMatchList((prev) =>
             prev.map((match) =>
@@ -138,7 +140,8 @@ function ChatListPage() {
   }, [myId]);
 
   const chattingList = matchList.filter(
-    (m) => m.status === "Chatting" && m.agreed === true
+    (m) =>
+      (m.status === "Chatting" || m.status === "Meeting") && m.agreed === true
   );
   const surveyList = matchList.filter(
     (m) =>
@@ -146,7 +149,10 @@ function ChatListPage() {
       (m.status === "Chatting" && m.agreed === false)
   );
   const cancelledList = matchList.filter(
-    (m) => m.status === "Survey_Cancelled" || m.status === "Chat_Cancelled"
+    (m) =>
+      m.status === "Survey_Cancelled" ||
+      m.status === "Chat_Cancelled" ||
+      m.status === "Reviewing"
   );
 
   const handleChatClick = (match: MatchData) => {

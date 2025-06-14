@@ -19,6 +19,7 @@ import {
   setHasJoinedChat,
 } from '../../Utils/surveySlice';
 import { fetchUserById, UserProfileData } from '../../Utils/api';
+import toast from 'react-hot-toast';
 
 import back_arrow from '../../assets/img/icons/HobbyIcon/back_arrow.svg';
 import NavBar from '../../components/NavBar';
@@ -33,7 +34,6 @@ import largeNextButton from '../../assets/img/icons/Login/l_btn_fill.svg';
 import ProfileModal from '../../components/ProfileModal';
 import EndModal from '../../components/EndModal';
 import SurveySlide from './components/SurveySlide';
-import toast from 'react-hot-toast';
 
 interface Question {
   questionId: number;
@@ -929,6 +929,11 @@ function SurveyPage() {
             };
             console.log('[설문 신고 전송]', reportBody);
 
+            await axios.post(
+              'https://www.mannamdeliveries.link/api/reports',
+              reportBody,
+              { withCredentials: true }
+            );
             toast.success('신고가 접수되었습니다.');
             setShowReportModal(false);
           } catch (error) {

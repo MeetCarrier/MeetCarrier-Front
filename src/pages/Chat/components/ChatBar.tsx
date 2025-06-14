@@ -2,6 +2,9 @@ import navbg from '../../../assets/img/nav_bg.webp';
 import navbg2 from '../../../assets/img/nav_bg2.webp';
 import { useState, useRef } from 'react';
 import { Client } from '@stomp/stompjs';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import toast from 'react-hot-toast';
 
 import ReportModal from '../../../components/ReportModal';
 import InviteLetterModal from '../Invite/InviteLetterModal';
@@ -17,7 +20,6 @@ import end_icon from '../../../assets/img/icons/ChatIcon/ic_end.svg';
 import report_icon from '../../../assets/img/icons/ChatIcon/ic_report.svg';
 import survey_icon from '../../../assets/img/icons/ChatIcon/ic_survey.svg';
 import imageCompression from 'browser-image-compression';
-import axios from 'axios';
 
 // 이모티콘 이미지 임포트
 import emoji1 from '../../../assets/img/icons/Chat/1.svg';
@@ -35,7 +37,6 @@ import emoji12 from '../../../assets/img/icons/Chat/12.svg';
 import emoji13 from '../../../assets/img/icons/Chat/13.svg';
 import emoji14 from '../../../assets/img/icons/Chat/14.svg';
 import emoji15 from '../../../assets/img/icons/Chat/15.svg';
-import toast from 'react-hot-toast';
 
 interface ChatBarProps {
   emojiOpen: boolean;
@@ -57,6 +58,8 @@ interface ChatBarProps {
   currentSearchIndex: number;
   onNavigateSearchResults: (direction: 'prev' | 'next') => void;
   searchQuery: string;
+  onBotMessage?: (message: string) => void;
+  myId?: number;
 }
 
 function ChatBar({
@@ -78,16 +81,21 @@ function ChatBar({
   currentSearchIndex,
   onNavigateSearchResults,
   searchQuery,
+  onBotMessage,
+  myId,
 }: ChatBarProps) {
   const [message, setMessage] = useState('');
   const [showReportModal, setShowReportModal] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showEndModal, setShowEndModal] = useState(false);
+  const [isBotMode, setIsBotMode] = useState(false);
+  const [botInput, setBotInput] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [currentMenuType, setCurrentMenuType] = useState<'general' | 'emoji'>(
     'general'
   );
   const [selectedEmojiUrl, setSelectedEmojiUrl] = useState<string | null>(null);
+  const [isVisibleToOpponent, setIsVisibleToOpponent] = useState(false);
 
   const emojis = [
     emoji1,
@@ -200,6 +208,42 @@ function ChatBar({
     } finally {
       if (e.target) {
         e.target.value = '';
+      }
+    }
+  };
+
+  const handleBotMessage = () => {
+    if (botInput.trim()) {
+      // WebSocket을 통해 챗봇 메시지 전송
+      if (stompClient && stompClient.connected) {
+        const botMessageBody = {
+          roomId: roomId,
+          message: botInput.trim(),
+          isVisible: isVisibleToOpponent,
+        };
+
+        stompClient.publish({
+          destination: '/app/api/chatbot/send',
+          body: JSON.stringify(botMessageBody),
+        });
+
+        console.log('[챗봇 메시지 전송]', botMessageBody);
+        if (onBotMessage) {
+          onBotMessage(botInput.trim());
+        }
+        setBotInput('');
+      } else {
+        console.error('WebSocket 연결이 없습니다.');
+        toast.error('챗봇 메시지 전송에 실패했습니다.');
+      }
+    }
+  };
+
+  const handleBotKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (botInput.trim()) {
+        handleBotMessage();
       }
     }
   };
@@ -326,7 +370,7 @@ function ChatBar({
                   >
                     <div
                       className={`w-12 h-12 rounded-full ${
-                        disabled ? 'bg-gray-400' : 'bg-[#722518]'
+                        disabled ? 'bg-gray-200' : 'bg-[#722518]'
                       } flex items-center justify-center ${
                         disabled ? 'cursor-not-allowed' : 'cursor-pointer'
                       }`}
@@ -346,12 +390,23 @@ function ChatBar({
       )}
 
       {selectedEmojiUrl && !isSearchMode && (
-        <div className="absolute bottom-[285px] right-2 z-40 bg-[rgba(255,255,255,0.5)] rounded-lg">
-          <img
-            src={selectedEmojiUrl}
-            alt="Selected Emoji"
-            className="w-30 h-30 p-2 shadow-lg"
-          />
+        <div className="absolute bottom-[282px] z-40  bg-white/50 w-full">
+          <div className="bg-white rounded-lg ml-auto w-fit relative">
+            {/* ✕ 닫기 버튼 */}
+            <button
+              onClick={() => setSelectedEmojiUrl(null)}
+              className="absolute top-1 right-1 text-gray-400 hover:text-black"
+              aria-label="미리보기 닫기"
+            >
+              ✕
+            </button>
+
+            <img
+              src={selectedEmojiUrl}
+              alt="Selected Emoji"
+              className="w-30 h-30 p-2 shadow-lg rounded-lg "
+            />
+          </div>
         </div>
       )}
 
@@ -361,83 +416,178 @@ function ChatBar({
           style={{ backgroundImage: `url(${navbg})` }}
         >
           <div className="flex items-center w-full gap-2">
-            <button
-              className={`w-9 h-9 rounded-full ${
-                isRoomActive ? 'bg-[#743120]' : 'bg-gray-400'
-              } flex items-center justify-center flex-shrink-0 ${
-                !isRoomActive ? 'cursor-not-allowed' : ''
-              }`}
-              onClick={isRoomActive ? onEmojiToggle : undefined}
-            >
-              <img
-                src={plus_icon}
-                alt="plus"
-                className={`w-5 h-5 transform transition-transform duration-300 ${
-                  emojiOpen && currentMenuType === 'general'
-                    ? 'rotate-45'
-                    : 'rotate-0'
-                }`}
-              />
-            </button>
+            {!isBotMode ? (
+              <>
+                {/* 좌측: 기능 열기 버튼 */}
+                <button
+                  className={`w-9 h-9 rounded-full ${
+                    isRoomActive ? 'bg-[#743120]' : 'bg-gray-200'
+                  } flex items-center justify-center flex-shrink-0 ${
+                    !isRoomActive ? 'cursor-not-allowed' : ''
+                  }`}
+                  onClick={isRoomActive ? onEmojiToggle : undefined}
+                >
+                  <img
+                    src={plus_icon}
+                    alt="plus"
+                    className={`w-5 h-5 transform transition-transform duration-300 ${
+                      emojiOpen && currentMenuType === 'general'
+                        ? 'rotate-45'
+                        : 'rotate-0'
+                    }`}
+                  />
+                </button>
 
-            <div className="flex items-center flex-1 bg-[#743120] rounded-full px-3 py-2">
-              <input
-                type="text"
-                placeholder={
-                  isRoomActive ? '전할 말 입력' : '비활성화된 채팅방입니다'
-                }
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                onKeyPress={handleKeyPress}
-                disabled={!isRoomActive}
-                className={`flex-1 bg-transparent text-white text-sm placeholder:text-white outline-none ${
-                  !isRoomActive ? 'cursor-not-allowed' : ''
-                }`}
-              />
-              <button
-                onClick={() => {
-                  if (!isRoomActive) {
-                    toast.error(
-                      '비활성화된 채팅방에서는 이모지를 사용할 수 없습니다.'
-                    );
-                    return;
-                  }
-                  if (!emojiOpen) {
-                    onEmojiToggle();
-                    setCurrentMenuType('emoji');
-                  } else {
-                    if (currentMenuType === 'general') {
-                      setCurrentMenuType('emoji');
-                    } else {
-                      setCurrentMenuType('general');
+                {/* 중앙: 일반 입력창 */}
+                <div className="flex items-center flex-1 bg-[#743120] rounded-full px-3 py-2">
+                  <input
+                    type="text"
+                    placeholder={
+                      isRoomActive ? '전할 말 입력' : '비활성화된 채팅방입니다'
                     }
-                  }
-                }}
-              >
-                <img src={face_icon} alt="face" className="w-5 h-5 ml-2" />
-              </button>
-            </div>
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    disabled={!isRoomActive}
+                    className={`flex-1 bg-transparent text-white text-sm placeholder:text-white outline-none ${
+                      !isRoomActive ? 'cursor-not-allowed' : ''
+                    }`}
+                  />
+                  <button
+                    onClick={() => {
+                      if (!isRoomActive) {
+                        toast.error(
+                          '비활성화된 채팅방에서는 이모지를 사용할 수 없습니다.'
+                        );
+                        return;
+                      }
+                      if (!emojiOpen) {
+                        onEmojiToggle();
+                        setCurrentMenuType('emoji');
+                      } else {
+                        setCurrentMenuType(
+                          currentMenuType === 'general' ? 'emoji' : 'general'
+                        );
+                      }
+                    }}
+                  >
+                    <img src={face_icon} alt="face" className="w-5 h-5 ml-2" />
+                  </button>
+                </div>
 
-            <button
-              onClick={handleSendMessage}
-              className={`w-9 h-9 rounded-full ${
-                isRoomActive
-                  ? message.trim()
-                    ? 'bg-gray-400'
-                    : 'bg-[#743120]'
-                  : 'bg-gray-400'
-              } flex items-center justify-center flex-shrink-0 ${
-                !isRoomActive || !message.trim() ? 'cursor-not-allowed' : ''
-              }`}
-              disabled={!isRoomActive || !message.trim()}
-            >
-              <img
-                src={message.trim() ? arrow_icon : questionmark_icon}
-                alt={message.trim() ? 'send' : '?'}
-                className="w-5 h-5"
-              />
-            </button>
+                {/* 우측: 전송 / 챗봇 진입 버튼 */}
+                <button
+                  onClick={(e) => {
+                    if (!isRoomActive) return;
+
+                    if (message.trim()) {
+                      handleSendMessage();
+                    } else {
+                      setMessage('');
+                      setIsBotMode(true);
+                    }
+                  }}
+                  className={`w-9 h-9 rounded-full ${
+                    isRoomActive
+                      ? message.trim()
+                        ? 'bg-gray-200'
+                        : 'bg-[#743120]'
+                      : 'bg-gray-200'
+                  } flex items-center justify-center flex-shrink-0 ${
+                    !isRoomActive ? 'cursor-not-allowed' : ''
+                  }`}
+                  disabled={!isRoomActive} // ✅ 오직 방이 비활성일 때만 비활성화
+                >
+                  <img
+                    src={message.trim() ? arrow_icon : questionmark_icon}
+                    alt={message.trim() ? 'send' : '?'}
+                    className="w-5 h-5"
+                  />
+                </button>
+              </>
+            ) : (
+              <>
+                {/* 챗봇 모드: 왼쪽 + 버튼 → X 역할 */}
+                <button
+                  className="w-9 h-9 rounded-full bg-[#743120] flex items-center justify-center flex-shrink-0"
+                  onClick={() => {
+                    setIsBotMode(false);
+                    setBotInput('');
+                  }}
+                >
+                  {/* 45도 회전된 + = X 아이콘 효과 */}
+                  <img
+                    src={plus_icon}
+                    alt="close"
+                    className="w-5 h-5 rotate-45 transition-transform duration-300"
+                  />
+                </button>
+
+                {/* 챗봇 모드: 왼쪽 ❓ 아이콘 (시각적 안내) */}
+
+                {/* 챗봇 입력창 */}
+                <div className="flex items-center flex-1 bg-[#743120] rounded-full px-3 py-2">
+                  <div className="w-5 h-5">
+                    <img
+                      src={questionmark_icon}
+                      alt="?"
+                      className="w-full h-full"
+                    />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="채팅 봇에게 요청/질문 내용 입력"
+                    value={botInput}
+                    onChange={(e) => setBotInput(e.target.value)}
+                    onKeyPress={handleBotKeyPress}
+                    className="ml-1 flex-1 bg-transparent text-white text-sm placeholder:text-gray text-opacity-50 outline-none"
+                  />
+                </div>
+
+                {/* 전송 버튼 */}
+                <button
+                  onClick={handleBotMessage}
+                  className={`w-9 h-9 rounded-full ${
+                    botInput.trim() ? 'bg-gray-200' : 'bg-[#743120]'
+                  } flex items-center justify-center flex-shrink-0 ${
+                    !botInput.trim() ? 'cursor-not-allowed' : ''
+                  }`}
+                  disabled={!botInput.trim()}
+                >
+                  <img src={arrow_icon} alt="send" className="w-5 h-5" />
+                </button>
+              </>
+            )}
           </div>
+        </div>
+      )}
+
+      {isBotMode && (
+        <div className="flex items-center justify-end px-4 py-2 border-b border-gray-200">
+          <label className="flex items-center cursor-pointer">
+            <span className="mr-2 text-sm text-gray-600">
+              상대방에게 보이기
+            </span>
+            <div className="relative">
+              <input
+                type="checkbox"
+                className="sr-only"
+                checked={isVisibleToOpponent}
+                onChange={(e) => setIsVisibleToOpponent(e.target.checked)}
+              />
+              <div
+                className={`block w-10 h-6 rounded-full transition-colors duration-200 ease-in-out ${
+                  isVisibleToOpponent ? 'bg-[#BD4B2C]' : 'bg-gray-300'
+                }`}
+              >
+                <div
+                  className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-200 ease-in-out ${
+                    isVisibleToOpponent ? 'transform translate-x-4' : ''
+                  }`}
+                />
+              </div>
+            </div>
+          </label>
         </div>
       )}
 
@@ -471,6 +621,7 @@ function ChatBar({
         matchId={matchId}
         receiverId={receiverId}
         roomId={roomId}
+        myId={myId}
       />
 
       <EndModal

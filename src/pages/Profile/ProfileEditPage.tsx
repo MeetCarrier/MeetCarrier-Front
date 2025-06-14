@@ -5,6 +5,7 @@ import axios from 'axios';
 import NavBar from '../../components/NavBar';
 import imageCompression from 'browser-image-compression';
 import Modal from '../../components/Modal';
+import toast from 'react-hot-toast';
 
 import { RootState, AppDispatch } from '../../Utils/store';
 import { fetchUser, UserState, resetUser } from '../../Utils/userSlice';
@@ -13,7 +14,6 @@ import arrowIcon from '../../assets/img/icons/HobbyIcon/back_arrow.svg';
 import stampImage from '../../assets/img/stamp.svg';
 import defaultProfileImg from '../../assets/img/sample/sample_profile.svg';
 import cameraIcon from '../../assets/img/icons/Profile/pic_change.svg';
-import toast from 'react-hot-toast';
 
 function ProfileEditPage() {
   const navigate = useNavigate();
@@ -95,7 +95,7 @@ function ProfileEditPage() {
 
     // 파일 타입 검사: 이미지 파일인지 확인
     if (!file.type.startsWith('image/')) {
-      toast.success('이미지 파일만 선택할 수 있습니다.');
+      toast.error('이미지 파일만 선택할 수 있습니다.');
       if (e.target) {
         e.target.value = '';
       }
@@ -189,6 +189,7 @@ function ProfileEditPage() {
     } catch (error) {
       console.error('닉네임 변경 중 오류 발생:', error);
       setNicknameError('닉네임 변경에 실패했습니다.');
+      toast.error('닉네임 변경에 실패했습니다.');
     }
   };
 
