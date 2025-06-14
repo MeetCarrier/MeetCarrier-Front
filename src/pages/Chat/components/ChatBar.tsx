@@ -74,6 +74,7 @@ function ChatBar({
   const [currentMenuType, setCurrentMenuType] = useState<"general" | "emoji">(
     "general"
   );
+  const [selectedEmojiUrl, setSelectedEmojiUrl] = useState<string | null>(null);
 
   const emojis = [
     emoji1,
@@ -195,14 +196,24 @@ function ChatBar({
           backgroundImage: `url(${navbg2})`,
         }}
       >
-        <div className="grid grid-cols-4 gap-y-4 px-6 pt-4">
-          {currentMenuType === "emoji"
-            ? // 이모티콘 메뉴
-              emojis.map((emojiSrc, index) => (
+        <div className="h-full overflow-y-auto">
+          {currentMenuType === "emoji" ? (
+            // 이모티콘 메뉴
+            <div className="grid grid-cols-4 px-2 bg-white m-4 rounded-lg">
+              {emojis.map((emojiSrc, index) => (
                 <div key={index} className="flex flex-col items-center">
                   <div
-                    className="w-20 h-20 flex items-center justify-center cursor-pointer bg-white"
-                    onClick={() => console.log(`Emoji ${index + 1} clicked`)} // 이모티콘 클릭 시 동작 추가 예정
+                    className="w-20 h-20 flex items-center justify-center cursor-pointer"
+                    onClick={() => {
+                      if (selectedEmojiUrl === emojiSrc) {
+                        // 이미 선택된 이모지를 다시 클릭하면 전송
+                        onSendMessage("", emojiSrc);
+                        setSelectedEmojiUrl(null);
+                      } else {
+                        // 다른 이모지를 클릭하거나 처음 클릭하는 경우 미리보기
+                        setSelectedEmojiUrl(emojiSrc);
+                      }
+                    }}
                   >
                     <img
                       src={emojiSrc}
@@ -211,9 +222,12 @@ function ChatBar({
                     />
                   </div>
                 </div>
-              ))
-            : // 일반 메뉴
-              [
+              ))}
+            </div>
+          ) : (
+            // 일반 메뉴
+            <div className="grid grid-cols-4 gap-y-4 px-6 pt-4">
+              {[
                 {
                   icon: album_icon,
                   label: "앨범",
@@ -255,8 +269,19 @@ function ChatBar({
                   </span>
                 </div>
               ))}
+            </div>
+          )}
         </div>
       </div>
+      {selectedEmojiUrl && (
+        <div className="absolute bottom-[285px] right-2 z-40">
+          <img
+            src={selectedEmojiUrl}
+            alt="Selected Emoji"
+            className="w-30 h-30 bg-white p-2 rounded-lg shadow-lg"
+          />
+        </div>
+      )}
       <div
         className="w-full h-[82px] px-2 flex items-center"
         style={{ backgroundImage: `url(${navbg})` }}
