@@ -59,20 +59,24 @@ function AlarmPage() {
 
   // 리뷰
   const handleReview = () => {
-    // TODO: Review 알림 처리
+    navigate("/ChatList");
   };
+
   // 신고에 대한 처리
   const handleReport = () => {
-    // TODO: Report 알림 처리
+    // 신고 알림은 그대로 둠
   };
+
   // 칭찬 일기
   const handleJournal = () => {
     navigate("/Calendar");
   };
+
   // 만남 일수? 알려주는 것
   const handleMeeting = () => {
     navigate("/Calendar");
   };
+
   // 추천 친구 매칭 요청
   const handleRequest = async (notification: Notification) => {
     if (notification.referenceId == null || notification.id == null) {
@@ -84,29 +88,76 @@ function AlarmPage() {
     setActiveNotificationId(notification.id);
     setIsRecFriendModal(true);
   };
+
   // 매칭이 성사되면 오는 것
   const handleMatch = () => {
     navigate("/ChatList");
   };
+
   // 만남 초대장 요청
-  const handleInvitationRequest = () => {
-    // TODO: InvitationRequest 알림 처리
+  const handleInvitationRequest = (notification: Notification) => {
+    if (!notification.referenceId) {
+      toast.error("유효하지 않은 초대장 요청입니다.");
+      return;
+    }
+    navigate(`/chat/${notification.referenceId}`, {
+      state: {
+        roomId: notification.referenceId,
+        showInviteModal: true,
+      },
+    });
   };
+
   // 상대가 만남 초대장 수락
-  const handleInvitationAccepted = () => {
-    navigate("/Calendar");
+  const handleInvitationAccepted = (notification: Notification) => {
+    if (!notification.referenceId) {
+      toast.error("유효하지 않은 초대장 응답입니다.");
+      return;
+    }
+    navigate(`/chat/${notification.referenceId}`, {
+      state: {
+        roomId: notification.referenceId,
+      },
+    });
   };
+
   // 상대가 만남 초대장 거절
-  const handleInvitationRejected = () => {
-    // TODO: InvitationRejected 알림 처리
+  const handleInvitationRejected = (notification: Notification) => {
+    if (!notification.referenceId) {
+      toast.error("유효하지 않은 초대장 응답입니다.");
+      return;
+    }
+    navigate(`/chat/${notification.referenceId}`, {
+      state: {
+        roomId: notification.referenceId,
+      },
+    });
   };
+
   // 만남 확정
-  const handleMeetingAccepted = () => {
-    // TODO: InvitationRejected 알림 처리
+  const handleMeetingAccepted = (notification: Notification) => {
+    if (!notification.referenceId) {
+      toast.error("유효하지 않은 만남 확정 알림입니다.");
+      return;
+    }
+    navigate(`/chat/${notification.referenceId}`, {
+      state: {
+        roomId: notification.referenceId,
+      },
+    });
   };
+
   // 일정 조정 요청
-  const handleMeetingRejected = () => {
-    // TODO: InvitationRejected 알림 처리
+  const handleMeetingRejected = (notification: Notification) => {
+    if (!notification.referenceId) {
+      toast.error("유효하지 않은 일정 조정 요청입니다.");
+      return;
+    }
+    navigate(`/chat/${notification.referenceId}`, {
+      state: {
+        roomId: notification.referenceId,
+      },
+    });
   };
 
   const handleDeleteAlarm = async (notification: Notification) => {

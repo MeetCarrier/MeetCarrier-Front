@@ -13,6 +13,16 @@ import ChatNotificationBar from "./components/ChatNotificationBar";
 import MeetingInfoModal from "../../components/MeetingInfoModal";
 import ProfileModal from "../../components/ProfileModal";
 import { fetchUserById, UserProfileData } from "../../Utils/api";
+import InviteLetterModal from "./Invite/InviteLetterModal";
+import { ChatMessage } from "./components/ChatPage/ChatMessage";
+import { ChatSearch } from "./components/ChatPage/ChatSearch";
+import { ChatHeader } from "./components/ChatPage/ChatHeader";
+import {
+  ChatMessage as ChatMessageType,
+  LocationState,
+  MatchData,
+  RoomInfo,
+} from "./components/ChatPage/types";
 
 import back_arrow from "../../assets/img/icons/HobbyIcon/back_arrow.svg";
 import search_icon from "../../assets/img/icons/ChatIcon/search.svg";
@@ -20,36 +30,13 @@ import delete_icon from "../../assets/img/icons/Chat/delete.svg";
 import chatBot from "../../assets/img/icons/Chat/chatBot.svg";
 
 interface ChatMessage {
-  messageType: string;
+  type: string;
   message: string;
   imageUrl: string | null;
   sender: number;
   sentAt: string;
   read: boolean;
-}
-
-interface LocationState {
-  roomId: number;
-}
-
-interface MatchData {
-  id: number;
-  user1Id: number;
-  user1Nickname: string;
-  user1ImageUrl?: string;
-  user2Id: number;
-  user2Nickname: string;
-  user2ImageUrl?: string;
-  agreed: boolean;
-  matchedAt?: string;
-  status: string;
-  sessionId: number;
-  roomId: number;
-}
-
-interface RoomInfo {
-  status: "Activate" | "Deactivate";
-  deactivationTime: string;
+  isBot?: boolean;
 }
 
 function ChatPage() {
@@ -88,6 +75,11 @@ function ChatPage() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [searchResults, setSearchResults] = useState<number[]>([]);
   const [currentSearchIndex, setCurrentSearchIndex] = useState<number>(-1);
+
+  // 알림으로부터 전달받은 초대장 모달 표시 여부
+  const [showInviteModal, setShowInviteModal] = useState(
+    state?.showInviteModal || false
+  );
 
   useEffect(() => {
     const updateCurrentTime = () => {
@@ -236,6 +228,7 @@ function ChatPage() {
           return {
             ...msg,
             sentAt: utcDate.toISOString(),
+            isBot: msg.type === "CHATBOT",
           };
         });
 
@@ -317,7 +310,7 @@ function ChatPage() {
       return;
     }
 
-    if (roomInfo?.status === "Deactivate") {
+    if (roomInfo?.status === "Deactivate" && matchData?.status !== "Meeting") {
       alert("채팅이 비활성화되어 메시지를 보낼 수 없습니다.");
       return;
     }
@@ -338,12 +331,13 @@ function ChatPage() {
       // 현재 시간을 UTC로 변환 (한국 시간에서 9시간을 빼서 UTC로 만듦)
       const utcSentAt = new Date(now.getTime()).toISOString();
       const localMessage: ChatMessage = {
-        messageType: imageUrl ? "IMAGE" : "TEXT",
+        type: imageUrl ? "IMAGE" : "TEXT",
         message: message,
         imageUrl: imageUrl || null,
         sender: Number(myId),
         sentAt: utcSentAt,
         read: false,
+        isBot: false,
       };
 
       // 1. 화면에 즉시 표시
@@ -375,6 +369,27 @@ function ChatPage() {
         stompClientRef.current?.connected
       );
     }
+  };
+
+  // 챗봇 메시지 처리 함수
+  const handleBotQuestion = (question: string) => {
+    if (!myId) {
+      console.error("사용자 ID가 없습니다. 챗봇 질문을 처리할 수 없습니다.");
+      return;
+    }
+    // 챗봇에게 보낸 메시지를 로컬에 표시 (나의 메시지처럼 보이지만 챗봇 아이콘과 함께)
+    const now = new Date();
+    const utcSentAt = new Date(now.getTime()).toISOString();
+    const botQuestionMessage: ChatMessage = {
+      type: "TEXT",
+      message: question,
+      imageUrl: null,
+      sender: Number(myId), // 내가 챗봇에게 보낸 메시지이므로 sender는 나의 ID
+      sentAt: utcSentAt,
+      read: true, // 내가 보낸 메시지이므로 바로 읽음 처리
+      isBot: true, // 챗봇 메시지로 구분
+    };
+    setMessages((prev) => [...prev, botQuestionMessage]);
   };
 
   // 채팅방 퇴장 함수
@@ -496,74 +511,36 @@ function ChatPage() {
     }
   };
 
+  // 컴포넌트 마운트 시 초대장 모달 표시
+  useEffect(() => {
+    if (state?.showInviteModal) {
+      setShowInviteModal(true);
+    }
+  }, [state?.showInviteModal]);
+
   return (
     <>
-      <div className="absolute top-[50px] text-[#333333] left-0 right-0 px-6 text-center">
-        {!showSearchBar ? (
-          <>
-            <img
-              src={back_arrow}
-              alt="back_arrow"
-              className="absolute top-1/2 -translate-y-1/2 left-6 w-[9px] h-[20px] cursor-pointer"
-              onClick={handleBackClick}
-            />
-            <p className="text-[20px] font-MuseumClassic_L italic">
-              {otherNickname}
-            </p>
-            <img
-              src={search_icon}
-              alt="search_icon"
-              className="absolute top-1/2 -translate-y-1/2 right-6 w-[20px] h-[20px] cursor-pointer"
-              onClick={() => setShowSearchBar(true)}
-            />
-          </>
-        ) : (
-          <div className="flex items-center w-full h-[40px] bg-transparent">
-            {/* 검색 바 */}
-            <div className="relative flex items-center flex-1 h-full bg-white rounded-lg shadow-md">
-              <img
-                src={search_icon}
-                alt="search_icon"
-                className="absolute left-3 w-[20px] h-[20px] opacity-60"
-              />
-              <input
-                type="text"
-                placeholder="대화 내용 검색"
-                className="flex-grow py-2 pl-10 pr-10 text-base outline-none font-GanwonEduAll_Light"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === "Enter") {
-                    handleSearch();
-                  }
-                }}
-              />
-              {searchQuery && (
-                <img
-                  src={delete_icon}
-                  alt="clear search"
-                  className="absolute right-3 w-[20px] h-[20px] cursor-pointer opacity-60"
-                  onClick={() => setSearchQuery("")}
-                />
-              )}
-            </div>
+      {!showSearchBar ? (
+        <ChatHeader
+          otherNickname={otherNickname}
+          onBackClick={handleBackClick}
+          onSearchClick={() => setShowSearchBar(true)}
+        />
+      ) : (
+        <ChatSearch
+          showSearchBar={showSearchBar}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          handleSearch={handleSearch}
+          onClose={() => {
+            setShowSearchBar(false);
+            setSearchQuery("");
+            setSearchResults([]);
+            setCurrentSearchIndex(-1);
+          }}
+        />
+      )}
 
-            {/* 취소 버튼 (외부로 뺌) */}
-            <button
-              className="ml-2  text-[#333] font-GanwonEduAll_Light text-xl"
-              onClick={() => {
-                setShowSearchBar(false);
-                setSearchQuery("");
-                setSearchResults([]);
-                setCurrentSearchIndex(-1);
-              }}
-            >
-              취소
-            </button>
-          </div>
-        )}
-      </div>
-      {/* 하단 입력창 */}
       <ChatBar
         emojiOpen={emojiOpen}
         onEmojiToggle={() => setEmojiOpen((prev) => !prev)}
@@ -579,7 +556,10 @@ function ChatPage() {
         }
         roomId={state.roomId}
         onInviteClick={() => {
-          if (roomInfo?.status === "Deactivate") {
+          if (
+            roomInfo?.status === "Deactivate" &&
+            matchData?.status !== "Meeting"
+          ) {
             alert("비활성화된 채팅방에서는 초대할 수 없습니다.");
             return;
           }
@@ -594,6 +574,7 @@ function ChatPage() {
                   ? matchData?.user2Id ?? 0
                   : matchData?.user1Id ?? 0,
               roomId: state.roomId,
+              myId: user?.userId,
             },
           });
         }}
@@ -605,19 +586,26 @@ function ChatPage() {
           });
         }}
         onEndMeeting={() => {
-          if (roomInfo?.status === "Deactivate") {
+          if (
+            roomInfo?.status === "Deactivate" &&
+            matchData?.status !== "Meeting"
+          ) {
             alert("이미 비활성화된 채팅방입니다.");
             return;
           }
           navigate("/ChatList");
         }}
         stompClient={stompClientRef.current}
-        isRoomActive={roomInfo?.status === "Activate"}
+        isRoomActive={
+          roomInfo?.status === "Activate" || matchData?.status === "Meeting"
+        }
         isSearchMode={showSearchBar}
         searchResults={searchResults}
         currentSearchIndex={currentSearchIndex}
         onNavigateSearchResults={navigateSearchResults}
         searchQuery={searchQuery}
+        onBotMessage={handleBotQuestion}
+        myId={myId}
       />
 
       {!showSearchBar && (
@@ -638,7 +626,9 @@ function ChatPage() {
           memo={meetingSchedule.memo || undefined}
           isScheduled={meetingSchedule.isScheduled}
           onModifyClick={() => setShowMeetingInfoModal(true)}
-          isRoomActive={roomInfo?.status === "Activate"}
+          isRoomActive={
+            roomInfo?.status === "Activate" || matchData?.status === "Meeting"
+          }
         />
       )}
 
@@ -652,10 +642,8 @@ function ChatPage() {
         }}
       >
         {messages.map((msg, index) => {
+          const isChatbot = msg.type === "CHATBOT";
           const isMine = msg.sender === myId;
-          const isChatbot = msg.messageType === "CHATBOT";
-
-          // myId로 내 정보/상대 정보 구분
           let currentNickname = "나";
           let currentOpponentNickname = "상대방";
           let currentProfileUrl = sampleProfile;
@@ -663,40 +651,44 @@ function ChatPage() {
           if (isChatbot) {
             currentNickname = "만남배달부 봇";
             currentProfileUrl = chatBot;
-          } else if (isMine) {
-            currentNickname = myNickname;
-            currentProfileUrl = user?.imgUrl || sampleProfile;
           } else {
-            currentNickname = otherNickname;
-            currentProfileUrl =
-              myId === matchData?.user1Id
-                ? matchData?.user2ImageUrl || sampleProfile
-                : matchData?.user1ImageUrl || sampleProfile;
+            if (msg.isBot) {
+              currentNickname = myNickname;
+              currentProfileUrl = user?.imgUrl || sampleProfile;
+            } else if (isMine) {
+              currentNickname = myNickname;
+              currentProfileUrl = user?.imgUrl || sampleProfile;
+            } else {
+              currentNickname = otherNickname;
+              currentProfileUrl =
+                myId === matchData?.user1Id
+                  ? matchData?.user2ImageUrl || sampleProfile
+                  : matchData?.user1ImageUrl || sampleProfile;
+            }
           }
 
           const isPrevSameSender =
             index > 0 &&
             messages[index - 1].sender === msg.sender &&
-            !isChatbot; // 챗봇 메시지일 경우 이전 메시지 발신자 동일 여부 무시
+            !isChatbot &&
+            !messages[index - 1].isBot;
           const isNextDifferentSender =
             index === messages.length - 1 ||
             messages[index + 1].sender !== msg.sender ||
-            messages[index + 1].messageType === "CHATBOT"; // 챗봇 메시지 다음에는 시간 표시
+            messages[index + 1].type === "CHATBOT" ||
+            messages[index + 1].isBot;
 
-          // UTC 시간을 한국 시간으로 변환
           const messageDate = new Date(msg.sentAt);
           const koreanTime = new Date(messageDate.getTime());
 
-          // 날짜 구분선 표시 여부 확인
           const showDateDivider =
             index === 0 ||
             new Date(messages[index - 1].sentAt).toDateString() !==
               messageDate.toDateString();
 
-          // 시간 표시 로직 추가 (카카오톡 스타일)
           let shouldDisplayTime = false;
           if (index === messages.length - 1) {
-            shouldDisplayTime = true; // 마지막 메시지는 항상 시간 표시
+            shouldDisplayTime = true;
           } else {
             const nextMessage = messages[index + 1];
             const nextMessageDate = new Date(nextMessage.sentAt);
@@ -704,11 +696,11 @@ function ChatPage() {
               (nextMessageDate.getTime() - messageDate.getTime()) / 1000
             );
 
-            // 다음 메시지가 다른 발신자이거나, 동일 발신자여도 시간 차이가 1분 이상이거나, 다음 메시지가 챗봇이면 시간 표시
             if (
               nextMessage.sender !== msg.sender ||
               timeDifferenceInSeconds > 60 ||
-              nextMessage.messageType === "CHATBOT"
+              nextMessage.type === "CHATBOT" ||
+              nextMessage.isBot
             ) {
               shouldDisplayTime = true;
             }
@@ -720,12 +712,7 @@ function ChatPage() {
             currentSearchIndex === searchResults.indexOf(index);
 
           return (
-            <div
-              key={`${msg.sentAt}-${index}`}
-              ref={(el) => {
-                messageRefs.current[index] = el;
-              }}
-            >
+            <div key={`${msg.sentAt}-${index}`}>
               {showDateDivider && (
                 <div className="flex justify-center items-center my-4">
                   <div className="bg-gray-200 text-gray-600 text-xs px-3 py-1 rounded-full">
@@ -733,174 +720,28 @@ function ChatPage() {
                   </div>
                 </div>
               )}
-              {/* Main message container */}
-              <div
-                className={`flex ${
-                  isMine ? "justify-end" : "justify-start"
-                } mb-1`}
-              >
-                {/* Chatbot Message Layout */}
-                {isChatbot ? (
-                  <div className="flex flex-col items-start max-w-[70%]">
-                    {/* Profile & Nickname Row */}
-                    <div className="flex items-center mb-1">
-                      <div className="w-8 mr-2">
-                        <img
-                          src={currentProfileUrl}
-                          alt="챗봇 프로필"
-                          className="w-8 h-8 rounded-[2px] bg-white"
-                        />
-                      </div>
-                      <span className="text-base text-gray-700 font-GanwonEduAll_Light">
-                        {currentNickname}
-                      </span>
-                    </div>
-                    {/* Message Bubble + Time */}
-                    <div className="flex items-end gap-1 ml-[40px]">
-                      <div
-                        className={`px-3 py-2 rounded-xl whitespace-pre-wrap font-GanwonEduAll_Light bg-[#333] text-white rounded-bl-none`}
-                      >
-                        <span
-                          className={`text-base ${
-                            isHighlighted
-                              ? isCurrent
-                                ? "bg-[#EADCCB] text-[#333] font-bold"
-                                : "bg-[#EADCCB] text-[#333]"
-                              : ""
-                          }`}
-                        >
-                          {msg.message}
-                        </span>
-                      </div>
-                      {shouldDisplayTime && (
-                        <div
-                          className={`flex flex-col gap-y-0.5 text-xs text-gray-400 leading-tight font-GanwonEduAll_Light items-start ml-1`}
-                        >
-                          {/* Time display logic */}
-                          <span>
-                            {koreanTime.toLocaleTimeString("ko-KR", {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                              hour12: true,
-                            })}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ) : (
-                  // Regular User Message Layout
-                  <>
-                    {/* Left Profile (only if not mine and not prev same sender) */}
-                    {!isMine && !isPrevSameSender ? (
-                      <div
-                        className="w-8 mr-2 cursor-pointer"
-                        onClick={() => handleProfileClick(msg.sender)}
-                      >
-                        <img
-                          src={currentProfileUrl}
-                          alt="프로필"
-                          className="w-8 h-8 rounded-[2px] bg-white"
-                        />
-                      </div>
-                    ) : (
-                      !isMine && <div className="w-8 mr-2 " />
-                    )}
-
-                    {/* Message Content (Nickname above, then bubble) */}
-                    <div className={`max-w-[70%] flex flex-col`}>
-                      {/* Nickname */}
-                      {!isMine && !isPrevSameSender && (
-                        <span className="text-base text-gray-700 mb-1 font-GanwonEduAll_Light">
-                          {currentNickname}
-                        </span>
-                      )}
-                      {/* Message Bubble + Time */}
-                      <div
-                        className={`flex items-end gap-1 ${
-                          isMine ? "flex-row-reverse" : "flex-row"
-                        }`}
-                      >
-                        {/* Message Bubble */}
-                        <div
-                          className={`px-3 py-2 rounded-xl whitespace-pre-wrap font-GanwonEduAll_Light ${
-                            msg.imageUrl
-                              ? ""
-                              : isMine
-                              ? "bg-[#BD4B2C] text-[#F2F2F2] rounded-br-none"
-                              : "bg-[#FFFFFF] text-[#333333] rounded-bl-none"
-                          }`}
-                        >
-                          {msg.imageUrl ? (
-                            <img
-                              src={msg.imageUrl}
-                              alt="전송된 이미지"
-                              className="max-w-full max-h-[150px] rounded-lg"
-                            />
-                          ) : (
-                            <span
-                              className={`text-base ${
-                                isHighlighted
-                                  ? isCurrent
-                                    ? "bg-[#EADCCB] text-[#333] font-bold"
-                                    : "bg-[#EADCCB] text-[#333]"
-                                  : ""
-                              }`}
-                            >
-                              {msg.message}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Time/Read Status */}
-                        {shouldDisplayTime && (
-                          <div
-                            className={`flex flex-col gap-y-0.5 text-xs text-gray-400 leading-tight font-GanwonEduAll_Light ${
-                              isMine ? "items-end mr-1" : "items-start ml-1"
-                            }`}
-                          >
-                            {isMine ? (
-                              <>
-                                {!msg.read && (
-                                  <span className="text-[#BD4B2C]">1</span>
-                                )}
-                                <span>
-                                  {koreanTime.toLocaleTimeString("ko-KR", {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                    hour12: true,
-                                  })}
-                                </span>
-                              </>
-                            ) : (
-                              <>
-                                <span>
-                                  {koreanTime.toLocaleTimeString("ko-KR", {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                    hour12: true,
-                                  })}
-                                </span>
-                                {!msg.read && (
-                                  <span className="text-[#BD4B2C]">1</span>
-                                )}
-                              </>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
+              <ChatMessage
+                msg={msg}
+                isMine={isMine}
+                isPrevSameSender={isPrevSameSender}
+                isNextDifferentSender={isNextDifferentSender}
+                currentNickname={currentNickname}
+                currentProfileUrl={currentProfileUrl}
+                koreanTime={koreanTime}
+                shouldDisplayTime={shouldDisplayTime}
+                isHighlighted={isHighlighted}
+                isCurrent={isCurrent}
+                onProfileClick={handleProfileClick}
+                messageRef={(el) => {
+                  messageRefs.current[index] = el;
+                }}
+              />
             </div>
           );
         })}
-
         <div ref={messagesEndRef} />
       </div>
 
-      {/* 만남 일정 정보 모달 */}
       <MeetingInfoModal
         isOpen={showMeetingInfoModal}
         onClose={() => setShowMeetingInfoModal(false)}
@@ -911,9 +752,25 @@ function ChatPage() {
         <ProfileModal
           isOpen={showProfileModal}
           onClose={() => setShowProfileModal(false)}
-          user={selectedUser!}
+          user={selectedUser}
         />
       )}
+
+      <InviteLetterModal
+        isOpen={showInviteModal}
+        onClose={() => setShowInviteModal(false)}
+        senderName={myNickname}
+        recipientName={otherNickname}
+        senderProfile={user?.imgUrl || sampleProfile}
+        matchId={matchData?.id || 0}
+        receiverId={
+          user?.userId === matchData?.user1Id
+            ? matchData?.user2Id ?? 0
+            : matchData?.user1Id ?? 0
+        }
+        roomId={state.roomId}
+        myId={myId}
+      />
     </>
   );
 }

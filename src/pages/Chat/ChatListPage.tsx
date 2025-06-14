@@ -138,7 +138,8 @@ function ChatListPage() {
   }, [myId]);
 
   const chattingList = matchList.filter(
-    (m) => m.status === "Chatting" && m.agreed === true
+    (m) =>
+      (m.status === "Chatting" || m.status === "Meeting") && m.agreed === true
   );
   const surveyList = matchList.filter(
     (m) =>
@@ -146,7 +147,10 @@ function ChatListPage() {
       (m.status === "Chatting" && m.agreed === false)
   );
   const cancelledList = matchList.filter(
-    (m) => m.status === "Survey_Cancelled" || m.status === "Chat_Cancelled"
+    (m) =>
+      m.status === "Survey_Cancelled" ||
+      m.status === "Chat_Cancelled" ||
+      m.status === "Reviewing"
   );
 
   const handleChatClick = (match: MatchData) => {
