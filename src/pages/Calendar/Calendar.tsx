@@ -1,5 +1,5 @@
 import NavBar from '../../components/NavBar';
-import calendar_icon from '../../assets/img/icons/Calendar/ic_calendar.svg';
+import calendar_icon from '../../assets/img/icons/Calendar/ic_calendar.webp';
 import comming_dage from '../../assets/img/calendar/comming_date.webp';
 import dairy_button from '../../assets/img/calendar/dairy.webp';
 import today_check from '../../assets/img/calendar/today_check.svg';

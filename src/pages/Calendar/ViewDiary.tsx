@@ -4,8 +4,9 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import NavBar from '../../components/NavBar';
 import menu_icon from '../../assets/img/icons/Dairy/menu_icon.svg';
 import back_arrow from '../../assets/img/icons/HobbyIcon/back_arrow.svg';
-import modify_icon from '../../assets/img/icons/Dairy/modify_icon.svg';
-import delete_icon from '../../assets/img/icons/Dairy/delete_icon.svg';
+import modify_icon from '../../assets/img/icons/Dairy/modify_icon.webp';
+import delete_icon from '../../assets/img/icons/Dairy/delete_icon.webp';
+import pen1_icon from '../../assets/img/icons/Calendar/pen1_icon.webp';
 import Modal from '../../components/Modal';
 import DiaryDeleteModal from '../../Modal/DiaryDeleteModal';
 import { stampMap } from '../../Utils/StampMap';
@@ -89,7 +90,9 @@ function ViewDiary() {
 
       <div className="flex flex-col w-full h-[calc(100%-200px)] px-4">
         <div className="flex justify-center mb-3">
-          <div className="w-[200px] h-[60px] bg-white" />
+          <div className="flex w-[200px] h-[60px] justify-center items-center">
+            <img src={pen1_icon} alt="pen_icon" className="w-[60px] h-[25px]" />
+          </div>
         </div>
 
         <div className="w-full max-w-md min-h-0 mx-auto flex flex-col flex-1">

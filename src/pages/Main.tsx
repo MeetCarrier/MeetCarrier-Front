@@ -14,14 +14,16 @@ import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import btn1 from '../assets/img/button/btn1.webp';
 import btn2 from '../assets/img/button/btn2.webp';
-import bell_default from '../assets/img/icons/NavIcon/bell_default.svg';
-import bell_alarm from '../assets/img/icons/NavIcon/bell_alarm.svg';
+import bell_default from '../assets/img/icons/NavIcon/bell_default.webp';
+import bell_alarm from '../assets/img/icons/NavIcon/bell_alarm.webp';
 import NavBar from '../components/NavBar';
 import Modal from '../components/Modal';
 import MainModal from '../Modal/MainModal';
 import IsTestModal from '../Modal/IsTestModal';
 import RecommendModal from '../Modal/RecommendModal';
-import { fetchUser } from '../Utils/userSlice';
+import PhoneAuthModal from '../Modal/PhoneAuthModal';
+import IsPhoneAuthModal from '../Modal/IsPhoneAuthModal';
+import { fetchUser, UserState } from '../Utils/userSlice';
 import { fetchSelfTestList } from '../Utils/selfTestSlice';
 import { startMatchingClient } from '../Utils/Matching';
 import {
@@ -42,6 +44,7 @@ function Main() {
   const location = useLocation();
   const fromMatching = location.state?.fromMatching === true;
   const status = useAppSelector((state) => state.matching.status);
+  const user = useAppSelector((state) => state.user) as UserState | null;
   const isSocketConnected = useAppSelector(
     (state) => state.matching.isSocketConnected
   );
@@ -49,6 +52,8 @@ function Main() {
 
   const [recommededUser, setRecommendedUser] = useState<number[]>([]);
   const [isRecommendModalOpen, setIsRecommendModalOpen] = useState(false);
+  const [isPhoneAuthModalOpen, setIsPhoneAuthModalOpen] = useState(false);
+  const [isIsPhoneAuthModalOpen, setIsIsPhoneAuthModalOpen] = useState(false);
 
   const successData = useAppSelector((state) => state.matching.successData);
   const failData = useAppSelector((state) => state.matching.failData);
@@ -153,6 +158,11 @@ function Main() {
         return;
       }
 
+      if (!user?.phone) {
+        setIsIsPhoneAuthModalOpen(true);
+        return;
+      }
+
       if (!isTest) {
         setIsTestModal(true);
         return;
@@ -213,6 +223,11 @@ function Main() {
       // 이미 매칭이 있다면? -> X
       if (!locationAllowed) {
         toast.error('위치 권한이 허용되어야 매칭을 시작할 수 있습니다.');
+        return;
+      }
+
+      if (!user?.phone) {
+        setIsIsPhoneAuthModalOpen(true);
         return;
       }
 
@@ -344,6 +359,29 @@ function Main() {
         onClose={() => setIsRecommendModalOpen(false)}
       >
         <RecommendModal userIds={recommededUser} status={status} />
+      </Modal>
+
+      <Modal
+        isOpen={isIsPhoneAuthModalOpen}
+        onClose={() => setIsIsPhoneAuthModalOpen(false)}
+      >
+        <IsPhoneAuthModal
+          onClose={() => {
+            setIsIsPhoneAuthModalOpen(false);
+            setIsPhoneAuthModalOpen(true);
+          }}
+        />
+      </Modal>
+
+      <Modal
+        isOpen={isPhoneAuthModalOpen}
+        onClose={() => setIsPhoneAuthModalOpen(false)}
+      >
+        <PhoneAuthModal
+          onClose={() => {
+            setIsPhoneAuthModalOpen(false);
+          }}
+        />
       </Modal>
     </>
   );

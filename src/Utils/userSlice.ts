@@ -24,6 +24,7 @@ export interface UserState {
   maxAgeGap: number;
   allowOppositeGender: boolean;
   maxMatchingDistance: number;
+  phone: string;
 }
 
 const initialState: UserState | null = null;

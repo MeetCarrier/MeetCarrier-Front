@@ -4,7 +4,7 @@ import SurveyRoom from '../components/SurveyRoom';
 
 import { FormatTimestamp } from '../Utils/FormatTimeStamp';
 
-import bell_default from '../assets/img/icons/NavIcon/bell_default.svg';
+import bell_default from '../assets/img/icons/NavIcon/bell_default.webp';
 import sample_profile from '../assets/img/sample/sample_profile.svg';
 
 // 나중에 백이랑 해서 .map 으로 컴포넌트 채우면 될 듯
