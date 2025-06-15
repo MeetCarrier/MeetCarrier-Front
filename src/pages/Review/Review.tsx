@@ -184,7 +184,7 @@ const ReviewPage = () => {
 
   const categories = [
     {
-      title: "대화",
+      title: "1. 대화",
       tags: [
         { text: "대화가 자연스럽고 편안해요", icon: "💡" },
         { text: "경청하는 태도가 좋아요", icon: "👂" },
@@ -195,7 +195,7 @@ const ReviewPage = () => {
       ],
     },
     {
-      title: "태도",
+      title: "2. 태도",
       tags: [
         { text: "다정해요", icon: "🌸" },
         { text: "배려를 잘해요", icon: "🍃" },
@@ -204,7 +204,7 @@ const ReviewPage = () => {
       ],
     },
     {
-      title: "관계",
+      title: "3. 관계",
       tags: [
         { text: "나와 잘 맞아요", icon: "🧩" },
         { text: "신뢰가 생겨요", icon: "✨" },
@@ -213,7 +213,7 @@ const ReviewPage = () => {
       ],
     },
     {
-      title: "기타",
+      title: "4. 기타",
       tags: [{ text: "선택할 키워드가 없어요", icon: "" }],
     },
   ];
@@ -280,10 +280,10 @@ const ReviewPage = () => {
             친구의 어떤 점이 좋았나요?{" "}
             <span className="text-gray-400">(1개~5개)</span>
           </p>
-          <Swiper spaceBetween={12} slidesPerView={1} className="mb-4">
+          <Swiper spaceBetween={0} slidesPerView={1} className="mb-4 h-[220px] w-full">
             {categories.map((category) => (
               <SwiperSlide key={category.title}>
-                <div>
+                <div className="h-full">
                   <p className="text-sm font-semibold mb-2 font-GanwonEduAll_Light">{category.title}</p>
                   <div className="flex flex-wrap gap-2">
                     {category.tags.map((tag) => (
