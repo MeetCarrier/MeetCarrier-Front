@@ -20,7 +20,7 @@ const Modal: FC<ModalProps> = ({
         <>
           {/* 모달 뒷배경 */}
           <motion.div
-            className={`absolute inset-0 z-40 bg-black/80`}
+            className={`absolute inset-0 z-40 bg-black/80 `}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -28,13 +28,13 @@ const Modal: FC<ModalProps> = ({
 
           {/* 모달 박스 */}
           <motion.div
-            className={`absolute z-50 inset-0 flex items-center justify-center`}
+            className={`absolute z-50 inset-0 flex items-center justify-center `}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
           >
             <div
-              className="bg-white w-[90%] max-w-[320px] rounded-2xl shadow-md p-6 relative"
+              className="bg-white w-[90%] max-w-[320px] rounded-2xl shadow-md p-6 relative font-GanwonEduAll_Light"
               onClick={(e) => e.stopPropagation()}
             >
               {!hideCloseButton && (

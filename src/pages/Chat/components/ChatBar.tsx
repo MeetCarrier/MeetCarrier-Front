@@ -171,8 +171,8 @@ function ChatBar({
     if (!file) return;
 
     // 파일 타입 검사: 이미지 파일인지 확인
-    if (!file.type.startsWith("image/")) {
-      toast.error("이미지 파일만 선택할 수 있습니다.");
+    if (!file.type.startsWith("image/") || file.type === "image/svg+xml") {
+      toast.error("JPG, PNG 등 이미지 파일만 선택할 수 있습니다. (SVG는 지원하지 않음)");
       if (e.target) {
         e.target.value = "";
       }
@@ -181,7 +181,7 @@ function ChatBar({
 
     try {
       const options = {
-        maxSizeMB: 1,
+        maxSizeMB: 4,
         maxWidthOrHeight: 1920,
         useWebWorker: true,
         initialQuality: 0.8,

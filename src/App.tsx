@@ -48,7 +48,7 @@ axios.interceptors.response.use(
 function App() {
   return (
     <>
-      <Toaster position="top-center" reverseOrder={false} />
+      <Toaster position="top-center" reverseOrder={false} containerClassName="font-GanwonEduAll_Light text-base" />
       <Provider store={store}>
         <BrowserRouter>
           <Routes>

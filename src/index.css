@@ -26,3 +26,11 @@
   --font-GanwonEduAll_Bold: GanwonEduAll_Bold;
   --font-GanwonEduAll_Light: GanwonEduAll_Light;
 }
+
+#toast-root,
+div[data-sonner-toast],           /* sonner 라이브러리 사용 시 */
+div[data-hot-toast],              /* react-hot-toast */
+.react-hot-toast,                 /* 추가 안전망 */
+.react-hot-toast__toast {         /* react-hot-toast 개별 토스트 */
+  font-family: 'GanwonEduAll_Light', 'Pretendard', 'Noto Sans KR', sans-serif !important;
+}

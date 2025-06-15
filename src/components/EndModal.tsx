@@ -57,15 +57,15 @@ const EndModal = ({ isOpen, onClose, onSubmit }: EndModalProps) => {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <div className="space-y-3">
-        <h2 className="text-lg font-semibold">만남 종료 사유를 알려주세요</h2>
+    <Modal  hideCloseButton={true} isOpen={isOpen} onClose={onClose}>
+      <div className="space-y-3 ">
+        <h2 className="text-lg font-semibold ">만남 종료 사유를 알려주세요</h2>
         <p className="text-sm text-gray-500">
           종료 시, 현재 대화 중인 친구와 더이상 이어 나갈 수 없으며 다시는 만날
           수 없어요.
         </p>
 
-        <div className="space-y-4 pt-2">
+        <div className="space-y-1 pt-2">
           {END_REASONS.map((reason) => (
             <label
               key={reason.code}
@@ -101,25 +101,25 @@ const EndModal = ({ isOpen, onClose, onSubmit }: EndModalProps) => {
 
         <textarea
           placeholder="서로에게 도움이 될 수 있도록 상기보다 이해가 남을 수 있는 솔직한 이유를 적어주세요."
-          className="w-full border rounded p-2 text-sm resize-none font-GanwonEduAll_Light bg-gray-100"
+          className="w-full border border-gray-200 rounded p-2 text-sm resize-none font-GanwonEduAll_Light bg-gray-100"
           rows={5}
           value={customReason}
           onChange={(e) => setCustomReason(e.target.value)}
         />
 
-        <div className="flex justify-end gap-2 pt-2">
+        <div className="text-sm flex justify-end gap-2 pt-2">
           <button
             onClick={onClose}
-            className="text-sm text-gray-600 hover:text-black px-3 py-1"
+            className=" text-gray-600 hover:text-black px-3 py-1"
           >
             취소
           </button>
           <button
             onClick={handleSubmit}
-            className={`text-sm px-4 py-1.5 rounded ${
+            className={` px-4 py-1.5 rounded ${
               selectedReasonCodes.length > 0
                 ? "bg-[#D1582C] text-white"
-                : "bg-[#F1C4B5] text-[#714E45]"
+                : "bg-[#F1C4B5] text-white"
             }`}
             disabled={selectedReasonCodes.length === 0}
           >

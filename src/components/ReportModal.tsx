@@ -121,7 +121,7 @@ const ReportModal = ({
 
           <textarea
             placeholder="자세한 내용을 입력해주세요."
-            className="w-full border rounded p-1 text-sm resize-none font-GanwonEduAll_Light"
+            className="w-full border border-gray-200  rounded p-1 text-sm resize-none font-GanwonEduAll_Light"
             rows={2}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
