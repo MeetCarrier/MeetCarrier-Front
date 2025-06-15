@@ -5,12 +5,20 @@ interface SecretaryModalProps {
     isOpen: boolean;
     onClose: () => void;
     hideCloseButton?: boolean;
+    messages: { sender: "user" | "bot"; text: string }[];
+    input: string;
+    setInput: (input: string) => void;
+    onSend: () => void;
 }
 
 const SecretaryModal: FC<SecretaryModalProps> = ({
     isOpen,
     onClose,
     hideCloseButton,
+    messages,
+    input,
+    setInput,
+    onSend,
 }) => {
     return (
         <AnimatePresence>
@@ -18,13 +26,13 @@ const SecretaryModal: FC<SecretaryModalProps> = ({
                 <>
                     {/* 모달 박스만 중앙에 띄움 */}
                     <motion.div
-                        className="fixed z-30 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center w-full"
+                        className="fixed z-30 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center w-[90%]"
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
                     >
                         <div
-                            className="bg-white w-[90%] max-w-[320px] rounded-2xl shadow-none p-6 relative font-GanwonEduAll_Light"
+                            className="bg-white w-full h-[470px] max-w-[320px] rounded-2xl shadow-none p-6 relative font-GanwonEduAll_Light"
                             style={{
                                 boxShadow: "0 8px 40px 0 rgba(0,0,0,0.38)",  // 그림자만
                             }}
@@ -47,21 +55,27 @@ const SecretaryModal: FC<SecretaryModalProps> = ({
                                         <p className="text-gray-500 text-sm">몇 초 이내로 답변을 받을 수 있어요</p>
                                     </div>
                                 </div>
-                                {/* 타임스탬프 */}
-                                <p className="text-center text-gray-400 text-sm my-4">오늘 08:30 PM</p>
-                                {/* 챗봇 메시지 */}
-                                <div className="flex justify-start mb-4">
-                                    <div className="bg-gray-200 text-gray-800 p-3 rounded-lg max-w-[80%]">
-                                        <p>안녕, 반가워~</p>
-                                        <p>난 채팅을 도와주는 너만의 비서 봇이야!</p>
-                                        <p>친구와 대화하면서 어렵거나 궁금하거나 어떤 것이든 편하게 물어봐!!</p>
-                                    </div>
-                                </div>
-                                {/* 사용자 메시지 */}
-                                <div className="flex justify-end mb-4">
-                                    <div className="bg-gray-800 text-white p-3 rounded-lg max-w-[80%]">
-                                        <p>같이 게임하자고 물어봤는데 1시간 째 답이 없어. 내가 뭐 실수한 걸까?</p>
-                                    </div>
+
+                                {/* 채팅 메시지 컨테이너 */}
+                                <div className="h-[calc(470px-120px)] overflow-y-auto pr-2">
+                                    {messages.map((message, index) => (
+                                        <div
+                                            key={index}
+                                            className={`flex ${
+                                                message.sender === "user" ? "justify-end" : "justify-start"
+                                            } mb-4`}
+                                        >
+                                            <div
+                                                className={`${
+                                                    message.sender === "user"
+                                                        ? "bg-gray-800 text-white"
+                                                        : "bg-gray-200 text-gray-800"
+                                                } p-3 rounded-lg max-w-[80%]`}
+                                            >
+                                                <p>{message.text}</p>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         </div>
