@@ -246,31 +246,8 @@ function ChatPage() {
           const newMessage: ChatMessage = JSON.parse(message.body);
           console.log("[파싱된 메시지]", newMessage);
 
-          // 내 메시지는 이미 로컬에서 띄웠으므로 무시
-          if (
-            Number(newMessage.sender) === Number(myId) &&
-            !newMessage.chatbot
-          ) {
-            setMessages((prev) => {
-              const index = prev.findIndex(
-                (msg) =>
-                  msg.sender === myId &&
-                  msg.sentAt === newMessage.sentAt &&
-                  msg.message === newMessage.message
-              );
-
-              if (index !== -1) {
-                const updated = [...prev];
-                updated[index] = newMessage; // 덮어쓰기
-                return updated;
-              }
-              return prev;
-            });
-
-            return; // 추가 X
-            console.log("[무시된 내 메시지]", newMessage);
-            return;
-          }
+          // 내 메시지는 이제 로컬에서 띄우지 않고 서버에서 수신되면 추가
+          // 기존의 내 메시지 무시 및 업데이트 로직 제거
 
           // 챗봇 메시지인 경우 chatbot 속성을 true로 설정
           if (newMessage.type === "CHATBOT") {
@@ -343,22 +320,6 @@ function ChatPage() {
         imageUrl: imageUrl || null,
       };
 
-      // 로컬에서 바로 화면에 띄울 메시지
-      const now = new Date();
-      const utcSentAt = new Date(now.getTime()).toISOString();
-      const localMessage: ChatMessage = {
-        type: imageUrl ? "IMAGE" : "TEXT",
-        message: message,
-        imageUrl: imageUrl || null,
-        sender: Number(myId),
-        sentAt: utcSentAt,
-        read: false,
-        visible: true,
-        chatbot: false,
-      };
-
-      console.log("[로컬 메시지 생성됨]", localMessage);
-
       try {
         // 서버에 전송
         stompClientRef.current.publish({
@@ -369,7 +330,6 @@ function ChatPage() {
           },
         });
         console.log("[메시지 전송 성공]");
-        setMessages((prev) => [...prev, localMessage]);
       } catch (error) {
         console.error("[메시지 전송 실패]", error);
       }
