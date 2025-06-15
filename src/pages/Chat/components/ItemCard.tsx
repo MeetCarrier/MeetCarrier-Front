@@ -1,6 +1,7 @@
 import React from "react";
 import stamp from "../../../assets/img/stamp.svg";
 import sampleProfile from "../../../assets/img/sample/sample_profile.svg";
+import largeNextButton from "../../../assets/img/icons/Login/l_btn_fill.svg";
 
 interface ItemCardProps {
   profileImageUrl?: string;
@@ -109,7 +110,7 @@ const ItemCard: React.FC<ItemCardProps> = ({
         {showReviewButton ? (
           <button
             onClick={onClickReview}
-            className="px-4 py-1 text-sm bg-[#D9C6B4] text-white font-GanwonEduAll_Light rounded"
+            className="px-4 py-1 w-full text-sm bg-[#D9C6B4] text-white font-GanwonEduAll_Light rounded"
           >
             후기작성
           </button>
@@ -121,13 +122,22 @@ const ItemCard: React.FC<ItemCardProps> = ({
       </div>
 
       {/* Survey_Cancelled 또는 Chat_Cancelled 상태일 때 하단에 후기 버튼 표시 */}
-      {(status === "Survey_Cancelled" || status === "Chat_Cancelled" || status === "Reviewing") && (
+      {(status === "Survey_Cancelled" ||
+        status === "Chat_Cancelled" ||
+        status === "Reviewing") && (
         <div className="mt-2 flex justify-end">
           <button
             onClick={onClickReview}
-            className="px-4 py-1 text-sm bg-[#D9C6B4] text-white font-GanwonEduAll_Light rounded"
+            className="relative w-full max-w-[400px] h-[40px] flex items-center justify-center overflow-hidden transition-opacity duration-200"
           >
-            후기작성
+            <img
+              src={largeNextButton}
+              alt="다음"
+              className="absolute inset-0 w-full h-full object-fill"
+            />
+            <span className="relative z-10 font-GanwonEduAll_Bold text-white">
+              다음
+            </span>
           </button>
         </div>
       )}

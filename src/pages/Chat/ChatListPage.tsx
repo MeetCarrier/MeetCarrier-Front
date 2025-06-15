@@ -308,7 +308,10 @@ function ChatListPage() {
                     onClick={() => {
                       if (cancelled.status === "Survey_Cancelled") {
                         handleSurveyClick(cancelled);
-                      } else if (cancelled.status === "Chat_Cancelled" || cancelled.status === "Reviewing") {
+                      } else if (
+                        cancelled.status === "Chat_Cancelled" ||
+                        cancelled.status === "Reviewing"
+                      ) {
                         handleChatClick(cancelled);
                       }
                     }}

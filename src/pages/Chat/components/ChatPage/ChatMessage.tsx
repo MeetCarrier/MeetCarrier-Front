@@ -97,12 +97,13 @@ export const ChatMessage = ({
             <div className="flex items-end gap-1 ml-[40px]">
               <div className="px-3 py-2 rounded-xl whitespace-pre-wrap font-GanwonEduAll_Light bg-[#666] text-white rounded-bl-none">
                 <span
-                  className={`text-base ${isHighlighted
-                    ? isCurrent
-                      ? "bg-[#EADCCB] text-[#333] font-bold"
-                      : "bg-[#EADCCB] text-[#333]"
-                    : ""
-                    }`}
+                  className={`text-base ${
+                    isHighlighted
+                      ? isCurrent
+                        ? "bg-[#EADCCB] text-[#333] font-bold"
+                        : "bg-[#EADCCB] text-[#333]"
+                      : ""
+                  }`}
                 >
                   {msg.message}
                 </span>
@@ -145,12 +146,13 @@ export const ChatMessage = ({
               )}
               <div className="px-3 py-2 rounded-xl whitespace-pre-wrap font-GanwonEduAll_Light bg-[#666] text-white rounded-br-none">
                 <span
-                  className={`text-base ${isHighlighted
-                    ? isCurrent
-                      ? "bg-[#EADCCB] text-[#333] font-bold"
-                      : "bg-[#EADCCB] text-[#333]"
-                    : ""
-                    }`}
+                  className={`text-base ${
+                    isHighlighted
+                      ? isCurrent
+                        ? "bg-[#EADCCB] text-[#333] font-bold"
+                        : "bg-[#EADCCB] text-[#333]"
+                      : ""
+                  }`}
                 >
                   {msg.message}
                 </span>
@@ -193,12 +195,14 @@ export const ChatMessage = ({
             </span>
           )}
           <div
-            className={`flex items-end gap-1 ${isMine ? "flex-row-reverse" : "flex-row"
-              }`}
+            className={`flex items-end gap-1 ${
+              isMine ? "flex-row-reverse" : "flex-row"
+            }`}
           >
             <div
-              className={`px-3 py-2 rounded-xl whitespace-pre-wrap font-GanwonEduAll_Light ${msg.imageUrl ? "" : getMessageStyle()
-                }`}
+              className={`px-3 py-2 rounded-xl whitespace-pre-wrap font-GanwonEduAll_Light ${
+                msg.imageUrl ? "" : getMessageStyle()
+              }`}
             >
               {msg.imageUrl ? (
                 <img
@@ -208,12 +212,13 @@ export const ChatMessage = ({
                 />
               ) : (
                 <span
-                  className={`text-base ${isHighlighted
-                    ? isCurrent
-                      ? "bg-[#EADCCB] text-[#333] font-bold"
-                      : "bg-[#EADCCB] text-[#333]"
-                    : ""
-                    }`}
+                  className={`text-base ${
+                    isHighlighted
+                      ? isCurrent
+                        ? "bg-[#EADCCB] text-[#333] font-bold"
+                        : "bg-[#EADCCB] text-[#333]"
+                      : ""
+                  }`}
                 >
                   {msg.message}
                 </span>
@@ -222,8 +227,11 @@ export const ChatMessage = ({
 
             {/* 시간 & 읽음 수 묶어서 위아래 정렬 */}
             <div
-              className={`flex flex-col gap-y-0.5 text-xs font-GanwonEduAll_Light leading-tight ${isMine ? "items-end mr-1 text-right" : "items-start ml-1 text-left"
-                }`}
+              className={`flex flex-col gap-y-0.5 text-xs font-GanwonEduAll_Light leading-tight ${
+                isMine
+                  ? "items-end mr-1 text-right"
+                  : "items-start ml-1 text-left"
+              }`}
             >
               {/* 읽음 수 - 항상 위에 */}
               {isMine && !msg.read && (
@@ -241,8 +249,6 @@ export const ChatMessage = ({
                 </span>
               )}
             </div>
-
-
           </div>
         </div>
       </div>
