@@ -121,7 +121,7 @@ const ItemCard: React.FC<ItemCardProps> = ({
       </div>
 
       {/* Survey_Cancelled 또는 Chat_Cancelled 상태일 때 하단에 후기 버튼 표시 */}
-      {(status === "Survey_Cancelled" || status === "Chat_Cancelled") && (
+      {(status === "Survey_Cancelled" || status === "Chat_Cancelled" || status === "Reviewing") && (
         <div className="mt-2 flex justify-end">
           <button
             onClick={onClickReview}
