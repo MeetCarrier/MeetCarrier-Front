@@ -16,9 +16,6 @@ const SecretaryModal: FC<SecretaryModalProps> = ({
     onClose,
     hideCloseButton,
     messages,
-    input,
-    setInput,
-    onSend,
 }) => {
     return (
         <AnimatePresence>

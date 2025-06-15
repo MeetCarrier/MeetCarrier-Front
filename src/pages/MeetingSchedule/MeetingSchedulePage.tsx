@@ -1,44 +1,18 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { setMeetingSchedule } from "../../Utils/meetingScheduleSlice";
 import axios from "axios";
 
 import NavBar from "../../components/NavBar";
 import back_arrow from "../../assets/img/icons/HobbyIcon/back_arrow.svg";
 
-interface LocationState {
-  senderName: string;
-  recipientName: string;
-  matchId: number;
-  receiverId: number;
-  roomId: number;
-  isModify?: boolean;
-  meetingId?: number;
-}
-
-interface MeetingInfo {
-  id: number;
-  nickname: string;
-  date: string;
-  location: string;
-  note: string;
-  status: "PENDING" | "ACCEPTED" | "REJECTED";
-}
-
 function MeetingSchedulePage() {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
   const {
-    senderName,
-    recipientName,
     matchId,
-    receiverId,
-    roomId,
     isModify,
     meetingId,
-  } = location.state as LocationState;
+  } = location.state;
 
   const [date, setDate] = useState("");
   const [locationText, setLocationText] = useState("");

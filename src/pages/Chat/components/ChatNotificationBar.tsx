@@ -1,5 +1,4 @@
 import type { FC } from "react";
-import { useNavigate } from "react-router-dom";
 import alarmClockIcon from "../../../assets/img/icons/ChatIcon/alarm_clock.svg";
 import alarmCalIcon from "../../../assets/img/icons/ChatIcon/alarm_cal.svg";
 import alarmLetterIcon from "../../../assets/img/icons/ChatIcon/alarm_letter.svg";
@@ -20,9 +19,6 @@ interface ChatNotificationBarProps {
   remainingTime: string;
   meetingDate?: Date;
   deactivationTime?: string;
-  onSendInvitation?: () => void;
-  onAcceptInvitation?: () => void;
-  onRejectInvitation?: () => void;
   onScheduleMeeting?: () => void;
   onModifySchedule?: () => void;
   matchId?: number;
@@ -38,16 +34,12 @@ const ChatNotificationBar: FC<ChatNotificationBarProps> = ({
   remainingTime,
   meetingDate,
   deactivationTime,
-  onSendInvitation,
-  onAcceptInvitation,
-  onRejectInvitation,
   onScheduleMeeting,
   onModifySchedule,
   matchId,
   myId,
   roomId,
 }) => {
-  const navigate = useNavigate();
   const [showMeetingInfoModal, setShowMeetingInfoModal] = useState(false);
 
   const getNotificationMessage = () => {

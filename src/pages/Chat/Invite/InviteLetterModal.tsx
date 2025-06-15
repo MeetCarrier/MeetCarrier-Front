@@ -1,9 +1,8 @@
 import type { FC } from "react";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../Utils/store";
-import axios from "axios";
 import Modal from "../../../components/Modal";
 import stamp from "../../../assets/img/stamp.svg";
 import letterBg from "../../../assets/img/icons/Letter/letter.svg";
@@ -15,13 +14,13 @@ interface InviteLetterModalProps {
   onClose: () => void;
   senderName: string;
   recipientName: string;
-  senderProfile?: string;
+  senderProfile: string;
   matchData: MatchData | null;
   roomInfo: RoomInfo | null;
   matchId: number;
   receiverId: number;
   roomId: number;
-  myId?: number;
+  myId: number | undefined;
   invitationStatus: {
     exists: boolean;
     isSender: boolean;
@@ -37,8 +36,6 @@ const InviteLetterModal: FC<InviteLetterModalProps> = ({
   senderName,
   recipientName,
   senderProfile = sampleProfile,
-  matchData,
-  roomInfo,
   matchId,
   receiverId,
   roomId,

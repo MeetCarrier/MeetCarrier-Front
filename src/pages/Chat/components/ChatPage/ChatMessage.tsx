@@ -9,7 +9,6 @@ interface ChatMessageProps {
   currentProfileUrl: string;
   koreanTime: Date;
   shouldDisplayTime: boolean;
-  isHighlighted: boolean;
   isCurrent: boolean;
   onProfileClick: (senderId: number) => void;
   messageRef: (el: HTMLDivElement | null) => void;
@@ -25,7 +24,6 @@ export const ChatMessage = ({
   currentProfileUrl,
   koreanTime,
   shouldDisplayTime,
-  isHighlighted,
   isCurrent,
   onProfileClick,
   messageRef,
@@ -82,7 +80,7 @@ export const ChatMessage = ({
     if (!searchQuery) return text;
     
     const parts = text.split(new RegExp(`(${searchQuery})`, 'gi'));
-    return parts.map((part, i) => 
+    return parts.map(part => 
       part.toLowerCase() === searchQuery.toLowerCase() 
         ? `<span class="bg-[#EADCCB] text-[#333] ${isCurrent ? 'font-bold' : ''}">${part}</span>` 
         : part

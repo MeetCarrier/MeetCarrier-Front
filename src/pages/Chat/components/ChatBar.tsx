@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from "react";
 import { Client } from "@stomp/stompjs";
 import axios from "axios";
 import toast from "react-hot-toast";
-import SockJS from "sockjs-client";
 
 import ReportModal from "../../../components/ReportModal";
 import EndModal from "../../../components/EndModal";
@@ -47,11 +46,11 @@ interface ChatBarProps {
   senderName: string;
   recipientName: string;
   senderProfile: string;
-  onInviteClick: () => void;
-  onSurveyClick: () => void;
   matchId: number;
   receiverId: number;
   roomId: number;
+  onInviteClick: () => void;
+  onSurveyClick: () => void;
   onEndMeeting: () => void;
   stompClient: Client | null;
   isRoomActive: boolean;
@@ -60,21 +59,17 @@ interface ChatBarProps {
   currentSearchIndex: number;
   onNavigateSearchResults: (direction: "prev" | "next") => void;
   searchQuery: string;
-  onSecretaryMessage?: (message: { sender: "bot" | "user"; text: string }) => void;
-  myId?: number;
+  myId: number | undefined;
 }
 
 function ChatBar({
   onEmojiToggle,
   emojiOpen,
   onSendMessage,
-  senderName = "나",
-  recipientName = "상대방",
-  senderProfile,
-  onSurveyClick,
-  matchId,
   receiverId,
   roomId,
+  onInviteClick,
+  onSurveyClick,
   onEndMeeting,
   stompClient: existingStompClient,
   isRoomActive,
@@ -83,9 +78,7 @@ function ChatBar({
   currentSearchIndex,
   onNavigateSearchResults,
   searchQuery,
-  onSecretaryMessage,
   myId,
-  onInviteClick,
 }: ChatBarProps) {
   const [message, setMessage] = useState("");
   const [showReportModal, setShowReportModal] = useState(false);
@@ -247,9 +240,6 @@ function ChatBar({
         });
 
         console.log("[챗봇 메시지 전송]", botMessageBody);
-        if (onSecretaryMessage) {
-          onSecretaryMessage({ sender: "bot", text: botInput.trim() });
-        }
         setBotInput("");
       } else {
         console.error("WebSocket 연결이 없습니다.");

@@ -123,59 +123,6 @@ const ChatNotificationHandler: React.FC<ChatNotificationHandlerProps> = ({
     return () => clearInterval(interval);
   }, [roomInfo?.deactivationTime]);
 
-  const handleSendInvitation = async () => {
-    try {
-      await axios.post(
-        `https://www.mannamdeliveries.link/api/invitation/${matchData?.id}`,
-        {},
-        {
-          withCredentials: true,
-        }
-      );
-      setNotificationType("PENDING");
-    } catch (error) {
-      console.error("[초대장 상태] 초대장 전송 실패:", error);
-      if (axios.isAxiosError(error) && error.response?.status === 403) {
-        console.error("[초대장 상태] 인증이 필요합니다.");
-      }
-    }
-  };
-
-  const handleAcceptInvitation = async () => {
-    try {
-      await axios.put(
-        `https://www.mannamdeliveries.link/api/invitation/${matchData?.id}/accept`,
-        {},
-        {
-          withCredentials: true,
-        }
-      );
-      setNotificationType("NEED_SCHEDULE");
-    } catch (error) {
-      console.error("[초대장 상태] 초대장 수락 실패:", error);
-      if (axios.isAxiosError(error) && error.response?.status === 403) {
-        console.error("[초대장 상태] 인증이 필요합니다.");
-      }
-    }
-  };
-
-  const handleRejectInvitation = async () => {
-    try {
-      await axios.put(
-        `https://www.mannamdeliveries.link/api/invitation/${matchData?.id}/reject`,
-        {},
-        {
-          withCredentials: true,
-        }
-      );
-      setNotificationType("NO_INVITATION");
-    } catch (error) {
-      console.error("[초대장 상태] 초대장 거절 실패:", error);
-      if (axios.isAxiosError(error) && error.response?.status === 403) {
-        console.error("[초대장 상태] 인증이 필요합니다.");
-      }
-    }
-  };
 
   const handleScheduleMeeting = () => {
     navigate("/meeting-schedule", {
@@ -212,9 +159,6 @@ const ChatNotificationHandler: React.FC<ChatNotificationHandlerProps> = ({
       remainingTime={remainingTime}
       meetingDate={meetingDate}
       deactivationTime={roomInfo?.deactivationTime}
-      onSendInvitation={handleSendInvitation}
-      onAcceptInvitation={handleAcceptInvitation}
-      onRejectInvitation={handleRejectInvitation}
       onScheduleMeeting={handleScheduleMeeting}
       onModifySchedule={handleModifySchedule}
       matchId={matchData?.id}

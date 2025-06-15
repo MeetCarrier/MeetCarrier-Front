@@ -49,6 +49,7 @@ function ProfilePage() {
     maxAgeGap: 0,
     allowOppositeGender: true,
     maxMatchingDistance: 0,
+    phone: ""
   };
 
   const displayUser = user || fallbackUser;

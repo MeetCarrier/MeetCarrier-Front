@@ -952,7 +952,7 @@ function SurveyPage() {
         isOpen={showReportModal}
         onClose={() => setShowReportModal(false)}
         reportType="User"
-        targetUser={
+        targetUserId={
           matchData?.user1Id === myId ? matchData?.user2Id : matchData?.user1Id
         }
         onSubmit={async (reasons, content) => {

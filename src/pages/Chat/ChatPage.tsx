@@ -9,7 +9,6 @@ import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "../../Utils/store";
 import { UserState } from "../../Utils/userSlice";
 import { fetchUser } from "../../Utils/userSlice";
-import ChatNotificationBar from "./components/ChatNotificationBar";
 import MeetingInfoModal from "../../components/MeetingInfoModal";
 import ProfileModal from "../../components/ProfileModal";
 import { fetchUserById, UserProfileData } from "../../Utils/api";
@@ -27,7 +26,6 @@ import {
 } from "./components/ChatPage/types";
 
 import toast from "react-hot-toast";
-import { NotificationType } from "./components/ChatNotificationBar";
 
 interface ChatMessage {
   type: string;
@@ -57,12 +55,6 @@ function ChatPage() {
   ) as UserState | null;
   const myId = user?.userId;
 
-  // Redux에서 만남 일정 정보 가져오기
-  const meetingSchedule = useSelector(
-    (state: RootState) => state.meetingSchedule
-  );
-
-  const [currentTime, setCurrentTime] = useState("");
   const [showMeetingInfoModal, setShowMeetingInfoModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserProfileData | null>(
@@ -70,23 +62,14 @@ function ChatPage() {
   );
 
   const [roomInfo, setRoomInfo] = useState<RoomInfo | null>(null);
-  const [remainingChatTime, setRemainingChatTime] = useState<string | null>(
-    null
-  );
   const [showSearchBar, setShowSearchBar] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [searchResults, setSearchResults] = useState<number[]>([]);
-  const [opponentInRoom, setOpponentInRoom] = useState(false);
   const [currentSearchIndex, setCurrentSearchIndex] = useState<number>(-1);
   const [showChatGuide, setShowChatGuide] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(
     state?.showInviteModal || false
   );
-  const [notificationType, setNotificationType] =
-    useState<NotificationType>("NO_INVITATION");
-  const [meetingDate, setMeetingDate] = useState<Date | undefined>();
-  const [remainingTime, setRemainingTime] = useState<string>("");
-  const [meetingId, setMeetingId] = useState<number | null>(null);
   const [loadingInvitation, setLoadingInvitation] = useState(false);
   const [invitationStatus, setInvitationStatus] = useState<{
     exists: boolean;
@@ -100,21 +83,6 @@ function ChatPage() {
     if (!shouldHide) {
       setShowChatGuide(true);
     }
-  }, []);
-
-  useEffect(() => {
-    const updateCurrentTime = () => {
-      const now = new Date();
-      const hours = String(now.getHours()).padStart(2, "0");
-      const minutes = String(now.getMinutes()).padStart(2, "0");
-      const seconds = String(now.getSeconds()).padStart(2, "0");
-      setCurrentTime(`${hours}시 ${minutes}분 ${seconds}초`);
-    };
-
-    updateCurrentTime();
-    const intervalId = setInterval(updateCurrentTime, 1000);
-
-    return () => clearInterval(intervalId);
   }, []);
 
   // 매치 데이터 가져오기
@@ -182,7 +150,6 @@ function ChatPage() {
         const diff = deactivationDate.getTime() - now.getTime();
 
         if (diff <= 0) {
-          setRemainingChatTime("00분 00초");
           setRoomInfo((prev) =>
             prev ? { ...prev, status: "Deactivate" } : null
           );
@@ -200,16 +167,13 @@ function ChatPage() {
           formattedTime += `${String(minutes).padStart(2, "0")}분 ${String(
             seconds
           ).padStart(2, "0")}초`;
-          setRemainingChatTime(formattedTime);
         }
       };
 
       calculateRemaining();
       timer = setInterval(calculateRemaining, 1000);
     } else if (roomInfo && roomInfo.status === "Deactivate") {
-      setRemainingChatTime("00분 00초");
     } else {
-      setRemainingChatTime(null);
     }
 
     return () => {
@@ -237,7 +201,6 @@ function ChatPage() {
       if (!invitation) {
         console.log("[초대장 상태 리패칭] 초대장 데이터 없음");
         setInvitationStatus(null);
-        setNotificationType("NO_INVITATION");
         return;
       }
 
@@ -263,40 +226,23 @@ function ChatPage() {
       setInvitationStatus(newStatus);
 
       if (invitation.status === "PENDING") {
-        setNotificationType("PENDING");
       } else if (invitation.status === "ACCEPTED") {
-        try {
-          const meetingResponse = await axios.get(
-            `https://www.mannamdeliveries.link/api/meetings/${matchData.id}`,
-            { withCredentials: true }
-          );
-          setMeetingDate(new Date(meetingResponse.data.date));
-          setMeetingId(meetingResponse.data.id);
-          setNotificationType("SCHEDULED");
-        } catch (error) {
-          if (axios.isAxiosError(error) && error.response?.status === 404) {
-            setNotificationType("NEED_SCHEDULE");
-          }
-        }
       }
     } catch (error) {
       console.error("[초대장 상태 리패칭] API 호출 실패:", error);
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 404) {
           setInvitationStatus(null);
-          setNotificationType("NO_INVITATION");
         } else {
           console.error(
             "[초대장 상태 리패칭] 서버 오류:",
             error.response?.status
           );
           setInvitationStatus(null);
-          setNotificationType("NO_INVITATION");
         }
       } else {
         console.error("[초대장 상태 리패칭] 네트워크 오류");
         setInvitationStatus(null);
-        setNotificationType("NO_INVITATION");
       }
     } finally {
       setLoadingInvitation(false);
@@ -319,18 +265,7 @@ function ChatPage() {
   useEffect(() => {
     const updateRemainingTime = () => {
       if (roomInfo?.deactivationTime) {
-        const now = new Date();
-        const deactivation = new Date(roomInfo.deactivationTime);
-        const diff = deactivation.getTime() - now.getTime();
 
-        if (diff > 0) {
-          const hours = Math.floor(diff / (1000 * 60 * 60));
-          const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-          const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-          setRemainingTime(`${hours}시간 ${minutes}분 ${seconds}초`);
-        } else {
-          setRemainingTime("00시간 00분 00초");
-        }
       }
     };
 
@@ -408,7 +343,6 @@ function ChatPage() {
         // 읽음 확인 구독
         stompClient.subscribe(`/topic/room/${state.roomId}/read`, (message) => {
           console.log("[읽음 확인 수신]", message);
-          setOpponentInRoom(true); // ✅ 상대방이 이 방에 있다는 증거
           setMessages((prev) =>
             prev.map((msg) =>
               msg.sender === myId ? { ...msg, read: true } : msg

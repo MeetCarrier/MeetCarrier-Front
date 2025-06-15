@@ -67,48 +67,12 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
   };
 
   const getDynamicHeight = () => {
-    let baseHeight = 232; // ChatHeader (50px) + ChatBar (82px) + padding/margins
-
-    if (showSearchBar) {
-      baseHeight = 132; // ChatHeader (50px) + SearchBar in ChatBar (82px)
-    } else if (emojiOpen) {
-      baseHeight = 82 + 200; // ChatBar (82px) + Expanded Menu (200px)
-    }
-    // Notification bar height is approximately 60px if shown
-    // Default: ChatHeader (50) + ChatNotificationHandler (approx 60) + ChatBar (82) = 192
-    // Let's re-evaluate the fixed height based on the image.
-    // The image shows notification bar takes up some space. If notification bar is not shown, message area should be taller.
-    // The current height is `calc(100% - 232px)`. Let's assume 232px accounts for header, notification bar and chatbar
-    // ChatHeader height is 50px.
-    // ChatBar height is 82px.
-    // If notification bar is shown, let's assume its height is about 60px (based on visual inspection and typical notification bar size).
-
-    // So, total height to subtract when all are present = 50 (header) + 60 (notification) + 82 (chatbar) = 192px.
-    // Original calc was 232px, so there's an extra 40px somewhere, maybe padding or margins.
-
-    // Let's refine based on the given behavior:
-    // When chatbar expands (emojiOpen), messages should shrink.
-    // When search bar is open (showSearchBar), notification bar is hidden.
-
-    // Default State (No Search, No Emoji Expansion, Notification Bar visible):
-    // ChatHeader: 50px
-    // Notification Bar: ~60px (Let's verify this from ChatNotificationBar.tsx)
-    // ChatBar (input area): 82px
-    // Total fixed elements at top/bottom: 50 + 60 + 82 = 192px. If we assume 232 is correct, then there's a 40px buffer.
-    // Let's stick with 232px as base for now, representing header + notification + chat bar.
     let heightToSubtract = 232;
 
     if (showSearchBar) {
-      // When search bar is open, notification bar is hidden, search results bar is 82px.
-      // ChatHeader (50px) + ChatBar(search results) (82px) + ChatBar(input) (82px) = 214px.
-      // Let's use 214px if search bar is active.
       heightToSubtract = 214;
     } else if (emojiOpen) {
-      // When emoji is open, notification bar is visible, chat bar expands by 200px.
-      // ChatHeader (50px) + Notification Bar (~60px) + ChatBar(input) (82px) + Emoji Menu (200px) = 392px.
-      // If base was 232, then additional 200 for emoji = 432px (if 232 already includes notification bar)
-      // Let's assume 232 includes notification bar as well as header and base chatbar.
-      heightToSubtract = 232 + 200; // Original 232 + emoji menu 200
+      heightToSubtract = 232 + 200;
     }
     return `calc(100% - ${heightToSubtract}px)`;
   };
@@ -226,7 +190,6 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
                 currentProfileUrl={currentProfileUrl}
                 koreanTime={koreanTime}
                 shouldDisplayTime={shouldDisplayTime}
-                isHighlighted={isHighlighted}
                 isCurrent={isCurrent}
                 onProfileClick={onProfileClick}
                 messageRef={(el) => {
