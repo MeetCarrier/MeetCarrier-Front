@@ -11,8 +11,8 @@ import { Client } from "@stomp/stompjs";
 import NavBar from "../../components/NavBar";
 import ItemCard from "./components/ItemCard";
 import ProfileModal from "../../components/ProfileModal";
-import bell_default from "../../assets/img/icons/NavIcon/bell_default.svg";
-import bell_alarm from "../../assets/img/icons/NavIcon/bell_alarm.svg";
+import bell_default from "../../assets/img/icons/NavIcon/bell_default.webp";
+import bell_alarm from "../../assets/img/icons/NavIcon/bell_alarm.webp";
 
 type MatchData = {
   id: number;

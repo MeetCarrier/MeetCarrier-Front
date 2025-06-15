@@ -1,15 +1,15 @@
-import NavBar from "../components/NavBar";
-import { FormatTimestamp } from "../Utils/FormatTimeStamp";
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import Modal from "../components/Modal";
-import RecFriendModal from "../Modal/RecFriendModal";
-import axios from "axios";
-import back_arrow from "../assets/img/icons/HobbyIcon/back_arrow.svg";
-import check_icon from "../assets/img/icons/MainPageIcon/check_icon.svg";
-import person_icon from "../assets/img/icons/Test/interpersonalskill_icon.svg";
-import delete_icon from "../assets/img/icons/Dairy/delete_icon.svg";
-import toast from "react-hot-toast";
+import NavBar from '../components/NavBar';
+import { FormatTimestamp } from '../Utils/FormatTimeStamp';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Modal from '../components/Modal';
+import RecFriendModal from '../Modal/RecFriendModal';
+import axios from 'axios';
+import back_arrow from '../assets/img/icons/HobbyIcon/back_arrow.svg';
+import check_icon from '../assets/img/icons/MainPageIcon/check_icon.svg';
+import person_icon from '../assets/img/icons/Test/interpersonalskill_icon.webp';
+import delete_icon from '../assets/img/icons/Dairy/delete_icon.webp';
+import toast from 'react-hot-toast';
 
 interface Notification {
   id: number;
@@ -30,36 +30,31 @@ function AlarmPage() {
   const [requestId, setRequestId] = useState<number | null>(null);
 
   // 삭제되면 안되는 알림
-  const nonDeletableTypes = new Set([
-    "Request",
-    "InvitationRequest",
-    "InvitationAccepted",
-    "InvitationRejected",
-  ]);
+  const nonDeletableTypes = new Set(['Request']);
 
   useEffect(() => {
     const fetchAlarms = async () => {
       try {
         const response = await axios.get(
-          "https://www.mannamdeliveries.link/api/notification",
+          'https://www.mannamdeliveries.link/api/notification',
           { withCredentials: true }
         );
         console.log(response.data);
         setAlarms(response.data);
       } catch (error) {
-        console.error("알림을 가져오지 못했어요", error);
+        console.error('알림을 가져오지 못했어요', error);
       }
     };
     fetchAlarms();
   }, []);
 
   const handleBackClick = () => {
-    navigate("/main");
+    navigate('/main');
   };
 
   // 리뷰
   const handleReview = () => {
-    navigate("/ChatList");
+    navigate('/ChatList');
   };
 
   // 신고에 대한 처리
@@ -69,18 +64,18 @@ function AlarmPage() {
 
   // 칭찬 일기
   const handleJournal = () => {
-    navigate("/Calendar");
+    navigate('/Calendar');
   };
 
   // 만남 일수? 알려주는 것
   const handleMeeting = () => {
-    navigate("/Calendar");
+    navigate('/Calendar');
   };
 
   // 추천 친구 매칭 요청
   const handleRequest = async (notification: Notification) => {
     if (notification.referenceId == null || notification.id == null) {
-      toast("유효하지 않은 친구 요청입니다.");
+      toast('유효하지 않은 친구 요청입니다.');
       return;
     }
     setRequestId(notification.referenceId);
@@ -91,13 +86,13 @@ function AlarmPage() {
 
   // 매칭이 성사되면 오는 것
   const handleMatch = () => {
-    navigate("/ChatList");
+    navigate('/ChatList');
   };
 
   // 만남 초대장 요청
   const handleInvitationRequest = (notification: Notification) => {
     if (!notification.referenceId) {
-      toast.error("유효하지 않은 초대장 요청입니다.");
+      toast.error('유효하지 않은 초대장 요청입니다.');
       return;
     }
     navigate(`/chat/${notification.referenceId}`, {
@@ -111,7 +106,7 @@ function AlarmPage() {
   // 상대가 만남 초대장 수락
   const handleInvitationAccepted = (notification: Notification) => {
     if (!notification.referenceId) {
-      toast.error("유효하지 않은 초대장 응답입니다.");
+      toast.error('유효하지 않은 초대장 응답입니다.');
       return;
     }
     navigate(`/chat/${notification.referenceId}`, {
@@ -124,7 +119,7 @@ function AlarmPage() {
   // 상대가 만남 초대장 거절
   const handleInvitationRejected = (notification: Notification) => {
     if (!notification.referenceId) {
-      toast.error("유효하지 않은 초대장 응답입니다.");
+      toast.error('유효하지 않은 초대장 응답입니다.');
       return;
     }
     navigate(`/chat/${notification.referenceId}`, {
@@ -137,7 +132,7 @@ function AlarmPage() {
   // 만남 확정
   const handleMeetingAccepted = (notification: Notification) => {
     if (!notification.referenceId) {
-      toast.error("유효하지 않은 만남 확정 알림입니다.");
+      toast.error('유효하지 않은 만남 확정 알림입니다.');
       return;
     }
     navigate(`/chat/${notification.referenceId}`, {
@@ -150,7 +145,7 @@ function AlarmPage() {
   // 일정 조정 요청
   const handleMeetingRejected = (notification: Notification) => {
     if (!notification.referenceId) {
-      toast.error("유효하지 않은 일정 조정 요청입니다.");
+      toast.error('유효하지 않은 일정 조정 요청입니다.');
       return;
     }
     navigate(`/chat/${notification.referenceId}`, {
@@ -168,8 +163,8 @@ function AlarmPage() {
       );
       setAlarms((prev) => prev.filter((a) => a.id !== notification.id));
     } catch (error) {
-      console.error("삭제 실패", error);
-      toast.error("삭제에 실패했어요.");
+      console.error('삭제 실패', error);
+      toast.error('삭제에 실패했어요.');
     }
   };
 
@@ -192,7 +187,7 @@ function AlarmPage() {
     if (handler) {
       handler(notification);
     } else {
-      console.warn("정의되지 않은 알림 타입:", notification.type);
+      console.warn('정의되지 않은 알림 타입:', notification.type);
     }
   };
 
@@ -214,9 +209,9 @@ function AlarmPage() {
         {[...alarms].reverse().map((alarm) => {
           const isDeletable = !nonDeletableTypes.has(alarm.type);
           const isPersonIcon = [
-            "InvitationRequest",
-            "InvitationAccepted",
-            "InvitationRejected",
+            'InvitationRequest',
+            'InvitationAccepted',
+            'InvitationRejected',
           ].includes(alarm.type);
 
           const icon = isPersonIcon ? person_icon : check_icon;

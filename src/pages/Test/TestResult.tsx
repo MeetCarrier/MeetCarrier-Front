@@ -3,9 +3,9 @@ import { ResponsiveRadar } from '@nivo/radar';
 import { useAppSelector } from '../../Utils/hooks';
 import NavBar from '../../components/NavBar';
 import back_arrow from '../../assets/img/icons/HobbyIcon/back_arrow.svg';
-import selfefficacy_icon from '../../assets/img/icons/Test/selfefficacy_icon.svg';
-import interpersonalskill_icon from '../../assets/img/icons/Test/interpersonalskill_icon.svg';
-import depression_icon from '../../assets/img/icons/Test/depression_icon.svg';
+import selfefficacy_icon from '../../assets/img/icons/Test/selfefficacy_icon.webp';
+import interpersonalskill_icon from '../../assets/img/icons/Test/interpersonalskill_icon.webp';
+import depression_icon from '../../assets/img/icons/Test/depression_icon.webp';
 import btn1 from '../../assets/img/button/btn1.webp';
 
 function TestResult() {

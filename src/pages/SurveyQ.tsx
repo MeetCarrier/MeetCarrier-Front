@@ -191,20 +191,28 @@ function SurveyQ() {
         )}
       </div>
 
-      <div className="flex flex-col mb-2 w-full">
-        <p className="text-xs font-GanwonEduAll_Light text-gray-500 pl-3">
+      <div className="flex flex-col mb-2 w-full px-3">
+        <p className="text-xs font-GanwonEduAll_Light text-gray-500 pl-1 mb-1">
           등록한 질문은 비대면 설문지 단계에서 사용돼요
         </p>
-        <input
-          type="text"
-          value={inputValue}
-          onChange={(e) => {
-            if (e.target.value.length <= 40) setInputValue(e.target.value);
-          }}
-          onKeyDown={(e) => e.key === 'Enter' && addQuestion()}
-          placeholder="예) 제일 잘맞는다고 생각하는 MBTI와 이유는?"
-          className="bg-white rounded-md text-xs mx-3 mt-2 px-3 py-2 border border-white placeholder:text-gray-400"
-        />
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            value={inputValue}
+            onChange={(e) => {
+              if (e.target.value.length <= 40) setInputValue(e.target.value);
+            }}
+            onKeyDown={(e) => e.key === 'Enter' && addQuestion()}
+            placeholder="예) 제일 잘맞는다고 생각하는 MBTI와 이유는?"
+            className="flex-1 bg-white rounded-md text-xs px-3 py-2 border border-white placeholder:text-gray-400"
+          />
+          <button
+            onClick={addQuestion}
+            className="whitespace-nowrap px-2 py-[6px] bg-red-400 text-white rounded text-xs font-GanwonEduAll_Bold"
+          >
+            등록
+          </button>
+        </div>
       </div>
     </>
   );
