@@ -200,7 +200,7 @@ function ProfileEditPage() {
       <div className="flex flex-col items-center w-full h-screen relative">
         {/* 상단 헤더 */}
 
-        <div className="flex flex-col items-center w-[90%] max-w-md pt-[100px] space-y-4">
+        <div className="flex flex-col items-center w-[90%] max-w-md pt-[100px] space-y-4 font-GanwonEduAll_Light">
           {/* 프로필 이미지 영역 */}
           <div
             className="relative w-[100px] h-[100px] mb-4 cursor-pointer"

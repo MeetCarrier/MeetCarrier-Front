@@ -161,7 +161,7 @@ function Calendar() {
   const [journals, setJournals] = useState<Journals[]>([]);
   const [upcomingMeeting, setUpcomingMeeting] = useState<{
     nickname: string;
-    dday: number;
+    dday: string | number;
   } | null>(null);
 
   useEffect(() => {
@@ -205,7 +205,11 @@ function Calendar() {
             ...m,
             dateObj: new Date(m.date),
           }))
-          .filter((m) => m.dateObj.getTime() >= now.getTime()); // ⬅️ 시간이 지난 약속 제거
+          .filter((m) => {
+            const meetingDate = new Date(m.dateObj.getFullYear(), m.dateObj.getMonth(), m.dateObj.getDate());
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            return meetingDate >= today;
+          }); // ⬅️ 시간이 지난 약속 제거 (당일 포함)
 
         if (validMeetings.length === 0) return;
 
@@ -230,7 +234,7 @@ function Calendar() {
 
         setUpcomingMeeting({
           nickname: nextMeeting.nickname,
-          dday: diffDays,
+          dday: diffDays === 0 ? 'D-Day' : `D-${diffDays}`,
         });
       } catch (error) {
         console.error('다가오는 약속 조회 실패:', error);
@@ -411,7 +415,7 @@ function Calendar() {
               다가오는 만남
             </p>
             <p className="text-[15px] font-GanwonEduAll_Bold text-[#333333]/50">
-              {upcomingMeeting ? `D-${upcomingMeeting.dday}` : 'D-?'}
+              {upcomingMeeting ? upcomingMeeting.dday : 'D-?'}
             </p>
             <p className="text-[15px] font-GanwonEduAll_Bold text-[#333333]/50">
               {upcomingMeeting?.nickname || '없음'}
