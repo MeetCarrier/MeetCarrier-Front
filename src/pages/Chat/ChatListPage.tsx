@@ -139,21 +139,35 @@ function ChatListPage() {
     };
   }, [myId]);
 
-  const chattingList = matchList.filter(
-    (m) =>
-      (m.status === "Chatting" || m.status === "Meeting") && m.agreed === true
-  );
-  const surveyList = matchList.filter(
-    (m) =>
-      m.status === "Surveying" ||
-      (m.status === "Chatting" && m.agreed === false)
-  );
-  const cancelledList = matchList.filter(
-    (m) =>
-      m.status === "Survey_Cancelled" ||
-      m.status === "Chat_Cancelled" ||
-      m.status === "Reviewing"
-  );
+  const sortByRecent = (a: MatchData, b: MatchData) => {
+    const timeA = a.lastMessageAt || a.matchedAt;
+    const timeB = b.lastMessageAt || b.matchedAt;
+    return new Date(timeB).getTime() - new Date(timeA).getTime(); // 최신순
+  };
+
+  const chattingList = matchList
+    .filter(
+      (m) =>
+        (m.status === "Chatting" || m.status === "Meeting") && m.agreed === true
+    )
+    .sort(sortByRecent);
+
+  const surveyList = matchList
+    .filter(
+      (m) =>
+        m.status === "Surveying" ||
+        (m.status === "Chatting" && m.agreed === false)
+    )
+    .sort(sortByRecent);
+
+  const cancelledList = matchList
+    .filter(
+      (m) =>
+        m.status === "Survey_Cancelled" ||
+        m.status === "Chat_Cancelled" ||
+        m.status === "Reviewing"
+    )
+    .sort(sortByRecent);
 
   const handleChatClick = (match: MatchData) => {
     navigate(`/chat/${match.roomId}`, {

@@ -930,7 +930,7 @@ function SurveyPage() {
             console.log("[설문 신고 전송]", reportBody);
 
             await axios.post(
-              "https://www.mannamdeliveries.link/api/reports",
+              "https://www.mannamdeliveries.link/api/reports/register",
               reportBody,
               { withCredentials: true }
             );
