@@ -459,18 +459,19 @@ function ChatBar({
           className="font-GanwonEduAll_Light w-full h-[82px] px-2 flex items-center"
           style={{ backgroundImage: `url(${navbg})` }}
         >
-          {!isBotMode && !isSearchMode && !isSecretaryMode && (
+          {!isBotMode && !isSearchMode && !isSecretaryMode && !emojiOpen && (
             <button
-              className="absolute right-2 z-20 w-11 h-11 rounded-full bg-[#743120] flex items-center justify-center shadow-lg duration-300 transition-all"
+              className="absolute right-2 z-20 w-11 h-11 rounded-full bg-[#743120] flex items-center justify-center shadow-lg transition-all duration-300 opacity-0 translate-y-2 animate-[fadeIn_0.3s_ease-in-out_0.3s_forwards] hover:bg-[#8a3d2d]"
+              style={{
+                bottom: emojiOpen ? 302 : 102,
+                transition: "opacity 0.1s ease-in-out, transform 0.1s ease-in-out",
+              }}
               onClick={() => {
                 setIsSecretaryMode(true);
                 setSecretaryInput("");
                 setSecretaryMessages([
                   { sender: "bot", text: "안녕, 반가워~ 난 채팅을 도와주는 너만의 비서 봇이야! 친구와 대화하면서 어렵거나 궁금하거나 어떤 것이든 편하게 물어봐!!" }
                 ]);
-              }}
-              style={{
-                bottom: emojiOpen ? 302 : 102,
               }}
             >
               <img src={secretaryIcon} alt="secretary" className="w-7 h-7" />
@@ -758,6 +759,25 @@ function ChatBar({
         setInput={setSecretaryInput}
         onSend={handleSecretaryMessage}
       />
+
+      <style>
+        {`
+          @keyframes fadeIn {
+            from {
+              opacity: 0;
+              transform: translateY(10px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+          .animate-fadeIn {
+            animation: fadeIn 0.1s ease-in-out forwards;
+            animation-delay: 0.1s;
+          }
+        `}
+      </style>
     </>
   );
 }
