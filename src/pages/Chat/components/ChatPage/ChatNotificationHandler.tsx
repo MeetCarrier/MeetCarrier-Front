@@ -211,11 +211,15 @@ const ChatNotificationHandler: React.FC<ChatNotificationHandlerProps> = ({
       recipientName={otherNickname}
       remainingTime={remainingTime}
       meetingDate={meetingDate}
+      deactivationTime={roomInfo?.deactivationTime}
       onSendInvitation={handleSendInvitation}
       onAcceptInvitation={handleAcceptInvitation}
       onRejectInvitation={handleRejectInvitation}
       onScheduleMeeting={handleScheduleMeeting}
       onModifySchedule={handleModifySchedule}
+      matchId={matchData?.id}
+      myId={myId}
+      roomId={roomInfo?.id}
     />
   );
 };

@@ -55,7 +55,7 @@ function ChatListPage() {
 
     const fetchMatches = async () => {
       try {
-        console.log("[매치 불러오기] API 호출 시작...");
+        //console.log("[매치 불러오기] API 호출 시작...");
         const res = await fetch(
           "https://www.mannamdeliveries.link/api/matches",
           {
@@ -86,7 +86,7 @@ function ChatListPage() {
   useEffect(() => {
     if (!myId) return;
 
-    console.log("[웹소켓] 연결 시작...");
+    //console.log("[웹소켓] 연결 시작...");
     const socket = new SockJS(
       "https://www.mannamdeliveries.link/api/connection"
     );
@@ -122,9 +122,6 @@ function ChatListPage() {
       },
       onWebSocketError: (event) => {
         console.error("[웹소켓] 에러:", event);
-      },
-      debug: (str) => {
-        console.log("[웹소켓] 디버그:", str);
       },
     });
 
@@ -186,8 +183,8 @@ function ChatListPage() {
   };
 
   const handleReviewClick = (match: MatchData) => {
-    // TODO: 후기 작성 페이지로 이동
-    console.log("후기 작성:", match);
+    const opponentId = match.user1Id === myId ? match.user2Id : match.user1Id;
+    navigate(`/review/${opponentId}`);
   };
 
   const handleProfileClick = async (opponentId: number) => {
@@ -319,6 +316,7 @@ function ChatListPage() {
                     status={cancelled.status}
                     onProfileClick={() => handleProfileClick(opponentId)}
                     onClickReview={() => handleReviewClick(cancelled)}
+                    userId={opponentId.toString()}
                     onClick={() => {
                       if (cancelled.status === "Survey_Cancelled") {
                         handleSurveyClick(cancelled);

@@ -161,7 +161,7 @@ function InviteWritePage() {
 
       {/* 초대장 본문 */}
       <div
-        className="relative w-full max-w-[350px] h-[480px] bg-contain bg-no-repeat bg-center p-6 bottom-10"
+        className="relative w-full max-w-[350px] h-[480px] bg-contain bg-no-repeat bg-center p-6 bottom-10 font-GanwonEduAll_Light"
         style={{ backgroundImage: `url(${letterBg})` }}
       >
         {/* To */}
@@ -201,7 +201,7 @@ function InviteWritePage() {
                 <img
                   src={largeNextButton}
                   alt="대면 초대장 보내기"
-                  className="absolute inset-0 w-full h-full object-fill"
+                  className="absolute inset-0 w-full h-full object-fill px-4"
                 />
                 <span className="relative z-10 font-GanwonEduAll_Bold text-[#333]">
                   대면 초대장 보내기

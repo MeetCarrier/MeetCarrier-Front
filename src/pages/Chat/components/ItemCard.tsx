@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import stamp from "../../../assets/img/stamp.svg";
 import sampleProfile from "../../../assets/img/sample/sample_profile.svg";
 import largeNextButton from "../../../assets/img/icons/Login/l_btn_fill.svg";
@@ -14,6 +15,7 @@ interface ItemCardProps {
   status?: string; // 추가
   onClick?: () => void; // 추가
   unreadCount?: number; // 안 읽은 메시지 개수
+  userId?: string; // 추가
 }
 
 function formatMessageTime(messageDateStr: string): string {
@@ -53,15 +55,26 @@ const ItemCard: React.FC<ItemCardProps> = ({
   status,
   onClick,
   unreadCount = 0,
+  userId,
 }) => {
+  const navigate = useNavigate();
   const actualImageUrl = profileImageUrl || sampleProfile;
 
-  console.log("[ItemCard] unreadCount:", unreadCount);
+  //console.log("[ItemCard] unreadCount:", unreadCount);
 
   const handleProfileClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // 이벤트 버블링 방지
     if (onProfileClick) {
       onProfileClick();
+    }
+  };
+
+  const handleReviewClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onClickReview) {
+      onClickReview();
+    } else if (userId) {
+      navigate(`/review/${userId}`);
     }
   };
 
@@ -109,7 +122,7 @@ const ItemCard: React.FC<ItemCardProps> = ({
         {/* 오른쪽: 시간 또는 버튼 */}
         {showReviewButton ? (
           <button
-            onClick={onClickReview}
+            onClick={handleReviewClick}
             className="px-4 py-1 w-full text-sm bg-[#D9C6B4] text-white font-GanwonEduAll_Light rounded"
           >
             후기작성
@@ -125,18 +138,18 @@ const ItemCard: React.FC<ItemCardProps> = ({
       {(status === "Survey_Cancelled" ||
         status === "Chat_Cancelled" ||
         status === "Reviewing") && (
-        <div className="mt-2 flex justify-end">
+        <div className="mt-2 flex justify-center">
           <button
-            onClick={onClickReview}
+            onClick={handleReviewClick}
             className="relative w-full max-w-[400px] h-[40px] flex items-center justify-center overflow-hidden transition-opacity duration-200"
           >
             <img
               src={largeNextButton}
-              alt="다음"
+              alt="후기작성"
               className="absolute inset-0 w-full h-full object-fill"
             />
-            <span className="relative z-10 font-GanwonEduAll_Bold text-white">
-              다음
+            <span className="relative z-10 font-GanwonEduAll_Light font-bold text-white">
+              후기작성
             </span>
           </button>
         </div>

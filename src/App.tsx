@@ -86,7 +86,7 @@ function App() {
                 path="meeting-schedule"
                 element={<MeetingSchedulePage />}
               />
-              <Route path="review" element={<ReviewPage />} />
+              <Route path="review/:userId" element={<ReviewPage />} />
               <Route path="Profile/edit" element={<ProfileEditPage />} />
               <Route path="PsychTestResult" element={<PsychTestResult />} />
 

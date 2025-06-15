@@ -186,7 +186,7 @@ function MeetingSchedulePage() {
                 min={formatDate(today)}
                 max={formatDate(oneMonthLater)}
                 onChange={(e) => setDate(e.target.value)}
-                className={`shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline ${
+                className={`shadow appearance-none border  rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline border-gray-200 ${
                   date
                     ? "text-gray-800 font-semibold"
                     : "text-gray-400 font-normal"
@@ -210,7 +210,7 @@ function MeetingSchedulePage() {
                 value={locationText}
                 onChange={(e) => setLocationText(e.target.value)}
                 placeholder="예: 강남역 10번 출구 스벅"
-                className={`shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline ${
+                className={`shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline border-gray-200 ${
                   locationText
                     ? "text-gray-800 font-semibold"
                     : "text-gray-400 font-normal italic"
@@ -231,7 +231,7 @@ function MeetingSchedulePage() {
                 onChange={(e) => setMemo(e.target.value)}
                 placeholder="추가적인 메모 (예: 늦으면 미리 연락주세요)"
                 rows={4}
-                className={`shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline ${
+                className={`shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline border-gray-200 ${
                   memo
                     ? "text-gray-800 font-semibold"
                     : "text-gray-400 font-normal italic"
