@@ -84,14 +84,7 @@ const ChatNotificationBar: FC<ChatNotificationBarProps> = ({
       case "PENDING":
         return;
       case "NEED_SCHEDULE":
-        return (
-          <button
-            onClick={onScheduleMeeting}
-            className="mt-2 bg-[#D45A4B] text-white px-4 py-2 rounded-md hover:bg-[#bf4a3c]"
-          >
-            일정 등록하기
-          </button>
-        );
+        return null;
       case "SCHEDULED":
         return (
           <button
@@ -106,9 +99,24 @@ const ChatNotificationBar: FC<ChatNotificationBarProps> = ({
     }
   };
 
+  const handleClick = () => {
+    if (type === "NEED_SCHEDULE" && onScheduleMeeting) {
+      onScheduleMeeting();
+    } else if (type === "SCHEDULED" && onModifySchedule) {
+      onModifySchedule();
+    }
+  };
+
   return (
     <div className="absolute top-[100px] px-2 mx-auto w-full z-10 text-[#333] font-GanwonEduAll_Light text-l">
-      <div className="flex flex-col py-3 bg-[#D9CDBF] rounded-lg shadow-md">
+      <div
+        className={`flex flex-col py-3 bg-[#D9CDBF] rounded-lg shadow-md ${
+          type === "NEED_SCHEDULE" || type === "SCHEDULED"
+            ? "cursor-pointer hover:bg-[#d3c5b3]"
+            : ""
+        }`}
+        onClick={handleClick}
+      >
         <div className="flex items-center justify-start">
           <img
             src={getNotificationIcon()}
@@ -129,7 +137,6 @@ const ChatNotificationBar: FC<ChatNotificationBarProps> = ({
             채팅 활성화 시간: {remainingTime}
           </p>
         </div>
-        {renderActionButtons()}
       </div>
     </div>
   );

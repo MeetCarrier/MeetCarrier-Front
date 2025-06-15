@@ -125,28 +125,55 @@ const ChatNotificationHandler: React.FC<ChatNotificationHandlerProps> = ({
 
   const handleSendInvitation = async () => {
     try {
-      await axios.post(`/api/invitation/${matchData?.id}`);
+      await axios.post(
+        `https://www.mannamdeliveries.link/api/invitation/${matchData?.id}`,
+        {},
+        {
+          withCredentials: true,
+        }
+      );
       setNotificationType("PENDING");
     } catch (error) {
-      console.error("초대장 전송 실패:", error);
+      console.error("[초대장 상태] 초대장 전송 실패:", error);
+      if (axios.isAxiosError(error) && error.response?.status === 403) {
+        console.error("[초대장 상태] 인증이 필요합니다.");
+      }
     }
   };
 
   const handleAcceptInvitation = async () => {
     try {
-      await axios.put(`/api/invitation/${matchData?.id}/accept`);
+      await axios.put(
+        `https://www.mannamdeliveries.link/api/invitation/${matchData?.id}/accept`,
+        {},
+        {
+          withCredentials: true,
+        }
+      );
       setNotificationType("NEED_SCHEDULE");
     } catch (error) {
-      console.error("초대장 수락 실패:", error);
+      console.error("[초대장 상태] 초대장 수락 실패:", error);
+      if (axios.isAxiosError(error) && error.response?.status === 403) {
+        console.error("[초대장 상태] 인증이 필요합니다.");
+      }
     }
   };
 
   const handleRejectInvitation = async () => {
     try {
-      await axios.put(`/api/invitation/${matchData?.id}/reject`);
+      await axios.put(
+        `https://www.mannamdeliveries.link/api/invitation/${matchData?.id}/reject`,
+        {},
+        {
+          withCredentials: true,
+        }
+      );
       setNotificationType("NO_INVITATION");
     } catch (error) {
-      console.error("초대장 거절 실패:", error);
+      console.error("[초대장 상태] 초대장 거절 실패:", error);
+      if (axios.isAxiosError(error) && error.response?.status === 403) {
+        console.error("[초대장 상태] 인증이 필요합니다.");
+      }
     }
   };
 

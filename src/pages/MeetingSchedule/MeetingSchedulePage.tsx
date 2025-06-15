@@ -66,13 +66,16 @@ function MeetingSchedulePage() {
   // 기존 일정 조회
   useEffect(() => {
     const fetchMeetingInfo = async () => {
-      if (!isModify || !meetingId) return;
+      if (!isModify || !matchId) return;
 
       try {
         console.log("[MeetingSchedulePage] 만남 일정 조회 요청:", {
-          meetingId,
+          matchId,
         });
-        const response = await axios.get(`/api/meetings/${meetingId}`);
+        const response = await axios.get(
+          `https://www.mannamdeliveries.link/api/meetings/${matchId}`,
+          { withCredentials: true }
+        );
         console.log(
           "[MeetingSchedulePage] 만남 일정 조회 응답:",
           response.data
@@ -88,7 +91,7 @@ function MeetingSchedulePage() {
     };
 
     fetchMeetingInfo();
-  }, [isModify, meetingId]);
+  }, [isModify, matchId]);
 
   const handleSubmit = async () => {
     if (!isFormValid) return;
@@ -106,7 +109,13 @@ function MeetingSchedulePage() {
           meetingId,
           ...meetingData,
         });
-        await axios.patch(`/api/meetings/${meetingId}`, meetingData);
+        await axios.patch(
+          `https://www.mannamdeliveries.link/api/meetings/${meetingId}`,
+          meetingData,
+          {
+            withCredentials: true,
+          }
+        );
         console.log("[MeetingSchedulePage] 만남 일정 수정 완료");
       } else {
         // 새 일정 생성
@@ -114,22 +123,34 @@ function MeetingSchedulePage() {
           matchId,
           ...meetingData,
         });
-        await axios.post(`/api/meetings/${matchId}`, meetingData);
+        await axios.post(
+          `https://www.mannamdeliveries.link/api/meetings/${matchId}`,
+          meetingData,
+          {
+            withCredentials: true,
+          }
+        );
         console.log("[MeetingSchedulePage] 만남 일정 생성 완료");
       }
 
       // 채팅방으로 돌아가기
-      navigate(`/chat/${roomId}`, {
-        state: {
-          senderName,
-          recipientName,
-          matchId,
-          receiverId,
-          roomId,
-        },
-      });
+      navigate(-1);
     } catch (error) {
       console.error("[MeetingSchedulePage] 만남 일정 등록/수정 실패:", error);
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 403) {
+          console.error(
+            "[MeetingSchedulePage] 인증이 필요합니다. 로그인 페이지로 이동합니다."
+          );
+          navigate("/Login");
+        } else {
+          console.error("[MeetingSchedulePage] 에러 상세:", {
+            status: error.response?.status,
+            data: error.response?.data,
+            config: error.config,
+          });
+        }
+      }
     }
   };
 
