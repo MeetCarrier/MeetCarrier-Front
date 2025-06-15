@@ -19,6 +19,12 @@ interface InviteLetterModalProps {
   receiverId: number;
   roomId: number;
   myId?: number;
+  invitationStatus: {
+    exists: boolean;
+    isSender: boolean;
+    isReceiver: boolean;
+  } | null;
+  loadingInvitation: boolean;
 }
 
 const InviteLetterModal: FC<InviteLetterModalProps> = ({
@@ -31,81 +37,35 @@ const InviteLetterModal: FC<InviteLetterModalProps> = ({
   receiverId,
   roomId,
   myId: propMyId,
+  invitationStatus,
+  loadingInvitation,
 }) => {
   const navigate = useNavigate();
-  const user = useSelector((state: RootState) => state.user) as { userId?: number } | null;
+  const user = useSelector((state: RootState) => state.user) as {
+    userId?: number;
+  } | null;
   const myId = propMyId || user?.userId;
 
-  const [invitationExists, setInvitationExists] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [isSenderOfExistingInvitation, setIsSenderOfExistingInvitation] =
-    useState(false);
-  const [isReceiverOfExistingInvitation, setIsReceiverOfExistingInvitation] =
-    useState(false);
-
-  useEffect(() => {
-    const checkInvitation = async () => {
-      try {
-        const res = await axios.get(
-          `https://www.mannamdeliveries.link/api/invitation/${matchId}`,
-          { withCredentials: true }
-        );
-        if (res.status === 200) {
-          setInvitationExists(true);
-          console.log("초대장 조회 코드:", res.status);
-          console.log("초대장 조회 응답:", res.data);
-
-          const { senderId, receiverId } = res.data;
-          if (myId === senderId) {
-            setIsSenderOfExistingInvitation(true);
-          } else if (myId === receiverId) {
-            setIsReceiverOfExistingInvitation(true);
-          }
-        }
-      } catch (error: any) {
-        if (error.response?.status === 404) {
-          setInvitationExists(false);
-          setIsSenderOfExistingInvitation(false);
-          setIsReceiverOfExistingInvitation(false);
-        } else {
-          console.error("초대장 확인 실패:", error);
-        }
-      } finally {
-        setLoading(false);
-      }
+  const handleSubmit = () => {
+    const { exists, isSender, isReceiver } = invitationStatus || {
+      exists: false,
+      isSender: false,
+      isReceiver: false,
     };
 
-    if (isOpen) checkInvitation();
-  }, [isOpen, matchId, myId]);
+    if (exists && !isReceiver) return;
 
-  const handleSubmit = () => {
-    if (invitationExists && !isReceiverOfExistingInvitation) return;
-
-    if (isReceiverOfExistingInvitation) {
-      navigate("/invite-write", {
-        state: {
-          senderName,
-          recipientName,
-          senderProfile,
-          matchId,
-          receiverId,
-          roomId,
-          myId,
-        },
-      });
-    } else {
-      navigate("/invite-write", {
-        state: {
-          senderName,
-          recipientName,
-          senderProfile,
-          matchId,
-          receiverId,
-          roomId,
-          myId,
-        },
-      });
-    }
+    navigate("/invite-write", {
+      state: {
+        senderName,
+        recipientName,
+        senderProfile,
+        matchId,
+        receiverId,
+        roomId,
+        myId,
+      },
+    });
     onClose();
   };
 
@@ -147,18 +107,18 @@ const InviteLetterModal: FC<InviteLetterModalProps> = ({
           </div>
         </div>
 
-        {loading ? (
+        {loadingInvitation ? (
           <p className="text-sm text-gray-600">
             초대장 정보를 확인 중입니다...
           </p>
         ) : (
           <>
-            {invitationExists ? (
-              isSenderOfExistingInvitation ? (
+            {invitationStatus?.exists ? (
+              invitationStatus.isSender ? (
                 <p className="text-sm text-red-500 mt-2">
                   이미 초대장을 보냈어요! 기다리세요!
                 </p>
-              ) : isReceiverOfExistingInvitation ? (
+              ) : invitationStatus.isReceiver ? (
                 <p className="text-sm text-gray-600 mt-2">
                   초대장이 도착했어요!
                 </p>
@@ -186,14 +146,14 @@ const InviteLetterModal: FC<InviteLetterModalProps> = ({
           </button>
           <button
             className={`flex-1 py-2 rounded-md transition ${
-              invitationExists && !isReceiverOfExistingInvitation
+              invitationStatus?.exists && !invitationStatus?.isReceiver
                 ? "bg-gray-300 text-white cursor-not-allowed"
                 : "bg-[#D45A4B] text-white hover:bg-[#bf4a3c]"
             }`}
             onClick={handleSubmit}
-            disabled={invitationExists && !isReceiverOfExistingInvitation}
+            disabled={invitationStatus?.exists && !invitationStatus?.isReceiver}
           >
-            {isReceiverOfExistingInvitation ? "초대장 보러가기" : "초대장쓰기"}
+            {invitationStatus?.isReceiver ? "초대장 보러가기" : "초대장쓰기"}
           </button>
         </div>
       </div>

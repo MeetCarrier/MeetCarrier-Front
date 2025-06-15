@@ -81,7 +81,7 @@ export const ChatMessage = ({
     return (
       <div ref={messageRef}>
         <div className="flex justify-start mb-1">
-          <div className="flex flex-col items-start max-w-[70%]">
+          <div className="flex flex-col items-start max-w-[95%]">
             <div className="flex items-center mb-1">
               <div className="w-8 mr-2">
                 <img
@@ -131,7 +131,7 @@ export const ChatMessage = ({
     return (
       <div ref={messageRef}>
         <div className="flex justify-end mb-1">
-          <div className="flex flex-col items-end max-w-[70%]">
+          <div className="flex flex-col items-end max-w-[95%]">
             <div className="flex items-end gap-1">
               {shouldDisplayTime && (
                 <div className="flex flex-col gap-y-0.5 text-xs text-gray-400 leading-tight font-GanwonEduAll_Light items-end mr-1">
@@ -146,7 +146,7 @@ export const ChatMessage = ({
               )}
               <div className="px-3 py-2 rounded-xl whitespace-pre-wrap font-GanwonEduAll_Light bg-[#666] text-white rounded-br-none">
                 <span
-                  className={`text-base ${
+                  className={`text-base font-medium ${
                     isHighlighted
                       ? isCurrent
                         ? "bg-[#EADCCB] text-[#333] font-bold"
@@ -188,7 +188,7 @@ export const ChatMessage = ({
           !isMine && <div className="w-8 mr-2 " />
         )}
 
-        <div className={`max-w-[70%] flex flex-col`}>
+        <div className={`max-w-[95%] flex flex-col`}>
           {!isMine && !isPrevSameSender && (
             <span className="text-base text-gray-700 mb-1 font-GanwonEduAll_Light">
               {getDisplayName()}
@@ -212,7 +212,7 @@ export const ChatMessage = ({
                 />
               ) : (
                 <span
-                  className={`text-base ${
+                  className={`text-lg font-medium ${
                     isHighlighted
                       ? isCurrent
                         ? "bg-[#EADCCB] text-[#333] font-bold"
@@ -235,12 +235,12 @@ export const ChatMessage = ({
             >
               {/* 읽음 수 - 항상 위에 */}
               {isMine && !msg.read && (
-                <span className="text-[11px] text-[#BD4B2C]">1</span>
+                <span className="text-[15px] text-[#BD4B2C]">1</span>
               )}
 
               {/* 시간 - 조건부 표시 */}
               {shouldDisplayTime && (
-                <span className="text-gray-400 whitespace-nowrap">
+                <span className="text-gray-400 whitespace-nowrap text-[15px]">
                   {koreanTime.toLocaleTimeString("ko-KR", {
                     hour: "2-digit",
                     minute: "2-digit",

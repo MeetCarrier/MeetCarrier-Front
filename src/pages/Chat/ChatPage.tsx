@@ -17,6 +17,8 @@ import InviteLetterModal from "./Invite/InviteLetterModal";
 import { ChatMessage } from "./components/ChatPage/ChatMessage";
 import { ChatSearch } from "./components/ChatPage/ChatSearch";
 import { ChatHeader } from "./components/ChatPage/ChatHeader";
+import ChatGuideModal from "./components/ChatPage/ChatGuideModal";
+
 import {
   LocationState,
   MatchData,
@@ -74,11 +76,24 @@ function ChatPage() {
   const [searchResults, setSearchResults] = useState<number[]>([]);
   const [opponentInRoom, setOpponentInRoom] = useState(false);
   const [currentSearchIndex, setCurrentSearchIndex] = useState<number>(-1);
-
+  const [showChatGuide, setShowChatGuide] = useState(false);
+  useEffect(() => {
+    const shouldHide = localStorage.getItem("hideChatGuideModal") === "true";
+    if (!shouldHide) {
+      setShowChatGuide(true);
+    }
+  }, []);
   // 알림으로부터 전달받은 초대장 모달 표시 여부
   const [showInviteModal, setShowInviteModal] = useState(
     state?.showInviteModal || false
   );
+  const [invitationStatus, setInvitationStatus] = useState<{
+    exists: boolean;
+    isSender: boolean;
+    isReceiver: boolean;
+    status?: "PENDING" | "ACCEPTED" | "REJECTED";
+  } | null>(null);
+  const [loadingInvitation, setLoadingInvitation] = useState(false);
 
   useEffect(() => {
     const updateCurrentTime = () => {
@@ -195,6 +210,52 @@ function ChatPage() {
     };
   }, [roomInfo]);
 
+  // 초대장 정보 가져오기
+  useEffect(() => {
+    const fetchInvitationStatus = async () => {
+      if (!matchData?.id || !myId) {
+        setInvitationStatus(null);
+        return;
+      }
+      setLoadingInvitation(true);
+
+      try {
+        const res = await axios.get(
+          `https://www.mannamdeliveries.link/api/invitation/${matchData.id}`,
+          { withCredentials: true }
+        );
+        if (res.status === 200) {
+          const { senderId, receiverId, status, ...rest } = res.data;
+
+          console.log("[초대장 조회 성공] 전체 응답:", res.data);
+
+          setInvitationStatus({
+            exists: true,
+            isSender: myId === senderId,
+            isReceiver: myId === receiverId,
+            status: status,
+          });
+        }
+      } catch (error: any) {
+        if (error.response?.status === 404) {
+          setInvitationStatus({
+            exists: false,
+            isSender: false,
+            isReceiver: false,
+            status: undefined,
+          });
+        } else {
+          console.error("초대장 확인 실패:", error);
+          setInvitationStatus(null);
+        }
+      } finally {
+        setLoadingInvitation(false);
+      }
+    };
+
+    fetchInvitationStatus();
+  }, [matchData?.id, myId]);
+
   useEffect(() => {
     // 사용자 정보 가져오기
     dispatch(fetchUser());
@@ -246,8 +307,8 @@ function ChatPage() {
           const newMessage: ChatMessage = JSON.parse(message.body);
           console.log("[파싱된 메시지]", newMessage);
 
-          // 내 메시지는 이제 로컬에서 띄우지 않고 서버에서 수신되면 추가
-          // 기존의 내 메시지 무시 및 업데이트 로직 제거
+          // 내가 보낸 메시지 무시 로직을 완전히 제거하고,
+          // 서버로부터 수신된 모든 메시지를 그대로 추가합니다.
 
           // 챗봇 메시지인 경우 chatbot 속성을 true로 설정
           if (newMessage.type === "CHATBOT") {
@@ -277,9 +338,9 @@ function ChatPage() {
       onWebSocketError: (event) => {
         console.error("WebSocket 에러 발생:", event);
       },
-      debug: function (str) {
-        console.log("STOMP Debug:", str);
-      },
+      // debug: function (str) {
+      //   console.log("STOMP Debug:", str);
+      // },
     });
 
     stompClientRef.current = stompClient;
@@ -600,6 +661,22 @@ function ChatPage() {
           isRoomActive={
             roomInfo?.status === "Activate" || matchData?.status === "Meeting"
           }
+          invitationStatus={invitationStatus}
+          deactivationDate={roomInfo?.deactivationTime}
+          onInviteClick={() => {
+            if (invitationStatus?.exists && invitationStatus.isReceiver) {
+              navigate("/invite-write", {
+                state: {
+                  senderName: otherNickname,
+                  recipientName: myNickname,
+                  matchId: matchData?.id || 0,
+                  receiverId: myId || 0,
+                  roomId: state.roomId,
+                  myId: myId,
+                },
+              });
+            }
+          }}
         />
       )}
 
@@ -760,6 +837,12 @@ function ChatPage() {
         }
         roomId={state.roomId}
         myId={myId}
+        invitationStatus={invitationStatus}
+        loadingInvitation={loadingInvitation}
+      />
+      <ChatGuideModal
+        isOpen={showChatGuide}
+        onClose={() => setShowChatGuide(false)}
       />
     </>
   );

@@ -10,7 +10,7 @@ interface ReportModalProps {
   onClose: () => void;
   onSubmit: (reasons: string[], content: string) => void;
   reportType: "User" | "Question"; // Question 타입 추가
-  targetUser?: number; // 선택적으로 변경
+  targetUserId?: number; // 선택적으로 변경
 }
 
 type ReportContent =
@@ -40,7 +40,7 @@ const ReportModal = ({
   onClose,
   onSubmit,
   reportType,
-  targetUser,
+  targetUserId,
 }: ReportModalProps) => {
   const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
   const [description, setDescription] = useState("");
@@ -62,14 +62,14 @@ const ReportModal = ({
     // 신고 내용 로깅
     console.log("[신고 내용]", {
       reportType,
-      targetUser: targetUser || null,
+      targetUserId: targetUserId || null,
       reportContent: enumReasons.join(","),
       reportDescription: description,
     });
 
     const reportData = {
       reportType,
-      targetUser: targetUser || null,
+      targetUserId: targetUserId || null,
       reportContent: enumReasons.join(","),
       reportDescription: description,
     };
