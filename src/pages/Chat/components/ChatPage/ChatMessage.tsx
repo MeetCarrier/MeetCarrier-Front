@@ -149,7 +149,7 @@ export const ChatMessage = ({
     );
 
   // 사용자의 챗봇 질문인 경우 (type: CHATBOT, chatbot: false)
-  if (msg.type === "CHATBOT" && !msg.chatbot) {
+  if (msg.type === "CHATBOT" && !msg.chatbot && isMine) {
     return (
       <div ref={messageRef} className="w-full">
         <div className="flex justify-end mb-1">
@@ -173,6 +173,50 @@ export const ChatMessage = ({
                     : msg.message}
                 </span>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (msg.type === "CHATBOT" && !msg.chatbot && !isMine) {
+    return (
+      <div ref={messageRef} className="w-full">
+        <div className="flex justify-start mb-1">
+          <div
+            className="w-10 flex-shrink-0 cursor-pointer"
+            onClick={() => onProfileClick(msg.sender)}
+          >
+            <img
+              src={currentProfileUrl}
+              alt="상대방 프로필"
+              className="w-8 h-8 rounded-[2px] bg-white object-cover"
+            />
+          </div>
+          <div className="flex flex-col items-start ml-2 flex-1 min-w-0">
+            <span className="text-base text-gray-700 font-GanwonEduAll_Light mb-1">
+              {currentNickname}
+            </span>
+            <div className="flex items-end gap-1">
+              <div className="px-3 py-2 rounded-xl whitespace-pre-wrap font-GanwonEduAll_Light bg-[#666] text-white rounded-bl-none max-w-[70%] break-words">
+                <span className="text-lg font-medium">
+                  {isHighlighted
+                    ? highlightText(msg.message, searchQuery)
+                    : msg.message}
+                </span>
+              </div>
+              {shouldDisplayTime && (
+                <div className="flex flex-col gap-y-0.5 text-xs text-gray-400 leading-tight font-GanwonEduAll_Light items-start ml-1 flex-shrink-0">
+                  <span>
+                    {koreanTime.toLocaleTimeString("ko-KR", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: true,
+                    })}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>

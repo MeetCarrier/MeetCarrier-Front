@@ -332,9 +332,6 @@ function ChatPage() {
           // 서버로부터 수신된 모든 메시지를 그대로 추가합니다.
 
           // 챗봇 메시지인 경우 chatbot 속성을 true로 설정
-          if (newMessage.type === "CHATBOT") {
-            newMessage.chatbot = true;
-          }
 
           setMessages((prev) => [...prev, newMessage]);
         });
@@ -421,26 +418,6 @@ function ChatPage() {
   };
 
   // 챗봇 메시지 처리 함수
-  const handleBotQuestion = (question: string) => {
-    if (!myId) {
-      console.error("사용자 ID가 없습니다. 챗봇 질문을 처리할 수 없습니다.");
-      return;
-    }
-
-    const now = new Date();
-    const utcSentAt = new Date(now.getTime()).toISOString();
-    const botQuestionMessage: ChatMessage = {
-      type: "CHATBOT",
-      message: question,
-      imageUrl: null,
-      sender: Number(myId),
-      sentAt: utcSentAt,
-      read: true,
-      visible: true,
-      chatbot: false, // 사용자의 챗봇 질문은 chatbot: false
-    };
-    setMessages((prev) => [...prev, botQuestionMessage]);
-  };
 
   const handleLeave = () => {
     navigate("/ChatList");
@@ -622,7 +599,6 @@ function ChatPage() {
         currentSearchIndex={currentSearchIndex}
         onNavigateSearchResults={navigateSearchResults}
         searchQuery={searchQuery}
-        onBotMessage={handleBotQuestion}
         myId={myId}
       />
 
