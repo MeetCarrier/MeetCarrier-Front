@@ -18,6 +18,9 @@ import end_icon from "../../../assets/img/icons/ChatIcon/ic_end.svg";
 import report_icon from "../../../assets/img/icons/ChatIcon/ic_report.svg";
 import survey_icon from "../../../assets/img/icons/ChatIcon/ic_survey.svg";
 import imageCompression from "browser-image-compression";
+import secretaryIcon from "../../../assets/img/icons/Chat/secretary.svg";
+
+import SecretaryModal from "./ChatPage/SecretaryModal";
 
 // 이모티콘 이미지 임포트
 import emoji1 from "../../../assets/img/icons/Chat/1.svg";
@@ -56,7 +59,7 @@ interface ChatBarProps {
   currentSearchIndex: number;
   onNavigateSearchResults: (direction: "prev" | "next") => void;
   searchQuery: string;
-  onBotMessage?: (message: string) => void;
+  onSecretaryMessage?: (message: { sender: "bot" | "user"; text: string }) => void;
   myId?: number;
 }
 
@@ -79,7 +82,7 @@ function ChatBar({
   currentSearchIndex,
   onNavigateSearchResults,
   searchQuery,
-  onBotMessage,
+  onSecretaryMessage,
   myId,
   onInviteClick,
 }: ChatBarProps) {
@@ -94,6 +97,9 @@ function ChatBar({
   );
   const [selectedEmojiUrl, setSelectedEmojiUrl] = useState<string | null>(null);
   const [isVisibleToOpponent, setIsVisibleToOpponent] = useState(false);
+  const [isSecretaryMode, setIsSecretaryMode] = useState(false);
+  const [secretaryInput, setSecretaryInput] = useState("");
+  const [secretaryMessages, setSecretaryMessages] = useState<{ sender: "bot" | "user"; text: string }[]>([]);
 
   const emojis = [
     emoji1,
@@ -226,8 +232,8 @@ function ChatBar({
         });
 
         console.log("[챗봇 메시지 전송]", botMessageBody);
-        if (onBotMessage) {
-          onBotMessage(botInput.trim());
+        if (onSecretaryMessage) {
+          onSecretaryMessage({ sender: "bot", text: botInput.trim() });
         }
         setBotInput("");
       } else {
@@ -242,6 +248,43 @@ function ChatBar({
       e.preventDefault();
       if (botInput.trim()) {
         handleBotMessage();
+      }
+    }
+  };
+
+  const handleSecretaryMessage = () => {
+    if (secretaryInput.trim()) {
+      // WebSocket을 통해 비서봇 메시지 전송
+      if (stompClient && stompClient.connected) {
+        const secretaryMessageBody = {
+          roomId: roomId,
+          message: secretaryInput.trim(),
+          isVisible: isVisibleToOpponent,
+        };
+
+        stompClient.publish({
+          destination: "/app/api/secretary/send",
+          body: JSON.stringify(secretaryMessageBody),
+        });
+
+        console.log("[비서봇 메시지 전송]", secretaryMessageBody);
+        if (onSecretaryMessage) {
+          onSecretaryMessage({ sender: "user", text: secretaryInput.trim() });
+        }
+        setSecretaryMessages((prevMessages) => [...prevMessages, { sender: "user", text: secretaryInput.trim() }]);
+        setSecretaryInput("");
+      } else {
+        console.error("WebSocket 연결이 없습니다.");
+        toast.error("비서봇 메시지 전송에 실패했습니다.");
+      }
+    }
+  };
+
+  const handleSecretaryKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      if (secretaryInput.trim()) {
+        handleSecretaryMessage();
       }
     }
   };
@@ -388,13 +431,16 @@ function ChatBar({
       )}
 
       {selectedEmojiUrl && !isSearchMode && (
-        <div className="absolute bottom-[282px] z-40  bg-white/50 w-full font-GanwonEduAll_Light ">
+        <div className="absolute z-40 bg-white/50 w-full font-GanwonEduAll_Light  duration-300 transition-all " style={{
+          bottom: emojiOpen ? 282 : 82,
+        }}>
           <div className="bg-white rounded-lg ml-auto w-fit relative">
             {/* ✕ 닫기 버튼 */}
             <button
               onClick={() => setSelectedEmojiUrl(null)}
               className="absolute top-1 right-1 text-gray-400 hover:text-black"
               aria-label="미리보기 닫기"
+              
             >
               ✕
             </button>
@@ -413,8 +459,73 @@ function ChatBar({
           className="font-GanwonEduAll_Light w-full h-[82px] px-2 flex items-center"
           style={{ backgroundImage: `url(${navbg})` }}
         >
+          {!isBotMode && !isSearchMode && !isSecretaryMode && (
+            <button
+              className="absolute right-2 z-20 w-11 h-11 rounded-full bg-[#743120] flex items-center justify-center shadow-lg duration-300 transition-all"
+              onClick={() => {
+                setIsSecretaryMode(true);
+                setSecretaryInput("");
+                setSecretaryMessages([
+                  { sender: "bot", text: "안녕, 반가워~ 난 채팅을 도와주는 너만의 비서 봇이야! 친구와 대화하면서 어렵거나 궁금하거나 어떤 것이든 편하게 물어봐!!" }
+                ]);
+              }}
+              style={{
+                bottom: emojiOpen ? 302 : 102,
+              }}
+            >
+              <img src={secretaryIcon} alt="secretary" className="w-7 h-7" />
+            </button>
+          )}
           <div className="flex items-center w-full gap-2">
-            {!isBotMode ? (
+            {isSecretaryMode ? (
+              <>
+                {/* 비서봇 모드: 좌측 X버튼 */}
+                <button
+                  className="w-9 h-9 rounded-full bg-[#743120] flex items-center justify-center flex-shrink-0"
+                  onClick={() => {
+                    setIsSecretaryMode(false);
+                    setSecretaryInput("");
+                  }}
+                >
+                  {/* 45도 회전된 + = X 아이콘 효과 */}
+                  <img
+                    src={plus_icon}
+                    alt="close"
+                    className="w-5 h-5 rotate-45 transition-transform duration-300"
+                  />
+                </button>
+
+                {/* 입력창 */}
+                <div className="flex items-center flex-1 bg-[#743120] rounded-full px-3 py-2">
+                  <img
+                    src={secretaryIcon}
+                    alt="secretary"
+                    className="w-5 h-5 opacity-80 mr-2"
+                  />
+                  <input
+                    type="text"
+                    placeholder="AI 비서에게 무엇이든 물어보기"
+                    value={secretaryInput}
+                    onChange={e => setSecretaryInput(e.target.value)}
+                    onKeyPress={handleSecretaryKeyPress}
+                    className="flex-1 bg-transparent text-white text-base placeholder:text-[#F2F2F280] outline-none"
+                  />
+                </div>
+
+                {/* 전송 버튼 */}
+                <button
+                  onClick={handleSecretaryMessage}
+                  className={`w-9 h-9 rounded-full ${
+                    secretaryInput.trim() ? "bg-gray-200" : "bg-[#743120]"
+                  } flex items-center justify-center flex-shrink-0 ${
+                    !secretaryInput.trim() ? "cursor-not-allowed" : ""
+                  }`}
+                  disabled={!secretaryInput.trim()}
+                >
+                  <img src={arrow_icon} alt="send" className="w-5 h-5" />
+                </button>
+              </>
+            ) : !isBotMode ? (
               <>
                 {/* 좌측: 기능 열기 버튼 */}
                 <button
@@ -494,7 +605,7 @@ function ChatBar({
                   } flex items-center justify-center flex-shrink-0 ${
                     !isRoomActive ? "cursor-not-allowed" : ""
                   }`}
-                  disabled={!isRoomActive} // ✅ 오직 방이 비활성일 때만 비활성화
+                  disabled={!isRoomActive}
                 >
                   <img
                     src={message.trim() ? arrow_icon : questionmark_icon}
@@ -520,8 +631,6 @@ function ChatBar({
                     className="w-5 h-5 rotate-45 transition-transform duration-300"
                   />
                 </button>
-
-                {/* 챗봇 모드: 왼쪽 ❓ 아이콘 (시각적 안내) */}
 
                 {/* 챗봇 입력창 */}
                 <div className="flex items-center flex-1 bg-[#743120] rounded-full px-3 py-2">
@@ -639,6 +748,15 @@ function ChatBar({
           }
           setShowEndModal(false);
         }}
+      />
+
+      <SecretaryModal
+        isOpen={isSecretaryMode}
+        onClose={() => setIsSecretaryMode(false)}
+        messages={secretaryMessages}
+        input={secretaryInput}
+        setInput={setSecretaryInput}
+        onSend={handleSecretaryMessage}
       />
     </>
   );
