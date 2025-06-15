@@ -213,7 +213,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
             <div key={`${msg.sentAt}-${index}`}>
               {showDateDivider && (
                 <div className="flex justify-center items-center my-4">
-                  <div className="bg-gray-200 text-gray-600 text-xs px-3 py-1 rounded-full">
+                  <div className="bg-gray-200 text-black text-xs px-3 py-1 rounded-full text-[15px] font-GanwonEduAll_Light">
                     {formatDate(koreanTime)}
                   </div>
                 </div>

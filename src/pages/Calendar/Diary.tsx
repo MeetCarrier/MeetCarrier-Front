@@ -85,7 +85,7 @@ function Dairy() {
             value={text}
             onInput={handleInput}
             placeholder={placeholderText}
-            className="w-full flex-1 p-3 rounded-t-[10px] resize-none text-[14px] bg-white focus:outline-none"
+            className="w-full flex-1 p-3 rounded-t-[10px] resize-none text-[19px] font-GanwonEduAll_Light bg-white focus:outline-none"
           />
           <div className="text-right text-[12px] text-[#333333]/50 rounded-b-[10px] bg-white p-3 mb-4">
             {text.length} / 500

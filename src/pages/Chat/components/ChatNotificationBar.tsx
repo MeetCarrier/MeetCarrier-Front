@@ -117,16 +117,18 @@ const ChatNotificationBar: FC<ChatNotificationBarProps> = ({
         }`}
         onClick={handleClick}
       >
-        <div className="flex items-center justify-start">
-          <img
-            src={getNotificationIcon()}
-            alt="notification icon"
-            className="w-5 h-5 ml-3 mr-3"
-          />
-          <p className="font-semibold flex-grow whitespace-pre-line">
-            {getNotificationMessage()}
-          </p>
-        </div>
+        {type !== "NO_INVITATION" && (
+          <div className="flex items-center justify-start">
+            <img
+              src={getNotificationIcon()}
+              alt="notification icon"
+              className="w-5 h-5 ml-3 mr-3"
+            />
+            <p className="font-semibold flex-grow whitespace-pre-line">
+              {getNotificationMessage()}
+            </p>
+          </div>
+        )}
         <div className="flex items-center justify-start">
           <img
             src={alarmClockIcon}

@@ -397,12 +397,12 @@ function ChatPage() {
           const newMessage: ChatMessage = JSON.parse(message.body);
           console.log("[파싱된 메시지]", newMessage);
 
-          // 내가 보낸 메시지 무시 로직을 완전히 제거하고,
-          // 서버로부터 수신된 모든 메시지를 그대로 추가합니다.
-
-          // 챗봇 메시지인 경우 chatbot 속성을 true로 설정
-
           setMessages((prev) => [...prev, newMessage]);
+          
+          // 새 메시지가 추가된 후 스크롤을 최신 메시지로 이동
+          setTimeout(() => {
+            messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+          }, 100);
         });
 
         // 읽음 확인 구독

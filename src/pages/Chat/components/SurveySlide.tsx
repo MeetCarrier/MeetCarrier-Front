@@ -116,7 +116,7 @@ const SurveySlide: React.FC<SurveySlideProps> = ({
             <textarea
               maxLength={150}
               rows={5}
-              className="w-full h-[120px] border border-[#333] rounded p-2 text-sm resize-none"
+              className="w-full h-[120px] border rounded p-2 text-sm resize-none"
               value={editedContent}
               onChange={(e) => {
                 const value = e.target.value;
