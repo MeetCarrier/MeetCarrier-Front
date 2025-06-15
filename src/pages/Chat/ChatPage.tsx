@@ -15,7 +15,6 @@ import ProfileModal from "../../components/ProfileModal";
 import { fetchUserById, UserProfileData } from "../../Utils/api";
 import InviteLetterModal from "./Invite/InviteLetterModal";
 import { ChatMessage } from "./components/ChatPage/ChatMessage";
-import { ChatSearch } from "./components/ChatPage/ChatSearch";
 import { ChatHeader } from "./components/ChatPage/ChatHeader";
 import ChatGuideModal from "./components/ChatPage/ChatGuideModal";
 import ChatMessages from "./components/ChatPage/ChatMessages";
@@ -649,6 +648,8 @@ function ChatPage() {
         searchResults={searchResults}
         currentSearchIndex={currentSearchIndex}
         searchQuery={searchQuery}
+        emojiOpen={emojiOpen}
+        showSearchBar={showSearchBar}
       />
 
       <MeetingInfoModal
