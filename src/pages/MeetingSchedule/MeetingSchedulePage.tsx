@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setMeetingSchedule } from "../../Utils/meetingScheduleSlice";
+import axios from "axios";
 
 import NavBar from "../../components/NavBar";
 import back_arrow from "../../assets/img/icons/HobbyIcon/back_arrow.svg";
@@ -9,10 +10,20 @@ import back_arrow from "../../assets/img/icons/HobbyIcon/back_arrow.svg";
 interface LocationState {
   senderName: string;
   recipientName: string;
-  senderProfile: string;
   matchId: number;
   receiverId: number;
   roomId: number;
+  isModify?: boolean;
+  meetingId?: number;
+}
+
+interface MeetingInfo {
+  id: number;
+  nickname: string;
+  date: string;
+  location: string;
+  note: string;
+  status: "PENDING" | "ACCEPTED" | "REJECTED";
 }
 
 function MeetingSchedulePage() {
@@ -22,10 +33,11 @@ function MeetingSchedulePage() {
   const {
     senderName,
     recipientName,
-    senderProfile,
     matchId,
     receiverId,
     roomId,
+    isModify,
+    meetingId,
   } = location.state as LocationState;
 
   const [date, setDate] = useState("");
@@ -51,115 +63,173 @@ function MeetingSchedulePage() {
   // 저장 버튼 활성화 여부 확인
   const isFormValid = date && locationText && isValidDate(date);
 
-  const handleSubmit = () => {
+  // 기존 일정 조회
+  useEffect(() => {
+    const fetchMeetingInfo = async () => {
+      if (!isModify || !meetingId) return;
+
+      try {
+        console.log("[MeetingSchedulePage] 만남 일정 조회 요청:", {
+          meetingId,
+        });
+        const response = await axios.get(`/api/meetings/${meetingId}`);
+        console.log(
+          "[MeetingSchedulePage] 만남 일정 조회 응답:",
+          response.data
+        );
+
+        const meetingInfo = response.data;
+        setDate(meetingInfo.date.split("T")[0]);
+        setLocationText(meetingInfo.location);
+        setMemo(meetingInfo.note);
+      } catch (error) {
+        console.error("[MeetingSchedulePage] 만남 일정 조회 실패:", error);
+      }
+    };
+
+    fetchMeetingInfo();
+  }, [isModify, meetingId]);
+
+  const handleSubmit = async () => {
     if (!isFormValid) return;
 
-    dispatch(
-      setMeetingSchedule({
-        matchId,
-        receiverId,
-        date,
+    try {
+      const meetingData = {
+        date: new Date(date).toISOString(),
         location: locationText,
-        memo,
-        isScheduled: true,
-      })
-    );
+        note: memo,
+      };
 
-    navigate(`/chat/${roomId}`, {
-      state: {
-        senderName,
-        recipientName,
-        senderProfile,
-        matchId,
-        receiverId,
-        roomId,
-      },
-    });
+      if (isModify && meetingId) {
+        // 기존 일정 수정
+        console.log("[MeetingSchedulePage] 만남 일정 수정 요청:", {
+          meetingId,
+          ...meetingData,
+        });
+        await axios.patch(`/api/meetings/${meetingId}`, meetingData);
+        console.log("[MeetingSchedulePage] 만남 일정 수정 완료");
+      } else {
+        // 새 일정 생성
+        console.log("[MeetingSchedulePage] 만남 일정 생성 요청:", {
+          matchId,
+          ...meetingData,
+        });
+        await axios.post(`/api/meetings/${matchId}`, meetingData);
+        console.log("[MeetingSchedulePage] 만남 일정 생성 완료");
+      }
+
+      // 채팅방으로 돌아가기
+      navigate(`/chat/${roomId}`, {
+        state: {
+          senderName,
+          recipientName,
+          matchId,
+          receiverId,
+          roomId,
+        },
+      });
+    } catch (error) {
+      console.error("[MeetingSchedulePage] 만남 일정 등록/수정 실패:", error);
+    }
   };
 
   return (
     <>
       <NavBar />
-      <div className="absolute top-[50px] z-50 text-[#333333] left-0 right-0 px-6 text-center">
-        <img
-          src={back_arrow}
-          alt="back_arrow"
-          className="absolute top-1/2 -translate-y-1/2 left-6 w-[9px] h-[20px] cursor-pointer"
-          onClick={() => navigate(-1)}
-        />
-        <p className="text-[20px] font-MuseumClassic_L italic">
-          만남 일정 등록
-        </p>
-      </div>
+      <div className="font-GanwonEduAll_Light w-full">
+        <div className="font-GanwonEduAll_Light absolute top-[50px] z-50 text-[#333333] left-0 right-0 px-6 text-center">
+          <img
+            src={back_arrow}
+            alt="back_arrow"
+            className="absolute top-1/2 -translate-y-1/2 left-6 w-[9px] h-[20px] cursor-pointer"
+            onClick={() => navigate(-1)}
+          />
+          <p className="text-[20px] font-MuseumClassic_L italic">
+            {isModify ? "만남 일정 수정" : "만남 일정 등록"}
+          </p>
+        </div>
 
-      <div className="flex flex-col items-center justify-center w-full min-h-[calc(100vh-132px)] mt-[50px] px-4">
-        <div className="w-full max-w-[800px] p-6 bg-white rounded-lg shadow-md">
-          <div className="mb-4">
-            <label
-              htmlFor="date"
-              className="block text-gray-700 text-sm font-bold mb-2"
+        <div className="font-GanwonEduAll_Light flex flex-col items-center justify-center w-full min-h-[calc(100vh-132px)] mt-[50px] px-4">
+          <div className="w-full max-w-[800px] p-6 bg-white rounded-lg shadow-md">
+            <div className="mb-4">
+              <label
+                htmlFor="date"
+                className="block text-gray-700 text-sm font-bold mb-2"
+              >
+                날짜
+              </label>
+              <input
+                type="date"
+                id="date"
+                value={date}
+                min={formatDate(today)}
+                max={formatDate(oneMonthLater)}
+                onChange={(e) => setDate(e.target.value)}
+                className={`shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline ${
+                  date
+                    ? "text-gray-800 font-semibold"
+                    : "text-gray-400 font-normal"
+                }`}
+              />
+              <p className="text-sm text-gray-500 mt-1">
+                * 한 달 이내의 날짜만 선택 가능합니다.
+              </p>
+            </div>
+
+            <div className="mb-4">
+              <label
+                htmlFor="location"
+                className="block text-gray-700 text-sm font-bold mb-2"
+              >
+                장소
+              </label>
+              <input
+                type="text"
+                id="location"
+                value={locationText}
+                onChange={(e) => setLocationText(e.target.value)}
+                placeholder="예: 강남역 10번 출구 스벅"
+                className={`shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline ${
+                  locationText
+                    ? "text-gray-800 font-semibold"
+                    : "text-gray-400 font-normal italic"
+                }`}
+              />
+            </div>
+
+            <div className="mb-6">
+              <label
+                htmlFor="memo"
+                className="block text-gray-700 text-sm font-bold mb-2"
+              >
+                메모
+              </label>
+              <textarea
+                id="memo"
+                value={memo}
+                onChange={(e) => setMemo(e.target.value)}
+                placeholder="추가적인 메모 (예: 늦으면 미리 연락주세요)"
+                rows={4}
+                className={`shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline ${
+                  memo
+                    ? "text-gray-800 font-semibold"
+                    : "text-gray-400 font-normal italic"
+                }`}
+              />
+            </div>
+
+            <button
+              onClick={handleSubmit}
+              disabled={!isFormValid}
+              className={`w-full font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ${
+                isFormValid
+                  ? "bg-[#D45A4B] hover:bg-[#bf4a3c] text-white"
+                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
+              }`}
             >
-              날짜
-            </label>
-            <input
-              type="date"
-              id="date"
-              value={date}
-              min={formatDate(today)}
-              max={formatDate(oneMonthLater)}
-              onChange={(e) => setDate(e.target.value)}
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            />
-            <p className="text-sm text-gray-500 mt-1">
-              * 한 달 이내의 날짜만 선택 가능합니다.
-            </p>
+              {isModify ? "수정하기" : "등록하기"}
+            </button>
           </div>
-
-          <div className="mb-4">
-            <label
-              htmlFor="location"
-              className="block text-gray-700 text-sm font-bold mb-2"
-            >
-              장소
-            </label>
-            <input
-              type="text"
-              id="location"
-              value={locationText}
-              onChange={(e) => setLocationText(e.target.value)}
-              placeholder="예: 강남역 10번 출구 스벅"
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            />
-          </div>
-
-          <div className="mb-6">
-            <label
-              htmlFor="memo"
-              className="block text-gray-700 text-sm font-bold mb-2"
-            >
-              메모
-            </label>
-            <textarea
-              id="memo"
-              value={memo}
-              onChange={(e) => setMemo(e.target.value)}
-              placeholder="추가적인 메모 (예: 늦으면 미리 연락주세요)"
-              rows={4}
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            />
-          </div>
-
-          <button
-            onClick={handleSubmit}
-            disabled={!isFormValid}
-            className={`w-full font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ${
-              isFormValid
-                ? "bg-[#D45A4B] hover:bg-[#bf4a3c] text-white"
-                : "bg-gray-300 text-gray-500 cursor-not-allowed"
-            }`}
-          >
-            저장
-          </button>
         </div>
       </div>
     </>

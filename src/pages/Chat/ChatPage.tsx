@@ -18,6 +18,8 @@ import { ChatMessage } from "./components/ChatPage/ChatMessage";
 import { ChatSearch } from "./components/ChatPage/ChatSearch";
 import { ChatHeader } from "./components/ChatPage/ChatHeader";
 import ChatGuideModal from "./components/ChatPage/ChatGuideModal";
+import ChatMessages from "./components/ChatPage/ChatMessages";
+import ChatNotificationHandler from "./components/ChatPage/ChatNotificationHandler";
 
 import {
   LocationState,
@@ -25,8 +27,8 @@ import {
   RoomInfo,
 } from "./components/ChatPage/types";
 
-import chatBot from "../../assets/img/icons/Chat/chatBot.svg";
 import toast from "react-hot-toast";
+import { NotificationType } from "./components/ChatNotificationBar";
 
 interface ChatMessage {
   type: string;
@@ -77,23 +79,27 @@ function ChatPage() {
   const [opponentInRoom, setOpponentInRoom] = useState(false);
   const [currentSearchIndex, setCurrentSearchIndex] = useState<number>(-1);
   const [showChatGuide, setShowChatGuide] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(
+    state?.showInviteModal || false
+  );
+  const [notificationType, setNotificationType] =
+    useState<NotificationType>("NO_INVITATION");
+  const [meetingDate, setMeetingDate] = useState<Date | undefined>();
+  const [remainingTime, setRemainingTime] = useState<string>("");
+  const [meetingId, setMeetingId] = useState<number | null>(null);
+  const [loadingInvitation, setLoadingInvitation] = useState(false);
+  const [invitationStatus, setInvitationStatus] = useState<{
+    exists: boolean;
+    isSender: boolean;
+    isReceiver: boolean;
+  } | null>(null);
+
   useEffect(() => {
     const shouldHide = localStorage.getItem("hideChatGuideModal") === "true";
     if (!shouldHide) {
       setShowChatGuide(true);
     }
   }, []);
-  // 알림으로부터 전달받은 초대장 모달 표시 여부
-  const [showInviteModal, setShowInviteModal] = useState(
-    state?.showInviteModal || false
-  );
-  const [invitationStatus, setInvitationStatus] = useState<{
-    exists: boolean;
-    isSender: boolean;
-    isReceiver: boolean;
-    status?: "PENDING" | "ACCEPTED" | "REJECTED";
-  } | null>(null);
-  const [loadingInvitation, setLoadingInvitation] = useState(false);
 
   useEffect(() => {
     const updateCurrentTime = () => {
@@ -104,10 +110,10 @@ function ChatPage() {
       setCurrentTime(`${hours}시 ${minutes}분 ${seconds}초`);
     };
 
-    updateCurrentTime(); // 컴포넌트 마운트 시 한 번 실행
-    const intervalId = setInterval(updateCurrentTime, 1000); // 1초마다 업데이트
+    updateCurrentTime();
+    const intervalId = setInterval(updateCurrentTime, 1000);
 
-    return () => clearInterval(intervalId); // 컴포넌트 언마운트 시 인터벌 정리
+    return () => clearInterval(intervalId);
   }, []);
 
   // 매치 데이터 가져오기
@@ -214,47 +220,63 @@ function ChatPage() {
   useEffect(() => {
     const fetchInvitationStatus = async () => {
       if (!matchData?.id || !myId) {
-        setInvitationStatus(null);
+        setNotificationType("NO_INVITATION");
         return;
       }
-      setLoadingInvitation(true);
 
       try {
-        const res = await axios.get(
-          `https://www.mannamdeliveries.link/api/invitation/${matchData.id}`,
-          { withCredentials: true }
-        );
-        if (res.status === 200) {
-          const { senderId, receiverId, status, ...rest } = res.data;
+        const response = await axios.get(`/api/invitation/${matchData.id}`);
+        const invitation = response.data;
 
-          console.log("[초대장 조회 성공] 전체 응답:", res.data);
-
-          setInvitationStatus({
-            exists: true,
-            isSender: myId === senderId,
-            isReceiver: myId === receiverId,
-            status: status,
-          });
+        if (invitation.status === "PENDING") {
+          setNotificationType("PENDING");
+        } else if (invitation.status === "ACCEPTED") {
+          try {
+            const meetingResponse = await axios.get(
+              `/api/meetings/${matchData.id}`
+            );
+            setMeetingDate(new Date(meetingResponse.data.date));
+            setMeetingId(meetingResponse.data.id);
+            setNotificationType("SCHEDULED");
+          } catch (error) {
+            if (axios.isAxiosError(error) && error.response?.status === 404) {
+              setNotificationType("NEED_SCHEDULE");
+            }
+          }
         }
-      } catch (error: any) {
-        if (error.response?.status === 404) {
-          setInvitationStatus({
-            exists: false,
-            isSender: false,
-            isReceiver: false,
-            status: undefined,
-          });
-        } else {
-          console.error("초대장 확인 실패:", error);
-          setInvitationStatus(null);
+      } catch (error) {
+        if (axios.isAxiosError(error) && error.response?.status === 404) {
+          setNotificationType("NO_INVITATION");
         }
-      } finally {
-        setLoadingInvitation(false);
       }
     };
 
     fetchInvitationStatus();
   }, [matchData?.id, myId]);
+
+  // 채팅방 활성화 시간 업데이트
+  useEffect(() => {
+    const updateRemainingTime = () => {
+      if (roomInfo?.deactivationTime) {
+        const now = new Date();
+        const deactivation = new Date(roomInfo.deactivationTime);
+        const diff = deactivation.getTime() - now.getTime();
+
+        if (diff > 0) {
+          const hours = Math.floor(diff / (1000 * 60 * 60));
+          const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+          setRemainingTime(`${hours}시간 ${minutes}분 ${seconds}초`);
+        } else {
+          setRemainingTime("00시간 00분 00초");
+        }
+      }
+    };
+
+    updateRemainingTime();
+    const interval = setInterval(updateRemainingTime, 1000);
+    return () => clearInterval(interval);
+  }, [roomInfo?.deactivationTime]);
 
   useEffect(() => {
     // 사용자 정보 가져오기
@@ -338,9 +360,6 @@ function ChatPage() {
       onWebSocketError: (event) => {
         console.error("WebSocket 에러 발생:", event);
       },
-      // debug: function (str) {
-      //   console.log("STOMP Debug:", str);
-      // },
     });
 
     stompClientRef.current = stompClient;
@@ -424,7 +443,6 @@ function ChatPage() {
     setMessages((prev) => [...prev, botQuestionMessage]);
   };
 
-  // 채팅방 퇴장 함수
   const handleLeave = () => {
     navigate("/ChatList");
   };
@@ -437,38 +455,6 @@ function ChatPage() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
-
-  // 날짜 포맷팅 함수 추가
-  const formatDate = (date: Date) => {
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    if (date.toDateString() === today.toDateString()) {
-      return "오늘";
-    } else if (date.toDateString() === yesterday.toDateString()) {
-      return "어제";
-    } else {
-      return date.toLocaleDateString("ko-KR", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      });
-    }
-  };
-
-  // userId로 내 정보/상대 정보 구분
-  let myNickname = "나";
-  let otherNickname = "상대방";
-  if (matchData) {
-    if (user?.userId === matchData.user1Id) {
-      myNickname = matchData.user1Nickname ?? "";
-      otherNickname = matchData.user2Nickname ?? "";
-    } else if (user?.userId === matchData.user2Id) {
-      myNickname = matchData.user2Nickname ?? "";
-      otherNickname = matchData.user1Nickname ?? "";
-    }
-  }
 
   const handleProfileClick = async (opponentId: number) => {
     if (!opponentId) return;
@@ -543,12 +529,18 @@ function ChatPage() {
     }
   };
 
-  // 컴포넌트 마운트 시 초대장 모달 표시
-  useEffect(() => {
-    if (state?.showInviteModal) {
-      setShowInviteModal(true);
+  // userId로 내 정보/상대 정보 구분
+  let myNickname = "나";
+  let otherNickname = "상대방";
+  if (matchData) {
+    if (user?.userId === matchData.user1Id) {
+      myNickname = matchData.user1Nickname ?? "";
+      otherNickname = matchData.user2Nickname ?? "";
+    } else if (user?.userId === matchData.user2Id) {
+      myNickname = matchData.user2Nickname ?? "";
+      otherNickname = matchData.user1Nickname ?? "";
     }
-  }, [state?.showInviteModal]);
+  }
 
   return (
     <>
@@ -641,178 +633,37 @@ function ChatPage() {
       />
 
       {!showSearchBar && (
-        <ChatNotificationBar
-          type={meetingSchedule.isScheduled ? "schedule" : "time"}
-          time={remainingChatTime || currentTime}
-          scheduleDate={
-            meetingSchedule.isScheduled
-              ? `${meetingSchedule.date?.split("-")[1]}월 ${
-                  meetingSchedule.date?.split("-")[2]
-                }일 ${new Date(meetingSchedule.date || "").toLocaleDateString(
-                  "ko-KR",
-                  { weekday: "short" }
-                )}요일`
-              : undefined
-          }
-          location={meetingSchedule.location || undefined}
-          memo={meetingSchedule.memo || undefined}
-          isScheduled={meetingSchedule.isScheduled}
-          onModifyClick={() => setShowMeetingInfoModal(true)}
-          isRoomActive={
-            roomInfo?.status === "Activate" || matchData?.status === "Meeting"
-          }
-          invitationStatus={invitationStatus}
-          deactivationDate={roomInfo?.deactivationTime}
-          onInviteClick={() => {
-            if (invitationStatus?.exists && invitationStatus.isReceiver) {
-              navigate("/invite-write", {
-                state: {
-                  senderName: otherNickname,
-                  recipientName: myNickname,
-                  matchId: matchData?.id || 0,
-                  receiverId: myId || 0,
-                  roomId: state.roomId,
-                  myId: myId,
-                },
-              });
-            }
-          }}
+        <ChatNotificationHandler
+          matchData={matchData}
+          myId={myId}
+          myNickname={myNickname}
+          otherNickname={otherNickname}
+          isSender={user?.userId === matchData?.user1Id}
+          roomInfo={roomInfo}
         />
       )}
 
-      <div
-        className="flex flex-col w-full overflow-y-auto p-4 z-0"
-        style={{
-          height: showSearchBar
-            ? `calc(100% - 180px)`
-            : `calc(100% - ${emojiOpen ? 432 : 232}px)`,
-          transition: "height 0.3s ease",
-        }}
-      >
-        {messages
-          .filter(
-            (msg) =>
-              msg.visible ||
-              (msg.sender === myId && (msg.chatbot || msg.type === "CHATBOT"))
-          )
-          .map((msg, index) => {
-            const isChatbot = msg.type === "CHATBOT";
-            const isMine = msg.sender === myId;
-            let currentNickname = "나";
-            let currentProfileUrl = sampleProfile;
-            let messageType = "";
-
-            // 메시지 유형 결정
-            if (isMine) {
-              if (isChatbot) {
-                messageType = "my-chatbot-question";
-                currentNickname = myNickname;
-                currentProfileUrl = user?.imgUrl || sampleProfile;
-              } else if (msg.chatbot) {
-                messageType = "chatbot-response-to-me";
-                currentNickname = "만남배달부 봇";
-                currentProfileUrl = chatBot;
-              } else {
-                messageType = "my-normal-message";
-                currentNickname = myNickname;
-                currentProfileUrl = user?.imgUrl || sampleProfile;
-              }
-            } else {
-              if (isChatbot) {
-                messageType = "opponent-chatbot-question";
-                currentNickname = otherNickname;
-                currentProfileUrl =
-                  myId === matchData?.user1Id
-                    ? matchData?.user2ImageUrl || sampleProfile
-                    : matchData?.user1ImageUrl || sampleProfile;
-              } else if (msg.chatbot) {
-                messageType = "chatbot-response-to-opponent";
-                currentNickname = "만남배달부 봇";
-                currentProfileUrl = chatBot;
-              } else {
-                messageType = "opponent-normal-message";
-                currentNickname = otherNickname;
-                currentProfileUrl =
-                  myId === matchData?.user1Id
-                    ? matchData?.user2ImageUrl || sampleProfile
-                    : matchData?.user1ImageUrl || sampleProfile;
-              }
-            }
-
-            const isPrevSameSender =
-              index > 0 &&
-              messages[index - 1].sender === msg.sender &&
-              messages[index - 1].type === msg.type &&
-              messages[index - 1].chatbot === msg.chatbot;
-
-            const messageDate = new Date(msg.sentAt);
-            const koreanTime = new Date(messageDate.getTime());
-
-            const showDateDivider =
-              index === 0 ||
-              new Date(messages[index - 1].sentAt).toDateString() !==
-                messageDate.toDateString();
-
-            let shouldDisplayTime = false;
-            if (index === messages.length - 1) {
-              shouldDisplayTime = true;
-            } else {
-              const nextMessage = messages[index + 1];
-              const nextMessageDate = new Date(nextMessage.sentAt);
-              const timeDifferenceInSeconds = Math.abs(
-                (nextMessageDate.getTime() - messageDate.getTime()) / 1000
-              );
-
-              if (
-                nextMessage.sender !== msg.sender ||
-                nextMessage.type !== msg.type ||
-                nextMessage.chatbot !== msg.chatbot ||
-                timeDifferenceInSeconds > 60
-              ) {
-                shouldDisplayTime = true;
-              }
-            }
-
-            const isHighlighted = searchResults.includes(index);
-            const isCurrent =
-              isHighlighted &&
-              currentSearchIndex === searchResults.indexOf(index);
-
-            return (
-              <div key={`${msg.sentAt}-${index}`}>
-                {showDateDivider && (
-                  <div className="flex justify-center items-center my-4">
-                    <div className="bg-gray-200 text-gray-600 text-xs px-3 py-1 rounded-full">
-                      {formatDate(koreanTime)}
-                    </div>
-                  </div>
-                )}
-                <ChatMessage
-                  msg={msg}
-                  isMine={isMine}
-                  isPrevSameSender={isPrevSameSender}
-                  currentNickname={currentNickname}
-                  currentProfileUrl={currentProfileUrl}
-                  koreanTime={koreanTime}
-                  shouldDisplayTime={shouldDisplayTime}
-                  isHighlighted={isHighlighted}
-                  isCurrent={isCurrent}
-                  onProfileClick={handleProfileClick}
-                  messageRef={(el) => {
-                    messageRefs.current[index] = el;
-                  }}
-                  messageType={messageType}
-                />
-              </div>
-            );
-          })}
-        <div ref={messagesEndRef} />
-      </div>
+      <ChatMessages
+        messages={messages}
+        myId={myId}
+        myNickname={myNickname}
+        otherNickname={otherNickname}
+        userImgUrl={user?.imgUrl}
+        matchData={matchData}
+        onProfileClick={handleProfileClick}
+        searchResults={searchResults}
+        currentSearchIndex={currentSearchIndex}
+      />
 
       <MeetingInfoModal
         isOpen={showMeetingInfoModal}
         onClose={() => setShowMeetingInfoModal(false)}
         onConfirm={() => setShowMeetingInfoModal(false)}
+        matchId={matchData?.id}
+        myId={myId}
+        roomId={state.roomId}
+        senderName={myNickname}
+        recipientName={otherNickname}
       />
 
       {showProfileModal && selectedUser && (

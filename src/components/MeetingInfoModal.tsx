@@ -1,17 +1,42 @@
-import type { FC } from "react";
+import { FC } from "react";
 import Modal from "./Modal";
+import { useNavigate } from "react-router-dom";
 
 interface MeetingInfoModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
+  matchId?: number;
+  myId?: number;
+  roomId?: number;
+  senderName?: string;
+  recipientName?: string;
 }
 
 const MeetingInfoModal: FC<MeetingInfoModalProps> = ({
   isOpen,
   onClose,
   onConfirm,
+  matchId,
+  myId,
+  roomId,
+  senderName,
+  recipientName,
 }) => {
+  const navigate = useNavigate();
+
+  const handleModifyClick = () => {
+    navigate("/meeting-schedule", {
+      state: {
+        senderName,
+        recipientName,
+        matchId,
+        receiverId: myId,
+        roomId,
+      },
+    });
+  };
+
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="items-end text-left text-[#333] font-GanwonEduAll_Light">
@@ -28,7 +53,7 @@ const MeetingInfoModal: FC<MeetingInfoModalProps> = ({
         </p>
         <div className="flex justify-around space-x-4">
           <button
-            onClick={onClose}
+            onClick={handleModifyClick}
             className="flex-1 py-2 px-4 rounded-md text-gray-700 hover:bg-gray-100"
           >
             일정 변경
