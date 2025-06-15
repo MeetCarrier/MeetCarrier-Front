@@ -1,9 +1,10 @@
 import navbg from "../../../assets/img/nav_bg.webp";
 import navbg2 from "../../../assets/img/nav_bg2.webp";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Client } from "@stomp/stompjs";
 import axios from "axios";
 import toast from "react-hot-toast";
+import SockJS from "sockjs-client";
 
 import ReportModal from "../../../components/ReportModal";
 import EndModal from "../../../components/EndModal";
@@ -75,7 +76,7 @@ function ChatBar({
   receiverId,
   roomId,
   onEndMeeting,
-  stompClient,
+  stompClient: existingStompClient,
   isRoomActive,
   isSearchMode,
   searchResults,
@@ -118,6 +119,20 @@ function ChatBar({
     emoji14,
     emoji15,
   ];
+
+  useEffect(() => {
+    if (existingStompClient?.connected && myId) {
+      // 비서봇 메시지 구독
+      existingStompClient.subscribe(`/topic/assistant/${myId}`, (message) => {
+        const data = JSON.parse(message.body);
+        console.log('[비서봇 응답 수신]', {
+          content: data.content,
+          createdAt: data.createdAt
+        });
+        setSecretaryMessages(prev => [...prev, { sender: "bot", text: data.content }]);
+      });
+    }
+  }, [existingStompClient, myId]);
 
   const handleSendMessage = () => {
     if (!isRoomActive) {
@@ -219,14 +234,14 @@ function ChatBar({
   const handleBotMessage = () => {
     if (botInput.trim()) {
       // WebSocket을 통해 챗봇 메시지 전송
-      if (stompClient && stompClient.connected) {
+      if (existingStompClient && existingStompClient.connected) {
         const botMessageBody = {
           roomId: roomId,
           message: botInput.trim(),
           isVisible: isVisibleToOpponent,
         };
 
-        stompClient.publish({
+        existingStompClient.publish({
           destination: "/app/api/chatbot/send",
           body: JSON.stringify(botMessageBody),
         });
@@ -253,30 +268,24 @@ function ChatBar({
   };
 
   const handleSecretaryMessage = () => {
-    if (secretaryInput.trim()) {
-      // WebSocket을 통해 비서봇 메시지 전송
-      if (stompClient && stompClient.connected) {
-        const secretaryMessageBody = {
-          roomId: roomId,
-          message: secretaryInput.trim(),
-          isVisible: isVisibleToOpponent,
-        };
+    if (secretaryInput.trim() && existingStompClient?.connected) {
+      const messageContent = secretaryInput.trim();
+      console.log('[비서봇 질문 전송]', {
+        content: messageContent
+      });
 
-        stompClient.publish({
-          destination: "/app/api/secretary/send",
-          body: JSON.stringify(secretaryMessageBody),
-        });
+      // 사용자 메시지 추가
+      setSecretaryMessages(prev => [...prev, { sender: "user", text: messageContent }]);
 
-        console.log("[비서봇 메시지 전송]", secretaryMessageBody);
-        if (onSecretaryMessage) {
-          onSecretaryMessage({ sender: "user", text: secretaryInput.trim() });
-        }
-        setSecretaryMessages((prevMessages) => [...prevMessages, { sender: "user", text: secretaryInput.trim() }]);
-        setSecretaryInput("");
-      } else {
-        console.error("WebSocket 연결이 없습니다.");
-        toast.error("비서봇 메시지 전송에 실패했습니다.");
-      }
+      // WebSocket을 통해 메시지 전송
+      existingStompClient.publish({
+        destination: '/app/api/assistant/send',
+        body: JSON.stringify({
+          content: messageContent
+        })
+      });
+
+      setSecretaryInput("");
     }
   };
 
@@ -733,8 +742,8 @@ function ChatBar({
             };
 
             // WebSocket을 통해 만남 종료 사유 전송
-            if (stompClient && stompClient.connected) {
-              stompClient.publish({
+            if (existingStompClient && existingStompClient.connected) {
+              existingStompClient.publish({
                 destination: "/app/api/chat/leave",
                 body: JSON.stringify(endChatBody),
               });

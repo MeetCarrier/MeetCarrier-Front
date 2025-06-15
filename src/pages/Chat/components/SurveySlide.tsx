@@ -45,8 +45,8 @@ const SurveySlide: React.FC<SurveySlideProps> = ({
   matchData,
   onProfileClick,
 }) => {
-  const myAnswer = allAnswers.find((a) => Number(a.userId) === myId);
-  const otherAnswer = allAnswers.find((a) => Number(a.userId) !== myId);
+  const myAnswer = allAnswers.find((a) => Number(a.userId) === myId && a.questionId === question.questionId);
+  const otherAnswer = allAnswers.find((a) => Number(a.userId) !== myId && a.questionId === question.questionId);
 
   const showOther = !isEditing;
   const currentAnswer =
