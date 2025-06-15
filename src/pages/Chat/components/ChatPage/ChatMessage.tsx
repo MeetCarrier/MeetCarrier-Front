@@ -14,6 +14,7 @@ interface ChatMessageProps {
   onProfileClick: (senderId: number) => void;
   messageRef: (el: HTMLDivElement | null) => void;
   messageType: string;
+  searchQuery: string;
 }
 
 export const ChatMessage = ({
@@ -29,6 +30,7 @@ export const ChatMessage = ({
   onProfileClick,
   messageRef,
   messageType,
+  searchQuery,
 }: ChatMessageProps) => {
   const getMessageStyle = () => {
     switch (messageType) {
@@ -76,6 +78,17 @@ export const ChatMessage = ({
     }
   };
 
+  const highlightSearchText = (text: string, searchQuery: string) => {
+    if (!searchQuery) return text;
+    
+    const parts = text.split(new RegExp(`(${searchQuery})`, 'gi'));
+    return parts.map((part, i) => 
+      part.toLowerCase() === searchQuery.toLowerCase() 
+        ? `<span class="bg-[#EADCCB] text-[#333] ${isCurrent ? 'font-bold' : ''}">${part}</span>` 
+        : part
+    ).join('');
+  };
+
   // 챗봇의 자동 응답인 경우 (type: CHATBOT, chatbot: true)
   if (msg.type === "CHATBOT" && msg.chatbot) {
     return (
@@ -97,15 +110,11 @@ export const ChatMessage = ({
             <div className="flex items-end gap-1 ml-[40px] ">
               <div className="px-3 py-2 rounded-xl whitespace-pre-wrap font-GanwonEduAll_Light bg-[#666] text-white rounded-bl-none">
                 <span
-                  className={`text-base break-all  ${isHighlighted
-                    ? isCurrent
-                      ? "bg-[#EADCCB] text-[#333] font-bold"
-                      : "bg-[#EADCCB] text-[#333]"
-                    : ""
-                    }`}
-                >
-                  {msg.message}
-                </span>
+                  className={`text-base break-all`}
+                  dangerouslySetInnerHTML={{ 
+                    __html: highlightSearchText(msg.message, searchQuery)
+                  }}
+                />
               </div>
               {shouldDisplayTime && (
                 <div className="flex flex-col gap-y-0.5 text-xs text-gray-400 leading-tight font-GanwonEduAll_Light items-start ml-1">
@@ -145,15 +154,11 @@ export const ChatMessage = ({
               )}
               <div className="px-3 py-2 rounded-xl whitespace-pre-wrap font-GanwonEduAll_Light bg-[#666] text-white rounded-br-none">
                 <span
-                  className={`text-base break-all  ${isHighlighted
-                    ? isCurrent
-                      ? "bg-[#EADCCB] text-[#333] font-bold"
-                      : "bg-[#EADCCB] text-[#333]"
-                    : ""
-                    }`}
-                >
-                  {msg.message}
-                </span>
+                  className={`text-base break-all`}
+                  dangerouslySetInnerHTML={{ 
+                    __html: highlightSearchText(msg.message, searchQuery)
+                  }}
+                />
               </div>
             </div>
           </div>
@@ -167,6 +172,7 @@ export const ChatMessage = ({
     return null;
   }
 
+  
   // 일반 메시지인 경우
   return (
     <div ref={messageRef}>
@@ -208,15 +214,11 @@ export const ChatMessage = ({
                 />
               ) : (
                 <span
-                  className={`text-base break-all ${isHighlighted
-                    ? isCurrent
-                      ? "bg-[#EADCCB] text-[#333] font-bold"
-                      : "bg-[#EADCCB] text-[#333]"
-                    : ""
-                    }`}
-                >
-                  {msg.message}
-                </span>
+                  className={`text-base break-all`}
+                  dangerouslySetInnerHTML={{ 
+                    __html: highlightSearchText(msg.message, searchQuery)
+                  }}
+                />
               )}
             </div>
 
