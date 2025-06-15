@@ -39,7 +39,7 @@ function AlarmPage() {
           'https://www.mannamdeliveries.link/api/notification',
           { withCredentials: true }
         );
-        console.log(response.data);
+        console.log('알림 데이터:', response.data);
         setAlarms(response.data);
       } catch (error) {
         console.error('알림을 가져오지 못했어요', error);
@@ -93,6 +93,7 @@ function AlarmPage() {
   const handleInvitationRequest = (notification: Notification) => {
     if (!notification.referenceId) {
       toast.error('유효하지 않은 초대장 요청입니다.');
+      navigate('/ChatList');
       return;
     }
     navigate(`/chat/${notification.referenceId}`, {
@@ -107,6 +108,7 @@ function AlarmPage() {
   const handleInvitationAccepted = (notification: Notification) => {
     if (!notification.referenceId) {
       toast.error('유효하지 않은 초대장 응답입니다.');
+      navigate('/ChatList');
       return;
     }
     navigate(`/chat/${notification.referenceId}`, {
@@ -120,6 +122,7 @@ function AlarmPage() {
   const handleInvitationRejected = (notification: Notification) => {
     if (!notification.referenceId) {
       toast.error('유효하지 않은 초대장 응답입니다.');
+      navigate('/ChatList');
       return;
     }
     navigate(`/chat/${notification.referenceId}`, {
@@ -133,6 +136,7 @@ function AlarmPage() {
   const handleMeetingAccepted = (notification: Notification) => {
     if (!notification.referenceId) {
       toast.error('유효하지 않은 만남 확정 알림입니다.');
+      navigate('/ChatList');
       return;
     }
     navigate(`/chat/${notification.referenceId}`, {
@@ -146,6 +150,7 @@ function AlarmPage() {
   const handleMeetingRejected = (notification: Notification) => {
     if (!notification.referenceId) {
       toast.error('유효하지 않은 일정 조정 요청입니다.');
+      navigate('/ChatList');
       return;
     }
     navigate(`/chat/${notification.referenceId}`, {
@@ -169,6 +174,7 @@ function AlarmPage() {
   };
 
   const handleNotificationClick = (notification: Notification) => {
+    console.log('알림 클릭:', notification);
     const handlers: Record<string, (n: Notification) => void> = {
       Review: handleReview,
       Report: handleReport,
@@ -185,6 +191,7 @@ function AlarmPage() {
 
     const handler = handlers[notification.type];
     if (handler) {
+      console.log('알림 타입:', notification.type, '핸들러 실행');
       handler(notification);
     } else {
       console.warn('정의되지 않은 알림 타입:', notification.type);
