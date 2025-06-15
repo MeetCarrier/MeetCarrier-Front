@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 import { ChatMessage as ChatMessageType } from "./types";
 import { ChatMessage } from "./ChatMessage";
 import sampleProfile from "../../../../assets/img/sample/sample_profile.svg";
@@ -14,6 +14,7 @@ interface ChatMessagesProps {
   onProfileClick: (opponentId: number) => void;
   searchResults: number[];
   currentSearchIndex: number;
+  searchQuery: string;
 }
 
 const ChatMessages: React.FC<ChatMessagesProps> = ({
@@ -26,9 +27,22 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
   onProfileClick,
   searchResults,
   currentSearchIndex,
+  searchQuery,
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messageRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  useEffect(() => {
+    if (searchResults.length > 0 && currentSearchIndex >= 0) {
+      const targetIndex = searchResults[currentSearchIndex];
+      messageRefs.current[targetIndex]?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    } else {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, searchResults, currentSearchIndex]);
 
   const formatDate = (date: Date) => {
     const today = new Date();
@@ -168,6 +182,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
                   messageRefs.current[index] = el;
                 }}
                 messageType={messageType}
+                searchQuery={searchQuery}
               />
             </div>
           );

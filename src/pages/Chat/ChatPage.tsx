@@ -544,26 +544,21 @@ function ChatPage() {
 
   return (
     <>
-      {!showSearchBar ? (
-        <ChatHeader
-          otherNickname={otherNickname}
-          onBackClick={handleBackClick}
-          onSearchClick={() => setShowSearchBar(true)}
-        />
-      ) : (
-        <ChatSearch
-          showSearchBar={showSearchBar}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          handleSearch={handleSearch}
-          onClose={() => {
-            setShowSearchBar(false);
-            setSearchQuery("");
-            setSearchResults([]);
-            setCurrentSearchIndex(-1);
-          }}
-        />
-      )}
+      <ChatHeader
+        otherNickname={otherNickname}
+        onBackClick={handleBackClick}
+        showSearchBar={showSearchBar}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        handleSearch={handleSearch}
+        onSearchClick={() => setShowSearchBar(true)}
+        onSearchClose={() => {
+          setShowSearchBar(false);
+          setSearchQuery("");
+          setSearchResults([]);
+          setCurrentSearchIndex(-1);
+        }}
+      />
 
       <ChatBar
         emojiOpen={emojiOpen}
@@ -653,6 +648,7 @@ function ChatPage() {
         onProfileClick={handleProfileClick}
         searchResults={searchResults}
         currentSearchIndex={currentSearchIndex}
+        searchQuery={searchQuery}
       />
 
       <MeetingInfoModal

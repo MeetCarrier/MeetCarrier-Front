@@ -14,6 +14,7 @@ interface ChatMessageProps {
   onProfileClick: (senderId: number) => void;
   messageRef: (el: HTMLDivElement | null) => void;
   messageType: string;
+  searchQuery?: string;
 }
 
 export const ChatMessage = ({
@@ -29,6 +30,7 @@ export const ChatMessage = ({
   onProfileClick,
   messageRef,
   messageType,
+  searchQuery = "",
 }: ChatMessageProps) => {
   const getMessageStyle = () => {
     switch (messageType) {
@@ -76,12 +78,38 @@ export const ChatMessage = ({
     }
   };
 
+  const highlightText = (text: string, highlight: string) => {
+    if (!highlight.trim()) return text;
+
+    const parts = text.split(new RegExp(`(${highlight})`, "gi"));
+    return (
+      <>
+        {parts.map((part, index) =>
+          part.toLowerCase() === highlight.toLowerCase() ? (
+            <mark
+              key={index}
+              className={`${
+                isCurrent
+                  ? "bg-[#EADCCB] text-[#333] font-bold"
+                  : "bg-[#EADCCB] text-[#333]"
+              } px-0.5 rounded`}
+            >
+              {part}
+            </mark>
+          ) : (
+            <span key={index}>{part}</span>
+          )
+        )}
+      </>
+    );
+  };
+
   // 챗봇의 자동 응답인 경우 (type: CHATBOT, chatbot: true)
   if (msg.type === "CHATBOT" && msg.chatbot) {
     return (
       <div ref={messageRef}>
         <div className="flex justify-start mb-1">
-          <div className="flex flex-col items-start max-w-[95%]">
+          <div className="flex flex-col items-start max-w-[80%]">
             <div className="flex items-center mb-1">
               <div className="w-8 mr-2">
                 <img
@@ -96,16 +124,10 @@ export const ChatMessage = ({
             </div>
             <div className="flex items-end gap-1 ml-[40px]">
               <div className="px-3 py-2 rounded-xl whitespace-pre-wrap font-GanwonEduAll_Light bg-[#666] text-white rounded-bl-none">
-                <span
-                  className={`text-base ${
-                    isHighlighted
-                      ? isCurrent
-                        ? "bg-[#EADCCB] text-[#333] font-bold"
-                        : "bg-[#EADCCB] text-[#333]"
-                      : ""
-                  }`}
-                >
-                  {msg.message}
+                <span className="text-lg font-medium">
+                  {isHighlighted
+                    ? highlightText(msg.message, searchQuery)
+                    : msg.message}
                 </span>
               </div>
               {shouldDisplayTime && (
@@ -145,16 +167,10 @@ export const ChatMessage = ({
                 </div>
               )}
               <div className="px-3 py-2 rounded-xl whitespace-pre-wrap font-GanwonEduAll_Light bg-[#666] text-white rounded-br-none">
-                <span
-                  className={`text-base font-medium ${
-                    isHighlighted
-                      ? isCurrent
-                        ? "bg-[#EADCCB] text-[#333] font-bold"
-                        : "bg-[#EADCCB] text-[#333]"
-                      : ""
-                  }`}
-                >
-                  {msg.message}
+                <span className="text-lg font-medium">
+                  {isHighlighted
+                    ? highlightText(msg.message, searchQuery)
+                    : msg.message}
                 </span>
               </div>
             </div>
@@ -211,16 +227,10 @@ export const ChatMessage = ({
                   className="max-w-full max-h-[150px] rounded-lg"
                 />
               ) : (
-                <span
-                  className={`text-lg font-medium ${
-                    isHighlighted
-                      ? isCurrent
-                        ? "bg-[#EADCCB] text-[#333] font-bold"
-                        : "bg-[#EADCCB] text-[#333]"
-                      : ""
-                  }`}
-                >
-                  {msg.message}
+                <span className="text-lg font-medium">
+                  {isHighlighted
+                    ? highlightText(msg.message, searchQuery)
+                    : msg.message}
                 </span>
               )}
             </div>
