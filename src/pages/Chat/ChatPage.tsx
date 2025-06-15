@@ -45,6 +45,7 @@ function ChatPage() {
   const location = useLocation();
   const dispatch = useDispatch<AppDispatch>();
   const state = location.state as LocationState;
+  const [isLoading, setIsLoading] = useState(true);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [emojiOpen, setEmojiOpen] = useState(false);
   const [matchData, setMatchData] = useState<MatchData | null>(null);
@@ -91,6 +92,7 @@ function ChatPage() {
     exists: boolean;
     isSender: boolean;
     isReceiver: boolean;
+    status?: "PENDING" | "ACCEPTED" | "REJECTED";
   } | null>(null);
 
   useEffect(() => {
@@ -155,7 +157,7 @@ function ChatPage() {
             console.error("방 활성화 정보 조회 실패:", error);
           }
         };
-        fetchRoomActivationInfo();
+        await fetchRoomActivationInfo();
       } catch (error) {
         console.error("매치 데이터 조회 실패:", error);
         navigate(-1);
@@ -215,43 +217,103 @@ function ChatPage() {
     };
   }, [roomInfo]);
 
-  // 초대장 정보 가져오기
-  useEffect(() => {
-    const fetchInvitationStatus = async () => {
-      if (!matchData?.id || !myId) {
+  // 초대장 상태 리패칭 함수
+  const refetchInvitationStatus = async () => {
+    if (!matchData?.id || !myId) {
+      console.log("[초대장 상태 리패칭] 매치 데이터 또는 사용자 ID 없음");
+      return;
+    }
+
+    setLoadingInvitation(true);
+    try {
+      console.log("[초대장 상태 리패칭] API 호출 시작:", matchData.id);
+      const response = await axios.get(
+        `https://www.mannamdeliveries.link/api/invitation/${matchData.id}`,
+        { withCredentials: true }
+      );
+      console.log("[초대장 상태 리패칭] API 응답:", response.data);
+      const invitation = response.data;
+
+      if (!invitation) {
+        console.log("[초대장 상태 리패칭] 초대장 데이터 없음");
+        setInvitationStatus(null);
         setNotificationType("NO_INVITATION");
         return;
       }
 
-      try {
-        const response = await axios.get(`/api/invitation/${matchData.id}`);
-        const invitation = response.data;
+      const newStatus = {
+        exists: true,
+        isSender: invitation.senderId === myId,
+        isReceiver: invitation.receiverId === myId,
+        status: invitation.status,
+      };
+      console.log("[초대장 상태 리패칭] 설정할 상태:", newStatus);
+      console.log("[초대장 상태 리패칭] 현재 상태:", {
+        isSender: newStatus.isSender ? "발신자" : "수신자",
+        status:
+          newStatus.status === "PENDING"
+            ? "대기중"
+            : newStatus.status === "ACCEPTED"
+            ? "수락됨"
+            : newStatus.status === "REJECTED"
+            ? "거절됨"
+            : "상태 없음",
+      });
 
-        if (invitation.status === "PENDING") {
-          setNotificationType("PENDING");
-        } else if (invitation.status === "ACCEPTED") {
-          try {
-            const meetingResponse = await axios.get(
-              `/api/meetings/${matchData.id}`
-            );
-            setMeetingDate(new Date(meetingResponse.data.date));
-            setMeetingId(meetingResponse.data.id);
-            setNotificationType("SCHEDULED");
-          } catch (error) {
-            if (axios.isAxiosError(error) && error.response?.status === 404) {
-              setNotificationType("NEED_SCHEDULE");
-            }
+      setInvitationStatus(newStatus);
+
+      if (invitation.status === "PENDING") {
+        setNotificationType("PENDING");
+      } else if (invitation.status === "ACCEPTED") {
+        try {
+          const meetingResponse = await axios.get(
+            `https://www.mannamdeliveries.link/api/meetings/${matchData.id}`,
+            { withCredentials: true }
+          );
+          setMeetingDate(new Date(meetingResponse.data.date));
+          setMeetingId(meetingResponse.data.id);
+          setNotificationType("SCHEDULED");
+        } catch (error) {
+          if (axios.isAxiosError(error) && error.response?.status === 404) {
+            setNotificationType("NEED_SCHEDULE");
           }
         }
-      } catch (error) {
-        if (axios.isAxiosError(error) && error.response?.status === 404) {
+      }
+    } catch (error) {
+      console.error("[초대장 상태 리패칭] API 호출 실패:", error);
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 404) {
+          setInvitationStatus(null);
+          setNotificationType("NO_INVITATION");
+        } else {
+          console.error(
+            "[초대장 상태 리패칭] 서버 오류:",
+            error.response?.status
+          );
+          setInvitationStatus(null);
           setNotificationType("NO_INVITATION");
         }
+      } else {
+        console.error("[초대장 상태 리패칭] 네트워크 오류");
+        setInvitationStatus(null);
+        setNotificationType("NO_INVITATION");
       }
-    };
+    } finally {
+      setLoadingInvitation(false);
+    }
+  };
 
-    fetchInvitationStatus();
-  }, [matchData?.id, myId]);
+  // 초대장 모달 열 때 상태 리패칭
+  const handleInviteModalOpen = async () => {
+    await refetchInvitationStatus();
+    setShowInviteModal(true);
+  };
+
+  // 초대장 모달 닫을 때 상태 초기화
+  const handleInviteModalClose = () => {
+    setShowInviteModal(false);
+    setInvitationStatus(null);
+  };
 
   // 채팅방 활성화 시간 업데이트
   useEffect(() => {
@@ -277,6 +339,35 @@ function ChatPage() {
     return () => clearInterval(interval);
   }, [roomInfo?.deactivationTime]);
 
+  // 채팅 기록 조회
+  useEffect(() => {
+    const fetchChatHistory = async () => {
+      if (!state?.roomId || !matchData) {
+        return;
+      }
+
+      try {
+        const response = await axios.get(
+          `https://www.mannamdeliveries.link/api/chat/${state.roomId}`,
+          { withCredentials: true }
+        );
+
+        const convertedMessages = response.data.map((msg: ChatMessage) => ({
+          ...msg,
+          sentAt: new Date(msg.sentAt).toISOString(),
+        }));
+
+        setMessages(convertedMessages);
+      } catch (error) {
+        console.error("채팅 기록 조회 실패:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchChatHistory();
+  }, [state?.roomId, matchData]);
+
   useEffect(() => {
     // 사용자 정보 가져오기
     dispatch(fetchUser());
@@ -290,28 +381,6 @@ function ChatPage() {
       roomId: state.roomId,
       matchData: matchData,
     });
-
-    // 채팅 기록 조회
-    const fetchChatHistory = async () => {
-      try {
-        console.log("채팅 기록 조회 시작:", state.roomId);
-        const response = await axios.get(
-          `https://www.mannamdeliveries.link/api/chat/${state.roomId}`,
-          { withCredentials: true }
-        );
-        console.log("채팅 기록 조회 결과:", response.data);
-
-        // UTC 시간을 한국 시간으로 변환
-        const convertedMessages = response.data.map((msg: ChatMessage) => ({
-          ...msg,
-          sentAt: new Date(msg.sentAt).toISOString(),
-        }));
-
-        setMessages(convertedMessages);
-      } catch (error) {
-        console.error("채팅 기록 조회 실패:", error);
-      }
-    };
 
     // WebSocket 연결 설정
     console.log("WebSocket 연결 시작");
@@ -360,8 +429,6 @@ function ChatPage() {
 
     stompClientRef.current = stompClient;
     stompClient.activate();
-
-    fetchChatHistory();
 
     // 컴포넌트 언마운트 시 연결 해제
     return () => {
@@ -518,6 +585,25 @@ function ChatPage() {
     }
   }
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen ">
+        <svg
+          className="animate-spin h-20 w-20 text-gray-600"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 50 50"
+        >
+          <path
+            className="opacity-50"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+          ></path>
+        </svg>
+      </div>
+    );
+  }
+
   return (
     <>
       <ChatHeader
@@ -550,29 +636,7 @@ function ChatPage() {
             : matchData?.user1Id ?? 0
         }
         roomId={state.roomId}
-        onInviteClick={() => {
-          if (
-            roomInfo?.status === "Deactivate" &&
-            matchData?.status !== "Meeting"
-          ) {
-            toast.error("비활성화된 채팅방에서는 초대할 수 없습니다.");
-            return;
-          }
-          navigate("/invite-write", {
-            state: {
-              senderName: myNickname,
-              recipientName: otherNickname,
-              senderProfile: user?.imgUrl || sampleProfile,
-              matchId: matchData?.id || 0,
-              receiverId:
-                user?.userId === matchData?.user1Id
-                  ? matchData?.user2Id ?? 0
-                  : matchData?.user1Id ?? 0,
-              roomId: state.roomId,
-              myId: user?.userId,
-            },
-          });
-        }}
+        onInviteClick={handleInviteModalOpen}
         onSurveyClick={() => {
           navigate(`/survey/${matchData?.sessionId}`, {
             state: {
@@ -618,7 +682,7 @@ function ChatPage() {
         myId={myId}
         myNickname={myNickname}
         otherNickname={otherNickname}
-        userImgUrl={user?.imgUrl}
+        userImgUrl={user?.imgUrl || null}
         matchData={matchData}
         onProfileClick={handleProfileClick}
         searchResults={searchResults}
@@ -649,10 +713,12 @@ function ChatPage() {
 
       <InviteLetterModal
         isOpen={showInviteModal}
-        onClose={() => setShowInviteModal(false)}
+        onClose={handleInviteModalClose}
         senderName={myNickname}
         recipientName={otherNickname}
         senderProfile={user?.imgUrl || sampleProfile}
+        matchData={matchData}
+        roomInfo={roomInfo}
         matchId={matchData?.id || 0}
         receiverId={
           user?.userId === matchData?.user1Id

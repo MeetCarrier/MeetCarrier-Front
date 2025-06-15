@@ -6,7 +6,6 @@ import axios from "axios";
 import toast from "react-hot-toast";
 
 import ReportModal from "../../../components/ReportModal";
-import InviteLetterModal from "../Invite/InviteLetterModal";
 import EndModal from "../../../components/EndModal";
 
 import plus_icon from "../../../assets/img/icons/ChatIcon/ic_plus.svg";
@@ -82,10 +81,10 @@ function ChatBar({
   searchQuery,
   onBotMessage,
   myId,
+  onInviteClick,
 }: ChatBarProps) {
   const [message, setMessage] = useState("");
   const [showReportModal, setShowReportModal] = useState(false);
-  const [showInviteModal, setShowInviteModal] = useState(false);
   const [showEndModal, setShowEndModal] = useState(false);
   const [isBotMode, setIsBotMode] = useState(false);
   const [botInput, setBotInput] = useState("");
@@ -341,7 +340,7 @@ function ChatBar({
                   {
                     icon: invite_icon,
                     label: "대면초대장",
-                    onClick: () => setShowInviteModal(true),
+                    onClick: onInviteClick,
                     disabled: !isRoomActive,
                   },
                   {
@@ -604,20 +603,6 @@ function ChatBar({
         reportType="User"
         targetUserId={receiverId}
         onSubmit={() => {}}
-      />
-
-      <InviteLetterModal
-        isOpen={showInviteModal}
-        onClose={() => setShowInviteModal(false)}
-        senderName={senderName}
-        recipientName={recipientName}
-        senderProfile={senderProfile}
-        matchId={matchId}
-        receiverId={receiverId}
-        roomId={roomId}
-        myId={myId}
-        invitationStatus={null}
-        loadingInvitation={false}
       />
 
       <EndModal

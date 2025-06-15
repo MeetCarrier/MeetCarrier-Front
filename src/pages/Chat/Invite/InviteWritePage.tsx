@@ -1,15 +1,15 @@
-import { useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../../Utils/store';
-import toast from 'react-hot-toast';
-import letterBg from '../../../assets/img/icons/Letter/letterWrite.svg';
-import NavBar from '../../../components/NavBar';
-import back_arrow from '../../../assets/img/icons/HobbyIcon/back_arrow.svg';
-import largeNextButton from '../../../assets/img/icons/Login/l_btn_fill.svg';
-import smallNextButtonEmpty from '../../../assets/img/icons/Login/s_btn_empty.svg';
-import smallNextButtonFill from '../../../assets/img/icons/Login/s_btn_fill.svg';
+import { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../Utils/store";
+import toast from "react-hot-toast";
+import letterBg from "../../../assets/img/icons/Letter/letterWrite.svg";
+import NavBar from "../../../components/NavBar";
+import back_arrow from "../../../assets/img/icons/HobbyIcon/back_arrow.svg";
+import largeNextButton from "../../../assets/img/icons/Login/l_btn_fill.svg";
+import smallNextButtonEmpty from "../../../assets/img/icons/Login/s_btn_empty.svg";
+import smallNextButtonFill from "../../../assets/img/icons/Login/s_btn_fill.svg";
 
 interface LocationState {
   senderName: string;
@@ -33,15 +33,15 @@ function InviteWritePage() {
   } = location.state as LocationState;
 
   // Redux에서 사용자 정보 가져오기
-  const user = useSelector((state: RootState) => state.user) as { userId?: number } | null;
+  const user = useSelector((state: RootState) => state.user) as {
+    userId?: number;
+  } | null;
   const myId = propMyId || user?.userId;
 
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const [isInvitationExists, setIsInvitationExists] = useState(false);
   const [isReceiver, setIsReceiver] = useState(false);
   const [loading, setLoading] = useState(true);
-
-  console.log('[InviteWritePage] 현재 사용자 ID:', myId);
 
   useEffect(() => {
     const checkInvitation = async () => {
@@ -61,7 +61,7 @@ function InviteWritePage() {
         if (error.response?.status === 404) {
           setIsInvitationExists(false); // 초대장 없음 → 작성 모드
         } else {
-          console.error('[초대장 확인 실패]', error);
+          console.error("[초대장 확인 실패]", error);
         }
       } finally {
         setLoading(false);
@@ -76,7 +76,7 @@ function InviteWritePage() {
 
     try {
       const response = await axios.post(
-        'https://www.mannamdeliveries.link/api/invitation',
+        "https://www.mannamdeliveries.link/api/invitation",
         {
           matchId,
           receiverId,
@@ -85,16 +85,16 @@ function InviteWritePage() {
         {
           withCredentials: true,
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
         }
       );
 
-      console.log('[초대장 전송 응답]', response.data);
+      console.log("[초대장 전송 응답]", response.data);
       navigate(`/chat/${roomId}`, { state: { roomId } });
     } catch (error) {
-      console.error('초대장 전송 실패:', error);
-      toast.error('초대장 전송에 실패했습니다.');
+      console.error("초대장 전송 실패:", error);
+      toast.error("초대장 전송에 실패했습니다.");
     }
   };
 
@@ -108,16 +108,16 @@ function InviteWritePage() {
         },
         { withCredentials: true }
       );
-      console.log('[초대장 수락 응답]', response.data);
-      toast.success('초대장을 수락했습니다.');
+      console.log("[초대장 수락 응답]", response.data);
+      toast.success("초대장을 수락했습니다.");
       navigate(`/chat/${roomId}`, { state: { roomId } });
     } catch (error) {
-      console.error('[초대장 수락 실패]', error);
+      console.error("[초대장 수락 실패]", error);
       if (axios.isAxiosError(error)) {
-        console.error('서버 응답:', error.response?.data);
-        console.error('상태 코드:', error.response?.status);
+        console.error("서버 응답:", error.response?.data);
+        console.error("상태 코드:", error.response?.status);
       }
-      toast.error('초대장 수락에 실패했습니다.');
+      toast.error("초대장 수락에 실패했습니다.");
     }
   };
 
@@ -131,16 +131,16 @@ function InviteWritePage() {
         },
         { withCredentials: true }
       );
-      console.log('[초대장 거절 응답]', response.data);
-      toast.success('초대장을 거절했습니다.');
+      console.log("[초대장 거절 응답]", response.data);
+      toast.success("초대장을 거절했습니다.");
       navigate(`/chat/${roomId}`, { state: { roomId } });
     } catch (error) {
-      console.error('[초대장 거절 실패]', error);
+      console.error("[초대장 거절 실패]", error);
       if (axios.isAxiosError(error)) {
-        console.error('서버 응답:', error.response?.data);
-        console.error('상태 코드:', error.response?.status);
+        console.error("서버 응답:", error.response?.data);
+        console.error("상태 코드:", error.response?.status);
       }
-      toast.error('초대장 거절에 실패했습니다.');
+      toast.error("초대장 거절에 실패했습니다.");
     }
   };
 
@@ -195,7 +195,7 @@ function InviteWritePage() {
                 onClick={handleSubmit}
                 disabled={!message.trim()}
                 className={`relative w-full max-w-[400px] h-[45px] flex items-center justify-center overflow-hidden transition-opacity duration-200 ${
-                  !message.trim() ? 'opacity-50 cursor-not-allowed' : ''
+                  !message.trim() ? "opacity-50 cursor-not-allowed" : ""
                 }`}
               >
                 <img

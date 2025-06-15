@@ -42,20 +42,22 @@ const ChatNotificationBar: FC<ChatNotificationBarProps> = ({
   const getNotificationMessage = () => {
     switch (type) {
       case "NO_INVITATION":
-        return `⏱ 채팅 활성화 시간: ${remainingTime}`;
+        return "";
       case "PENDING":
         if (isSender) {
-          return `초대장을 보냈어요! ${recipientName}님이 초대를 확인하실 때까지 기다려주세요!\n⏱ 채팅 활성화 시간: ${remainingTime}`;
+          return `${recipientName}님이 결정하고 있어요.`;
         }
-        return `${senderName}님이 초대장을 보냈어요. 확인해주세요!\n⏱ 채팅 활성화 시간: ${remainingTime}`;
+        return `${senderName}님이 초대장을 보냈어요. 확인해주세요!`;
       case "NEED_SCHEDULE":
-        return `~월 ~일까지 만남 일정을 등록해주세요!!\n⏱ 채팅 활성화 시간: ${remainingTime}`;
+        return `~월 ~일까지 만남 일정을 등록해주세요!!`;
       case "SCHEDULED":
-        return `만남 일정: ${meetingDate?.toLocaleDateString("ko-KR", {
-          month: "long",
-          day: "numeric",
-          weekday: "long",
-        })}\n⏱ 채팅 활성화 시간: ${remainingTime}`;
+        return `만남 일정: ${
+          meetingDate?.toLocaleDateString("ko-KR", {
+            month: "long",
+            day: "numeric",
+            weekday: "long",
+          }) ?? ""
+        }`;
       default:
         return "";
     }
@@ -78,34 +80,9 @@ const ChatNotificationBar: FC<ChatNotificationBarProps> = ({
   const renderActionButtons = () => {
     switch (type) {
       case "NO_INVITATION":
-        return (
-          <button
-            onClick={onSendInvitation}
-            className="mt-2 bg-[#D45A4B] text-white px-4 py-2 rounded-md hover:bg-[#bf4a3c]"
-          >
-            초대장 보내기
-          </button>
-        );
+        return;
       case "PENDING":
-        if (!isSender) {
-          return (
-            <div className="mt-2 flex gap-2">
-              <button
-                onClick={onAcceptInvitation}
-                className="flex-1 bg-[#D45A4B] text-white px-4 py-2 rounded-md hover:bg-[#bf4a3c]"
-              >
-                수락하기
-              </button>
-              <button
-                onClick={onRejectInvitation}
-                className="flex-1 border border-[#D45A4B] text-[#D45A4B] px-4 py-2 rounded-md hover:bg-[#fff5f5]"
-              >
-                거절하기
-              </button>
-            </div>
-          );
-        }
-        return null;
+        return;
       case "NEED_SCHEDULE":
         return (
           <button
@@ -140,6 +117,16 @@ const ChatNotificationBar: FC<ChatNotificationBarProps> = ({
           />
           <p className="font-semibold flex-grow whitespace-pre-line">
             {getNotificationMessage()}
+          </p>
+        </div>
+        <div className="flex items-center justify-start">
+          <img
+            src={alarmClockIcon}
+            alt="notification icon"
+            className="w-5 h-5 ml-3 mr-3"
+          />
+          <p className="font-semibold flex-grow whitespace-pre-line">
+            채팅 활성화 시간: {remainingTime}
           </p>
         </div>
         {renderActionButtons()}

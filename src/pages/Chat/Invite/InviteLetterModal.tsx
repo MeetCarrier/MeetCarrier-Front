@@ -8,6 +8,7 @@ import Modal from "../../../components/Modal";
 import stamp from "../../../assets/img/stamp.svg";
 import letterBg from "../../../assets/img/icons/Letter/letter.svg";
 import sampleProfile from "../../../assets/img/sample/sample_profile.svg";
+import { MatchData, RoomInfo } from "../components/ChatPage/types";
 
 interface InviteLetterModalProps {
   isOpen: boolean;
@@ -15,6 +16,8 @@ interface InviteLetterModalProps {
   senderName: string;
   recipientName: string;
   senderProfile?: string;
+  matchData: MatchData | null;
+  roomInfo: RoomInfo | null;
   matchId: number;
   receiverId: number;
   roomId: number;
@@ -23,6 +26,7 @@ interface InviteLetterModalProps {
     exists: boolean;
     isSender: boolean;
     isReceiver: boolean;
+    status?: "PENDING" | "ACCEPTED" | "REJECTED";
   } | null;
   loadingInvitation: boolean;
 }
@@ -33,6 +37,8 @@ const InviteLetterModal: FC<InviteLetterModalProps> = ({
   senderName,
   recipientName,
   senderProfile = sampleProfile,
+  matchData,
+  roomInfo,
   matchId,
   receiverId,
   roomId,
@@ -46,15 +52,31 @@ const InviteLetterModal: FC<InviteLetterModalProps> = ({
   } | null;
   const myId = propMyId || user?.userId;
 
+  useEffect(() => {
+    if (isOpen) {
+      console.log(
+        "[InviteLetterModal] 모달 열림, 전달받은 초대장 상태:",
+        invitationStatus
+      );
+      if (invitationStatus) {
+        console.log("[InviteLetterModal] 현재 상태 상세:", {
+          isSender: invitationStatus.isSender ? "발신자" : "수신자",
+          status:
+            invitationStatus.status === "PENDING"
+              ? "대기중"
+              : invitationStatus.status === "ACCEPTED"
+              ? "수락됨"
+              : invitationStatus.status === "REJECTED"
+              ? "거절됨"
+              : "상태 없음",
+        });
+      } else {
+        console.log("[InviteLetterModal] 초대장 상태 없음 (null)");
+      }
+    }
+  }, [isOpen, invitationStatus]);
+
   const handleSubmit = () => {
-    const { exists, isSender, isReceiver } = invitationStatus || {
-      exists: false,
-      isSender: false,
-      isReceiver: false,
-    };
-
-    if (exists && !isReceiver) return;
-
     navigate("/invite-write", {
       state: {
         senderName,
@@ -69,10 +91,55 @@ const InviteLetterModal: FC<InviteLetterModalProps> = ({
     onClose();
   };
 
+  const getStatusMessage = () => {
+    if (!invitationStatus) return null;
+
+    const { exists, isSender, isReceiver, status } = invitationStatus;
+
+    if (!exists) {
+      return "대면 초대장을 보내 친구와 실제로 만남을 가져보세요!";
+    }
+
+    if (isSender) {
+      if (status === "PENDING") return "초대장을 보냈어요! 기다리세요!";
+      if (status === "ACCEPTED") return "초대장이 수락되었어요!";
+      if (status === "REJECTED") return "초대장이 거절되었어요.";
+    }
+
+    if (isReceiver) {
+      if (status === "PENDING") return "초대장이 도착했어요!";
+      if (status === "ACCEPTED") return "초대장을 수락했어요!";
+      if (status === "REJECTED") return "초대장을 거절했어요.";
+    }
+
+    return null;
+  };
+
+  const getModalTitle = () => {
+    if (!invitationStatus) return "대면 초대장을 보내시겠어요?";
+
+    const { exists, isSender, isReceiver, status } = invitationStatus;
+
+    if (exists) {
+      if (isSender) {
+        if (status === "PENDING") return "이미 초대장을 보냈어요!";
+        if (status === "ACCEPTED") return "초대장이 수락되었어요!";
+        if (status === "REJECTED") return "초대장이 거절되었어요.";
+      }
+      if (isReceiver) {
+        if (status === "PENDING") return "초대장이 도착했어요!";
+        if (status === "ACCEPTED") return "초대장을 수락했어요!";
+        if (status === "REJECTED") return "초대장을 거절했어요.";
+      }
+    }
+
+    return "대면 초대장을 보내시겠어요?";
+  };
+
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="flex flex-col items-center text-center space-y-4">
-        <h2 className="text-g font-semibold">대면 초대장을 보내시겠어요?</h2>
+        <h2 className="text-g font-semibold">{getModalTitle()}</h2>
 
         <div
           className="relative w-full max-w-[360px] h-[180px] bg-contain bg-no-repeat bg-center p-5"
@@ -112,29 +179,7 @@ const InviteLetterModal: FC<InviteLetterModalProps> = ({
             초대장 정보를 확인 중입니다...
           </p>
         ) : (
-          <>
-            {invitationStatus?.exists ? (
-              invitationStatus.isSender ? (
-                <p className="text-sm text-red-500 mt-2">
-                  이미 초대장을 보냈어요! 기다리세요!
-                </p>
-              ) : invitationStatus.isReceiver ? (
-                <p className="text-sm text-gray-600 mt-2">
-                  초대장이 도착했어요!
-                </p>
-              ) : (
-                <p className="text-sm text-gray-600">
-                  대면 초대장을 보내 <br />
-                  친구와 실제로 만남을 가져보세요!
-                </p>
-              )
-            ) : (
-              <p className="text-sm text-gray-600">
-                대면 초대장을 보내 <br />
-                친구와 실제로 만남을 가져보세요!
-              </p>
-            )}
-          </>
+          <p className="text-sm text-gray-600">{getStatusMessage()}</p>
         )}
 
         <div className="flex justify-between gap-4 w-full mt-2">
@@ -142,18 +187,13 @@ const InviteLetterModal: FC<InviteLetterModalProps> = ({
             className="flex-1 py-2 bg-gray-200 rounded-md hover:bg-gray-300 transition"
             onClick={onClose}
           >
-            취소
+            닫기
           </button>
           <button
-            className={`flex-1 py-2 rounded-md transition ${
-              invitationStatus?.exists && !invitationStatus?.isReceiver
-                ? "bg-gray-300 text-white cursor-not-allowed"
-                : "bg-[#D45A4B] text-white hover:bg-[#bf4a3c]"
-            }`}
+            className="flex-1 py-2 bg-[#D45A4B] text-white rounded-md hover:bg-[#bf4a3c] transition"
             onClick={handleSubmit}
-            disabled={invitationStatus?.exists && !invitationStatus?.isReceiver}
           >
-            {invitationStatus?.isReceiver ? "초대장 보러가기" : "초대장쓰기"}
+            확인하기
           </button>
         </div>
       </div>
