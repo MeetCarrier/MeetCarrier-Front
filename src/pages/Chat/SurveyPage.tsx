@@ -31,6 +31,8 @@ import exitIcon from "../../assets/img/icons/Survey/exit.svg";
 import reportIcon from "../../assets/img/icons/Survey/report.svg";
 import ReportModal from "../../components/ReportModal";
 import largeNextButton from "../../assets/img/icons/Login/l_btn_fill.svg";
+import smallNextButtonEmpty from '../../assets/img/icons/Login/s_btn_empty.svg';
+import smallNextButtonFill from '../../assets/img/icons/Login/s_btn_fill.svg';
 import ProfileModal from "../../components/ProfileModal";
 import EndModal from "../../components/EndModal";
 import SurveySlide from "./components/SurveySlide";
@@ -798,7 +800,7 @@ function SurveyPage() {
                 <img
                   src={largeNextButton}
                   alt="제출하기"
-                  className="absolute inset-0 w-full h-full object-fill"
+                  className="absolute inset-0 w-full h-full px-4 object-fill"
                 />
                 <span className="relative z-10 font-GanwonEduAll_Bold text-[#333]">
                   제출하기
@@ -810,26 +812,41 @@ function SurveyPage() {
       <FootPrintCheck currentStep={currentStep + 1} />
 
       {/* 제출 확인 모달 */}
-      <Modal isOpen={showSubmitModal} onClose={() => setShowSubmitModal(false)}>
-        <div className="flex flex-col items-center">
-          <h3 className="text-lg font-GanwonEduAll_Bold mb-4">제출 확인</h3>
-          <p className="text-sm mb-6 text-center">
+      <Modal hideCloseButton={true} isOpen={showSubmitModal} onClose={() => setShowSubmitModal(false)}>
+        <div className="flex flex-col items-center  font-GanwonEduAll_Light  text-base">
+          <h3 className="text-lg font-bold">제출 확인</h3>
+          <p className="text-base my-4 text-center">
             답변을 등록하시겠어요?
             <br />
             등록 후에는 수정이 불가능해요.
           </p>
           <div className="flex justify-center gap-4 w-full">
             <button
-              className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded"
               onClick={() => setShowSubmitModal(false)}
+              className="relative w-[120px] h-[40px] flex items-center justify-center overflow-hidden"
             >
-              취소
+              <img
+                src={smallNextButtonEmpty}
+                alt="취소"
+                className="absolute inset-0 w-full h-full object-fill"
+              />
+              <span className="relative z-10 text-sm text-[#333] font-GanwonEduAll_Bold">
+                취소
+              </span>
             </button>
+
             <button
-              className="px-4 py-2 bg-[#C67B5A] text-white text-sm rounded whitespace-pre-line"
               onClick={handleSubmit}
+              className="relative w-[120px] h-[40px] flex items-center justify-center overflow-hidden"
             >
-              제출하기
+              <img
+                src={smallNextButtonFill}
+                alt="제출하기"
+                className="absolute inset-0 w-full h-full object-fill"
+              />
+              <span className="relative z-10 text-sm text-white font-GanwonEduAll_Bold">
+                제출하기
+              </span>
             </button>
           </div>
         </div>
@@ -837,6 +854,7 @@ function SurveyPage() {
 
       {/* 설문 완료 모달 */}
       <Modal
+        hideCloseButton={true}
         isOpen={showCompleteModal}
         onClose={() => {
           setShowCompleteModal(false);
@@ -844,31 +862,40 @@ function SurveyPage() {
           // handleJoinChat(); // 이 부분은 이제 '채팅방 참가하기' 버튼 클릭 시에만 호출됨
         }}
       >
-        <div className="flex flex-col items-center">
-          <h3 className="text-lg font-GanwonEduAll_Bold mb-4">설문 완료!</h3>
-          <p className="text-sm mb-6 text-center">
+        <div className="flex flex-col items-center  font-GanwonEduAll_Light  text-base">
+          <h3 className="text-lg  font-bold mb-4">설문 완료!</h3>
+          <p className="text-sm mb-6 text-center ">
             둘 다 모든 설문에 답변했어요!
           </p>
           <div className="flex justify-center w-full">
             <button
-              className="px-6 py-2 bg-[#C67B5A] text-white text-sm rounded"
+              className="relative w-[120px] h-[40px] flex items-center justify-center overflow-hidden"
               onClick={() => {
                 setShowCompleteModal(false);
               }}
             >
-              답변 확인하기
+              <img
+                src={smallNextButtonFill}
+                alt="답변 확인하기"
+                className="absolute inset-0 w-full h-full object-fill"
+              />
+              <span className="relative z-10 text-sm text-white font-GanwonEduAll_Bold">
+                답변 확인하기
+              </span>
             </button>
+
           </div>
         </div>
       </Modal>
 
       {/* 제출 완료 안내 모달 */}
       <Modal
+        hideCloseButton={true}
         isOpen={showSubmittedModal}
         onClose={() => setShowSubmittedModal(false)}
       >
-        <div className="flex flex-col items-center">
-          <h3 className="text-lg font-GanwonEduAll_Bold mb-4">
+        <div className="flex flex-col items-center  font-GanwonEduAll_Light  text-base">
+          <h3 className="text-lg  font-bold mb-4">
             답변 제출 완료!
           </h3>
           <p className="text-sm mb-6 text-center">
@@ -878,11 +905,19 @@ function SurveyPage() {
           </p>
           <div className="flex justify-center w-full">
             <button
-              className="px-6 py-2 bg-[#C67B5A] text-white text-sm rounded"
+              className="relative w-[120px] h-[40px] flex items-center justify-center overflow-hidden"
               onClick={() => setShowSubmittedModal(false)}
             >
-              확인
+              <img
+                src={smallNextButtonFill}
+                alt="확인"
+                className="absolute inset-0 w-full h-full object-fill"
+              />
+              <span className="relative z-10 text-sm text-white font-GanwonEduAll_Bold">
+                확인
+              </span>
             </button>
+
           </div>
         </div>
       </Modal>
@@ -897,13 +932,13 @@ function SurveyPage() {
             <button
               onClick={handleJoinChat}
               className={
-                "relative w-full max-w-[400px] h-[45px] flex items-center justify-center overflow-hidden transition-opacity duration-200"
+                "  px-4 relative w-full max-w-[400px] h-[45px] flex items-center justify-center overflow-hidden transition-opacity duration-200"
               }
             >
               <img
                 src={largeNextButton}
                 alt="채팅방 참가하기"
-                className="absolute inset-0 w-full h-full object-fill"
+                className="px-4 absolute inset-0 w-full h-full object-fill"
               />
               <span className="relative z-10 font-GanwonEduAll_Bold text-[#333]">
                 채팅방 참가하기
