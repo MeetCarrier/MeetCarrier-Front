@@ -1,30 +1,33 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import toast from 'react-hot-toast';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import toast from "react-hot-toast";
 
-import doneIcon from '../assets/img/icons/Login/done.svg'; // 완료 페이지에 사용할 이미지 경로
-import largeNextButton from '../assets/img/icons/Login/l_btn_fill.svg';
-import smallNextButtonEmpty from '../assets/img/icons/Login/s_btn_empty.svg';
-import smallNextButtonFill from '../assets/img/icons/Login/s_btn_fill.svg';
+import doneIcon from "../assets/img/icons/Login/done.svg"; // 완료 페이지에 사용할 이미지 경로
+import largeNextButton from "../assets/img/icons/Login/l_btn_fill.svg";
+import smallNextButtonEmpty from "../assets/img/icons/Login/s_btn_empty.svg";
+import smallNextButtonFill from "../assets/img/icons/Login/s_btn_fill.svg";
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0); // 0: Nickname, 1: Gender, 2: Birthdate, 3: Complete
   const [formData, setFormData] = useState({
-    nickname: '',
-    gender: '', // 'Male' or 'Female'
-    birthdate: '', // YYYY/MM/DD format
+    nickname: "",
+    gender: "", // 'Male' or 'Female'
+    birthdate: "", // YYYY/MM/DD format
   });
   const [isNicknameUnique, setIsNicknameUnique] = useState(false);
-  const [nicknameError, setNicknameError] = useState('');
+  const [nicknameError, setNicknameError] = useState("");
+  const [isBirthdateValid, setIsBirthdateValid] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-    if (e.target.name === 'nickname') {
-      setNicknameError('');
+    if (e.target.name === "nickname") {
+      setNicknameError("");
+    } else if (e.target.name === "birthdate") {
+      validateBirthdate(e.target.value);
     }
   };
 
@@ -34,7 +37,7 @@ const Register: React.FC = () => {
 
   const handleNicknameCheck = async () => {
     if (!formData.nickname.trim()) {
-      setNicknameError('닉네임을 입력해주세요.');
+      setNicknameError("닉네임을 입력해주세요.");
       return;
     }
     try {
@@ -49,43 +52,98 @@ const Register: React.FC = () => {
 
       // 성공 = 사용 가능
       setIsNicknameUnique(true);
-      setNicknameError('사용 가능한 닉네임입니다.');
+      setNicknameError("사용 가능한 닉네임입니다.");
     } catch (error: any) {
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 409) {
           setIsNicknameUnique(false);
-          setNicknameError('이미 사용 중인 닉네임입니다.');
+          setNicknameError("이미 사용 중인 닉네임입니다.");
         } else {
           setIsNicknameUnique(false);
-          setNicknameError('닉네임 중복 확인 중 오류가 발생했습니다.');
+          setNicknameError("닉네임 중복 확인 중 오류가 발생했습니다.");
         }
       } else {
-        console.error('알 수 없는 에러:', error);
+        console.error("알 수 없는 에러:", error);
       }
     }
+  };
+
+  const validateBirthdate = (birthdate: string) => {
+    const dateRegex = /^\d{8}$/;
+    if (!birthdate.match(dateRegex)) {
+      setIsBirthdateValid(false);
+      return;
+    }
+
+    const birthYear = parseInt(birthdate.substring(0, 4));
+    const birthMonth = parseInt(birthdate.substring(4, 6));
+    const birthDay = parseInt(birthdate.substring(6, 8));
+
+    // 월과 일 유효성 검사
+    if (birthMonth < 1 || birthMonth > 12) {
+      setIsBirthdateValid(false);
+      return;
+    }
+
+    // 각 월의 일수 검사
+    const daysInMonth = new Date(birthYear, birthMonth, 0).getDate();
+    if (birthDay < 1 || birthDay > daysInMonth) {
+      setIsBirthdateValid(false);
+      return;
+    }
+
+    // 현재 날짜와 비교
+    const today = new Date();
+    const birthDate = new Date(birthYear, birthMonth - 1, birthDay);
+
+    // 미래 날짜 체크
+    if (birthDate > today) {
+      setIsBirthdateValid(false);
+      return;
+    }
+
+    // 만 나이 계산
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birthDate.getDate())
+    ) {
+      age--;
+    }
+
+    // 나이 제한 체크 (6세 이상 100세 미만)
+    if (age < 6) {
+      setIsBirthdateValid(false);
+      return;
+    }
+    if (age >= 100) {
+      setIsBirthdateValid(false);
+      return;
+    }
+
+    setIsBirthdateValid(true);
   };
 
   const handleNextStep = () => {
     if (currentStep === 0) {
       // 닉네임 단계 유효성 검사
       if (!isNicknameUnique) {
-        setNicknameError('닉네임 중복 확인이 필요합니다.');
+        setNicknameError("닉네임 중복 확인이 필요합니다.");
         return;
       }
     } else if (currentStep === 1) {
       // 성별 단계 유효성 검사
       if (!formData.gender) {
-        toast.error('성별을 선택해주세요.');
+        toast.error("성별을 선택해주세요.");
         return;
       }
     } else if (currentStep === 2) {
-      // 생년월일 단계 유효성 검사 (YYYY/MM/DD 형식 확인)
-      const dateRegex = /^\d{8}$/;
-      if (!formData.birthdate.match(dateRegex)) {
-        toast.error('생년월일을 YYYYMMDD 형식으로 입력해주세요.');
+      // 생년월일 단계 유효성 검사
+      if (!isBirthdateValid) {
+        toast.error("유효하지 않은 생년월일입니다.");
         return;
       }
-      // TODO: 실제 날짜 유효성 (예: 유효한 월, 일, 미래 날짜 아님) 검사 추가
     }
     setCurrentStep((prev) => prev + 1);
   };
@@ -102,39 +160,39 @@ const Register: React.FC = () => {
       const birthMonth = parseInt(formData.birthdate.substring(4, 6));
       const birthDay = parseInt(formData.birthdate.substring(6, 8));
 
-      console.log('=== 생년월일 파싱 ===');
-      console.log('년:', birthYear);
-      console.log('월:', birthMonth);
-      console.log('일:', birthDay);
+      console.log("=== 생년월일 파싱 ===");
+      console.log("년:", birthYear);
+      console.log("월:", birthMonth);
+      console.log("일:", birthDay);
 
       const today = new Date();
       const birthDate = new Date(birthYear, birthMonth - 1, birthDay);
 
-      console.log('=== 날짜 객체 ===');
-      console.log('오늘:', today);
-      console.log('생년월일:', birthDate);
+      console.log("=== 날짜 객체 ===");
+      console.log("오늘:", today);
+      console.log("생년월일:", birthDate);
 
       // 만 나이 계산
       let age = today.getFullYear() - birthDate.getFullYear();
       const monthDiff = today.getMonth() - birthDate.getMonth();
 
-      console.log('=== 나이 계산 과정 ===');
-      console.log('기본 나이:', age);
-      console.log('월 차이:', monthDiff);
-      console.log('오늘 날짜:', today.getDate());
-      console.log('생일 날짜:', birthDate.getDate());
+      console.log("=== 나이 계산 과정 ===");
+      console.log("기본 나이:", age);
+      console.log("월 차이:", monthDiff);
+      console.log("오늘 날짜:", today.getDate());
+      console.log("생일 날짜:", birthDate.getDate());
 
       if (
         monthDiff < 0 ||
         (monthDiff === 0 && today.getDate() < birthDate.getDate())
       ) {
         age--;
-        console.log('생일이 지나지 않아 나이 -1');
+        console.log("생일이 지나지 않아 나이 -1");
       }
 
       // 나이가 0보다 작거나 100보다 크면 에러
       if (age < 0 || age > 100) {
-        toast.error('유효하지 않은 생년월일입니다.');
+        toast.error("유효하지 않은 생년월일입니다.");
         return;
       }
 
@@ -144,33 +202,33 @@ const Register: React.FC = () => {
         age: Number(age), // 명시적으로 숫자 타입으로 변환
       };
 
-      console.log('=== 회원가입 데이터 ===');
-      console.log('닉네임:', formData.nickname);
-      console.log('성별:', formData.gender);
-      console.log('생년월일:', formData.birthdate);
-      console.log('계산된 나이:', age);
-      console.log('전송할 데이터:', submitData);
+      console.log("=== 회원가입 데이터 ===");
+      console.log("닉네임:", formData.nickname);
+      console.log("성별:", formData.gender);
+      console.log("생년월일:", formData.birthdate);
+      console.log("계산된 나이:", age);
+      console.log("전송할 데이터:", submitData);
 
       const response = await axios.post(
-        'https://www.mannamdeliveries.link/api/oauth/signup/detail',
+        "https://www.mannamdeliveries.link/api/oauth/signup/detail",
         submitData,
         {
           withCredentials: true,
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
         }
       );
 
-      if (response.status === 200) {
-        toast.success('회원가입 완료!');
-        navigate('/login');
+      if (response.status === 201) {
+        toast.success("회원가입 완료!");
+        navigate("/login");
       } else {
-        toast.error('회원가입에 실패했습니다.');
+        toast.error("회원가입에 실패했습니다.");
       }
     } catch (error) {
       console.error(error);
-      toast.error('회원가입에 실패했습니다.');
+      toast.error("회원가입에 실패했습니다.");
     }
   };
 
@@ -206,8 +264,8 @@ const Register: React.FC = () => {
                   className={`absolute right-0 bottom-[-36px] px-5 py-1 text-sm rounded font-GanwonEduAll_Bold transition
        ${
          formData.nickname.trim()
-           ? 'bg-[#BD4B2C] text-white hover:bg-[#a03e24]'
-           : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+           ? "bg-[#BD4B2C] text-white hover:bg-[#a03e24]"
+           : "bg-gray-200 text-gray-400 cursor-not-allowed"
        }`}
                 >
                   중복 확인
@@ -228,8 +286,8 @@ const Register: React.FC = () => {
                 disabled={!isNicknameUnique}
                 className={`relative w-full max-w-[400px] h-[45px] flex items-center justify-center overflow-hidden transition-opacity duration-200 ${
                   !isNicknameUnique
-                    ? 'opacity-50 cursor-not-allowed'
-                    : 'opacity-100'
+                    ? "opacity-50 cursor-not-allowed"
+                    : "opacity-100"
                 }`}
               >
                 <img
@@ -257,21 +315,21 @@ const Register: React.FC = () => {
               </p>
               <div className="flex flex-col space-y-4 mb-8">
                 <button
-                  onClick={() => handleGenderSelect('Female')}
+                  onClick={() => handleGenderSelect("Female")}
                   className={`w-full py-1 rounded-lg border-3 font-GanwonEduAll_Bold text-lg transition ${
-                    formData.gender === 'Female'
-                      ? 'border-[#BD4B2C]'
-                      : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                    formData.gender === "Female"
+                      ? "border-[#BD4B2C]"
+                      : "border-gray-300 text-gray-700 hover:border-gray-400"
                   }`}
                 >
                   여성
                 </button>
                 <button
-                  onClick={() => handleGenderSelect('Male')}
+                  onClick={() => handleGenderSelect("Male")}
                   className={`w-full py-1 rounded-lg border-3 font-GanwonEduAll_Bold text-lg transition ${
-                    formData.gender === 'Male'
-                      ? 'border-[#BD4B2C]'
-                      : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                    formData.gender === "Male"
+                      ? "border-[#BD4B2C]"
+                      : "border-gray-300 text-gray-700 hover:border-gray-400"
                   }`}
                 >
                   남성
@@ -298,8 +356,8 @@ const Register: React.FC = () => {
                 disabled={!formData.gender}
                 className={`relative w-1/2 h-[50px] flex items-center justify-center overflow-hidden transition-opacity duration-200 ${
                   !formData.gender
-                    ? 'opacity-50 cursor-not-allowed'
-                    : 'opacity-100'
+                    ? "opacity-50 cursor-not-allowed"
+                    : "opacity-100"
                 }`}
               >
                 <img
@@ -333,9 +391,50 @@ const Register: React.FC = () => {
                   value={formData.birthdate}
                   onChange={handleChange}
                   className="w-full px-0 py-1 border-b-2 border-gray-300 focus:outline-none focus:border-[#C67B5A] text-lg font-GanwonEduAll_Light"
-                  maxLength={8} // YYYY/MM/DD 형식 (8자)
+                  maxLength={8}
                   required
                 />
+                {!isBirthdateValid && formData.birthdate.length === 8 && (
+                  <p className="text-[#BD4B2C] text-sm mt-2 font-GanwonEduAll_Light">
+                    {(() => {
+                      const birthYear = parseInt(
+                        formData.birthdate.substring(0, 4)
+                      );
+                      const birthMonth = parseInt(
+                        formData.birthdate.substring(4, 6)
+                      );
+                      const birthDay = parseInt(
+                        formData.birthdate.substring(6, 8)
+                      );
+                      const birthDate = new Date(
+                        birthYear,
+                        birthMonth - 1,
+                        birthDay
+                      );
+                      const today = new Date();
+                      let age = today.getFullYear() - birthDate.getFullYear();
+                      const monthDiff = today.getMonth() - birthDate.getMonth();
+                      if (
+                        monthDiff < 0 ||
+                        (monthDiff === 0 &&
+                          today.getDate() < birthDate.getDate())
+                      ) {
+                        age--;
+                      }
+
+                      if (birthDate > today) {
+                        return "미래의 날짜는 입력할 수 없습니다.";
+                      }
+                      if (age < 6) {
+                        return "6세 이상만 가입할 수 있습니다.";
+                      }
+                      if (age >= 100) {
+                        return "100세 미만만 가입할 수 있습니다.";
+                      }
+                      return "유효하지 않은 생년월일입니다.";
+                    })()}
+                  </p>
+                )}
               </div>
             </div>
             <div className="mt-auto mb-[90px] flex justify-center gap-4 w-full">
@@ -353,17 +452,17 @@ const Register: React.FC = () => {
                 </span>
               </button>
               <button
-                onClick={handleNextStep} // 이 버튼이 마지막 제출로 이어짐
-                disabled={!formData.birthdate} // 생년월일이 입력되었을 때만 활성화
+                onClick={handleNextStep}
+                disabled={!isBirthdateValid}
                 className={`relative w-1/2 h-[50px] flex items-center justify-center overflow-hidden ${
-                  !formData.birthdate ? 'cursor-not-allowed' : ''
+                  !isBirthdateValid ? "opacity-50 cursor-not-allowed" : ""
                 }`}
               >
                 <img
                   src={smallNextButtonFill}
                   alt="완료"
                   className={`absolute inset-0 w-full h-full object-fill ${
-                    !formData.birthdate ? 'opacity-50' : ''
+                    !isBirthdateValid ? "opacity-50" : ""
                   }`}
                 />
                 <span className="relative z-10 font-GanwonEduAll_Bold text-[white] whitespace-nowrap">

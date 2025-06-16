@@ -4,6 +4,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
 import { AppDispatch } from "../../Utils/store";
+import { toast } from "react-hot-toast";
 
 import back_arrow from "../../assets/img/icons/HobbyIcon/back_arrow.svg";
 import help_icon from "../../assets/img/icons/Review/help.svg";
@@ -46,7 +47,9 @@ const ReviewPage = () => {
   const [matchData, setMatchData] = useState<Match | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const user = useSelector((state: RootState) => state.user) as UserState | null;
+  const user = useSelector(
+    (state: RootState) => state.user
+  ) as UserState | null;
   const myId = user?.userId;
 
   // 사용자 정보 로드
@@ -72,16 +75,20 @@ const ReviewPage = () => {
       if (!myId || !userId) return;
 
       try {
-        const response = await axios.get(`https://www.mannamdeliveries.link/api/matches`, {
-          withCredentials: true,
-          headers: {
-            'Content-Type': 'application/json',
+        const response = await axios.get(
+          `https://www.mannamdeliveries.link/api/matches`,
+          {
+            withCredentials: true,
+            headers: {
+              "Content-Type": "application/json",
+            },
           }
-        });
-        
+        );
+
         // userId와 일치하는 매치 찾기
         const match = response.data.find((match: Match) => {
-          const opponentId = match.user1Id === myId ? match.user2Id : match.user1Id;
+          const opponentId =
+            match.user1Id === myId ? match.user2Id : match.user1Id;
           return opponentId.toString() === userId;
         });
 
@@ -112,13 +119,13 @@ const ReviewPage = () => {
     // 매칭 상태에 따른 step 값 설정
     let step = 1;
     switch (matchData.status) {
-      case 'Survey_Cancelled':
+      case "Survey_Cancelled":
         step = 1;
         break;
-      case 'Chat_Cancelled':
+      case "Chat_Cancelled":
         step = 2;
         break;
-      case 'Reviewing':
+      case "Reviewing":
         step = 3;
         break;
       default:
@@ -127,27 +134,31 @@ const ReviewPage = () => {
 
     const requestData = {
       rating,
-      content: selectedTags.join(','),
-      step
+      content: selectedTags.join(","),
+      step,
     };
 
-    console.log('리뷰 등록 요청 데이터:', {
+    console.log("리뷰 등록 요청 데이터:", {
       url: `https://www.mannamdeliveries.link/api/review/${userId}`,
-      method: 'POST',
-      data: requestData
+      method: "POST",
+      data: requestData,
     });
 
     try {
-      const response = await axios.post(`https://www.mannamdeliveries.link/api/review/${userId}`, requestData, {
-        withCredentials: true,
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await axios.post(
+        `https://www.mannamdeliveries.link/api/review/${userId}`,
+        requestData,
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
-      });
+      );
 
-      console.log('리뷰 등록 응답 데이터:', {
+      console.log("리뷰 등록 응답 데이터:", {
         status: response.status,
-        data: response.data
+        data: response.data,
       });
 
       if (response.status === 200 || response.status === 201) {
@@ -159,12 +170,16 @@ const ReviewPage = () => {
     } catch (err) {
       console.error("리뷰 작성 실패:", err);
       if (axios.isAxiosError(err)) {
-        console.error('에러 상세 정보:', {
+        console.error("에러 상세 정보:", {
           status: err.response?.status,
           data: err.response?.data,
-          headers: err.response?.headers
+          headers: err.response?.headers,
         });
-        alert(`후기 등록에 실패했습니다: ${err.response?.data?.message || '알 수 없는 오류가 발생했습니다.'}`);
+        alert(
+          `후기 등록에 실패했습니다: ${
+            err.response?.data?.message || "알 수 없는 오류가 발생했습니다."
+          }`
+        );
       } else {
         alert("후기 등록에 실패했습니다. 다시 시도해주세요.");
       }
@@ -172,15 +187,27 @@ const ReviewPage = () => {
   };
 
   if (loading) {
-    return <div className="flex justify-center items-center h-screen">로딩중...</div>;
+    return (
+      <div className="flex justify-center items-center h-screen">로딩중...</div>
+    );
   }
 
   if (error || !matchData) {
-    return <div className="flex justify-center items-center h-screen">{error || "매칭 정보를 찾을 수 없습니다."}</div>;
+    return (
+      <div className="flex justify-center items-center h-screen">
+        {error || "매칭 정보를 찾을 수 없습니다."}
+      </div>
+    );
   }
 
-  const opponentNickname = matchData.user1Id === myId ? matchData.user2Nickname : matchData.user1Nickname;
-  const opponentImage = matchData.user1Id === myId ? matchData.user2ImageUrl : matchData.user1ImageUrl;
+  const opponentNickname =
+    matchData.user1Id === myId
+      ? matchData.user2Nickname
+      : matchData.user1Nickname;
+  const opponentImage =
+    matchData.user1Id === myId
+      ? matchData.user2ImageUrl
+      : matchData.user1ImageUrl;
 
   const categories = [
     {
@@ -222,6 +249,10 @@ const ReviewPage = () => {
     if (selectedTags.includes(tag)) {
       setSelectedTags(selectedTags.filter((t) => t !== tag));
     } else {
+      if (selectedTags.length >= 5) {
+        toast.error("키워드는 최대 5개까지 선택할 수 있습니다.");
+        return;
+      }
       setSelectedTags([...selectedTags, tag]);
     }
   };
@@ -247,7 +278,10 @@ const ReviewPage = () => {
 
       <div className="w-full flex flex-col items-center px-4">
         {/* 리뷰 카드 */}
-        <div className="mb-2 bg-white rounded-xl shadow p-1 flex flex-col items-center w-full max-w-md" style={{ minHeight: 'unset', height: 'auto' }}>
+        <div
+          className="mb-2 bg-white rounded-xl shadow p-1 flex flex-col items-center w-full max-w-md"
+          style={{ minHeight: "unset", height: "auto" }}
+        >
           <div className="relative m-2">
             <div className="relative w-12 h-12">
               <img src={stamp} alt="스탬프" className="w-full h-full" />
@@ -274,26 +308,40 @@ const ReviewPage = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow px-6 py-1 w-full max-w-md" style={{ minHeight: 'unset', height: 'auto' }}>
+        <div
+          className="bg-white rounded-xl shadow px-6 py-1 w-full max-w-md"
+          style={{ minHeight: "unset", height: "auto" }}
+        >
           {/* 키워드 선택 안내 */}
           <p className="text-sm font-semibold mb-2 font-GanwonEduAll_Light font-bold">
             친구의 어떤 점이 좋았나요?{" "}
             <span className="text-gray-400">(1개~5개)</span>
           </p>
-          <Swiper spaceBetween={0} slidesPerView={1} className="mb-4 h-[220px] w-full">
+          <Swiper
+            spaceBetween={0}
+            slidesPerView={1}
+            className="mb-4 h-[220px] w-full"
+          >
             {categories.map((category) => (
               <SwiperSlide key={category.title}>
                 <div className="h-full">
-                  <p className="text-sm font-semibold mb-2 font-GanwonEduAll_Light">{category.title}</p>
+                  <p className="text-sm font-semibold mb-2 font-GanwonEduAll_Light">
+                    {category.title}
+                  </p>
                   <div className="flex flex-wrap gap-2">
                     {category.tags.map((tag) => (
                       <button
                         key={tag.text}
-                        className={` font-bold font-GanwonEduAll_Light inline-flex items-center text-sm px-3 py-1 rounded-[4px] border transition whitespace-nowrap shadow-sm ${selectedTags.includes(tag.text)
-                          ? "bg-[#BD4B2C]/20 border-[#BD4B2C] text-[#BD4B2C] shadow-md"
-                          : "bg-white text-gray-700 border-gray-300 shadow"
+                        className={` font-bold font-GanwonEduAll_Light inline-flex items-center text-sm px-3 py-1 rounded-[4px] border transition whitespace-nowrap shadow-sm ${
+                          selectedTags.includes(tag.text)
+                            ? "bg-[#BD4B2C]/20 border-[#BD4B2C] text-[#BD4B2C] shadow-md"
+                            : "bg-white text-gray-700 border-gray-300 shadow"
                         }`}
-                        style={selectedTags.includes(tag.text) ? { boxShadow: '0 2px 8px 0 rgba(189,75,44,0.10)' } : {}}
+                        style={
+                          selectedTags.includes(tag.text)
+                            ? { boxShadow: "0 2px 8px 0 rgba(189,75,44,0.10)" }
+                            : {}
+                        }
                         onClick={() => toggleTag(tag.text)}
                       >
                         {tag.icon && <span className="mr-1">{tag.icon}</span>}

@@ -74,18 +74,37 @@ function ProfileEditPage() {
       window.confirm("정말로 회원 탈퇴하시겠습니까? 모든 정보가 삭제됩니다.")
     ) {
       try {
-        await axios.delete(
-          "https://www.mannamdeliveries.link/api/user/withdrawal",
+        console.log("회원탈퇴 요청 시작");
+        console.log(
+          "요청 URL:",
+          "https://www.mannamdeliveries.link/api/user/withdraw"
+        );
+        console.log("요청 메서드:", "DELETE");
+        console.log("요청 헤더:", { withCredentials: true });
+
+        const response = await axios.delete(
+          "https://www.mannamdeliveries.link/api/user/withdraw",
           {
             withCredentials: true,
           }
         );
+
+        console.log("회원탈퇴 응답:", response.data);
+        console.log("응답 상태 코드:", response.status);
+        console.log("응답 헤더:", response.headers);
+
         toast.success("회원 탈퇴가 완료되었습니다.");
         dispatch(resetUser());
         navigate("/login");
       } catch (error) {
         console.error("회원 탈퇴 중 오류가 발생했습니다:", error);
-        toast.error("회원 탈퇴에 실패했습니다.");
+        if (axios.isAxiosError(error)) {
+          console.error("에러 응답 데이터:", error.response?.data);
+          console.error("에러 상태 코드:", error.response?.status);
+          console.error("에러 헤더:", error.response?.headers);
+        }
+        toast.error("회원 탈퇴에 실패했습니다. 다시 시도해주세요.");
+        return; // 에러 발생 시 함수 종료
       }
     }
   };

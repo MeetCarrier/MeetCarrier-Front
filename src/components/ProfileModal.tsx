@@ -49,7 +49,6 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
 
   const profileImageUrl = imgUrl || defaultProfileImg;
 
-  const [reviews, setReviews] = useState<ReviewItem[]>([]);
   const [contentCounts, setContentCounts] = useState<ContentCount[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -107,7 +106,6 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
 
         if (response.status === 200) {
           console.log("리뷰 데이터 (ProfileModal):", response.data);
-          setReviews(response.data);
 
           const counts: { [key: string]: number } = {};
           response.data.forEach((review: ReviewItem) => {
@@ -135,10 +133,6 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
 
     fetchReviews();
   }, [isOpen, user.userId]);
-
-  const displayedContentCounts = isExpanded
-    ? contentCounts
-    : contentCounts.slice(0, 3);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>

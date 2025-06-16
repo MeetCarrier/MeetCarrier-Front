@@ -21,7 +21,6 @@ type ContentCount = {
 
 function ReviewList() {
   const navigate = useNavigate();
-  const [reviews, setReviews] = useState<ReviewItem[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [topContents, setTopContents] = useState<ContentCount[]>([]);
 
@@ -37,7 +36,6 @@ function ReviewList() {
 
         if (response.status === 200) {
           console.log("리뷰 데이터:", response.data);
-          setReviews(response.data);
 
           // 모든 content를 분리하고 카운트
           const contentCounts: { [key: string]: number } = {};

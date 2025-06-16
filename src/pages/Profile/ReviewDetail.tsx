@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import NavBar from "../../components/NavBar";
@@ -22,7 +22,6 @@ type ContentCount = {
 
 function ReviewDetail() {
   const navigate = useNavigate();
-  const [reviews, setReviews] = useState<ReviewItem[]>([]);
   const [contentCounts, setContentCounts] = useState<ContentCount[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -75,7 +74,6 @@ function ReviewDetail() {
 
         if (response.status === 200) {
           console.log("리뷰 데이터:", response.data);
-          setReviews(response.data);
 
           // 모든 content를 분리하고 카운트
           const counts: { [key: string]: number } = {};

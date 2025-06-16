@@ -123,7 +123,6 @@ const ChatNotificationHandler: React.FC<ChatNotificationHandlerProps> = ({
     return () => clearInterval(interval);
   }, [roomInfo?.deactivationTime]);
 
-
   const handleScheduleMeeting = () => {
     navigate("/meeting-schedule", {
       state: {
@@ -151,20 +150,24 @@ const ChatNotificationHandler: React.FC<ChatNotificationHandlerProps> = ({
   };
 
   return (
-    <ChatNotificationBar
-      type={notificationType}
-      isSender={isSender}
-      senderName={myNickname}
-      recipientName={otherNickname}
-      remainingTime={remainingTime}
-      meetingDate={meetingDate}
-      deactivationTime={roomInfo?.deactivationTime}
-      onScheduleMeeting={handleScheduleMeeting}
-      onModifySchedule={handleModifySchedule}
-      matchId={matchData?.id}
-      myId={myId}
-      roomId={roomInfo?.id}
-    />
+    <>
+      {roomInfo?.status === "Activate" && (
+        <ChatNotificationBar
+          type={notificationType}
+          isSender={isSender}
+          senderName={myNickname}
+          recipientName={otherNickname}
+          remainingTime={remainingTime}
+          meetingDate={meetingDate}
+          deactivationTime={roomInfo.deactivationTime}
+          onScheduleMeeting={handleScheduleMeeting}
+          onModifySchedule={handleModifySchedule}
+          matchId={matchData?.id}
+          myId={myId}
+          roomId={roomInfo?.id}
+        />
+      )}
+    </>
   );
 };
 
