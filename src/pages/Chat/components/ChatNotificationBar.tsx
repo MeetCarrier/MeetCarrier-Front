@@ -119,9 +119,13 @@ const ChatNotificationBar: FC<ChatNotificationBarProps> = ({
                 alt="notification icon"
                 className="w-5 h-5 ml-3 mr-3"
               />
-              <p className={`font-semibold flex-grow whitespace-pre-line ${
-                type === "NEED_SCHEDULE" || type === "SCHEDULED" ? "underline" : ""
-              }`}>
+              <p
+                className={`font-semibold flex-grow whitespace-pre-line ${
+                  type === "NEED_SCHEDULE" || type === "SCHEDULED"
+                    ? "underline"
+                    : ""
+                }`}
+              >
                 {getNotificationMessage()}
               </p>
             </div>

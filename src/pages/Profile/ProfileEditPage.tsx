@@ -193,23 +193,40 @@ function ProfileEditPage() {
     }
 
     try {
-      await axios.patch(
-        "https://www.mannamdeliveries.link/api/user",
-        { nickname: newNickname },
-        { withCredentials: true }
+      // 닉네임 중복 확인
+      const checkResponse = await axios.get(
+        `https://www.mannamdeliveries.link/api/oauth/signup/nick/check?nickname=${newNickname}`
       );
-      console.log("닉네임 업데이트 성공");
 
-      // 사용자 정보 새로고침
-      dispatch(fetchUser());
-      setShowNicknameModal(false);
-      setNewNickname("");
-      setNicknameError("");
-      toast.success("닉네임이 변경되었습니다.");
+      if (checkResponse.status === 200) {
+        // 중복이 아니면 닉네임 업데이트 진행
+        await axios.patch(
+          "https://www.mannamdeliveries.link/api/user",
+          { nickname: newNickname },
+          { withCredentials: true }
+        );
+        console.log("닉네임 업데이트 성공");
+
+        // 사용자 정보 새로고침
+        dispatch(fetchUser());
+        setShowNicknameModal(false);
+        setNewNickname("");
+        setNicknameError("");
+        toast.success("닉네임이 변경되었습니다.");
+      } else {
+        // 그 외 상태 코드 (예: 409 외 다른 오류)
+        setNicknameError("닉네임 중복 확인 중 오류가 발생했습니다.");
+        toast.error("닉네임 중복 확인에 실패했습니다.");
+      }
     } catch (error) {
-      console.error("닉네임 변경 중 오류 발생:", error);
-      setNicknameError("닉네임 변경에 실패했습니다.");
-      toast.error("닉네임 변경에 실패했습니다.");
+      if (axios.isAxiosError(error) && error.response?.status === 409) {
+        setNicknameError("이미 사용 중인 닉네임입니다.");
+        toast.error("이미 사용 중인 닉네임입니다.");
+      } else {
+        console.error("닉네임 변경 중 오류 발생:", error);
+        setNicknameError("닉네임 변경에 실패했습니다.");
+        toast.error("닉네임 변경에 실패했습니다.");
+      }
     }
   };
 

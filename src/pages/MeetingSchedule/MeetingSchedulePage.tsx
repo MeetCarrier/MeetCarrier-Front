@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 import NavBar from "../../components/NavBar";
 import back_arrow from "../../assets/img/icons/HobbyIcon/back_arrow.svg";
@@ -8,11 +9,7 @@ import back_arrow from "../../assets/img/icons/HobbyIcon/back_arrow.svg";
 function MeetingSchedulePage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const {
-    matchId,
-    isModify,
-    meetingId,
-  } = location.state;
+  const { matchId, isModify, meetingId } = location.state;
 
   const [date, setDate] = useState("");
   const [locationText, setLocationText] = useState("");
@@ -61,11 +58,15 @@ function MeetingSchedulePage() {
         setMemo(meetingInfo.note);
       } catch (error) {
         console.error("[MeetingSchedulePage] 만남 일정 조회 실패:", error);
+        if (axios.isAxiosError(error) && error.response?.status === 409) {
+          toast.error("더 이상 일정을 변경할 수 없습니다.");
+          navigate(-1);
+        }
       }
     };
 
     fetchMeetingInfo();
-  }, [isModify, matchId]);
+  }, [isModify, matchId, navigate]);
 
   const handleSubmit = async () => {
     if (!isFormValid) return;
@@ -117,6 +118,8 @@ function MeetingSchedulePage() {
             "[MeetingSchedulePage] 인증이 필요합니다. 로그인 페이지로 이동합니다."
           );
           navigate("/Login");
+        } else if (error.response?.status === 409) {
+          toast.error("더 이상 일정을 변경할 수 없습니다.");
         } else {
           console.error("[MeetingSchedulePage] 에러 상세:", {
             status: error.response?.status,
