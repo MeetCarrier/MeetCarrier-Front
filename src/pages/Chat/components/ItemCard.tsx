@@ -16,6 +16,7 @@ interface ItemCardProps {
   onClick?: () => void; // 추가
   unreadCount?: number; // 안 읽은 메시지 개수
   userId?: string; // 추가
+  hasWrittenReview?: boolean;
 }
 
 function formatMessageTime(messageDateStr: string): string {
@@ -56,6 +57,7 @@ const ItemCard: React.FC<ItemCardProps> = ({
   onClick,
   unreadCount = 0,
   userId,
+  hasWrittenReview = false,
 }) => {
   const navigate = useNavigate();
   const actualImageUrl = profileImageUrl || sampleProfile;
@@ -137,19 +139,27 @@ const ItemCard: React.FC<ItemCardProps> = ({
       {/* Survey_Cancelled 또는 Chat_Cancelled 상태일 때 하단에 후기 버튼 표시 */}
       {(status === "Survey_Cancelled" ||
         status === "Chat_Cancelled" ||
-        status === "Reviewing") && (
+        status === "Reviewing" ||
+        status === "Completed") && (
         <div className="mt-2 flex justify-center">
           <button
             onClick={handleReviewClick}
-            className="relative w-full max-w-[400px] h-[40px] flex items-center justify-center overflow-hidden transition-opacity duration-200"
+            disabled={hasWrittenReview}
+            className={`relative w-full max-w-[400px] h-[40px] flex items-center justify-center overflow-hidden transition-opacity duration-200 ${
+              hasWrittenReview ? "opacity-50 cursor-not-allowed" : ""
+            }`}
           >
             <img
               src={largeNextButton}
               alt="후기작성"
               className="absolute inset-0 w-full h-full object-fill"
             />
-            <span className="relative z-10 font-GanwonEduAll_Light font-bold text-white">
-              후기작성
+            <span
+              className={`relative z-10 font-GanwonEduAll_Light font-bold ${
+                hasWrittenReview ? "text-black" : "text-white"
+              }`}
+            >
+              {hasWrittenReview ? "이미 후기를 작성하셨어요" : "후기작성"}
             </span>
           </button>
         </div>

@@ -93,7 +93,9 @@ function ChatBar({
   const [isVisibleToOpponent, setIsVisibleToOpponent] = useState(false);
   const [isSecretaryMode, setIsSecretaryMode] = useState(false);
   const [secretaryInput, setSecretaryInput] = useState("");
-  const [secretaryMessages, setSecretaryMessages] = useState<{ sender: "bot" | "user"; text: string }[]>([]);
+  const [secretaryMessages, setSecretaryMessages] = useState<
+    { sender: "bot" | "user"; text: string }[]
+  >([]);
 
   const emojis = [
     emoji1,
@@ -118,11 +120,14 @@ function ChatBar({
       // 비서봇 메시지 구독
       existingStompClient.subscribe(`/topic/assistant/${myId}`, (message) => {
         const data = JSON.parse(message.body);
-        console.log('[비서봇 응답 수신]', {
+        console.log("[비서봇 응답 수신]", {
           content: data.content,
-          createdAt: data.createdAt
+          createdAt: data.createdAt,
         });
-        setSecretaryMessages(prev => [...prev, { sender: "bot", text: data.content }]);
+        setSecretaryMessages((prev) => [
+          ...prev,
+          { sender: "bot", text: data.content },
+        ]);
       });
     }
   }, [existingStompClient, myId]);
@@ -186,7 +191,9 @@ function ChatBar({
 
     // 파일 타입 검사: 이미지 파일인지 확인
     if (!file.type.startsWith("image/") || file.type === "image/svg+xml") {
-      toast.error("JPG, PNG 등 이미지 파일만 선택할 수 있습니다. (SVG는 지원하지 않음)");
+      toast.error(
+        "JPG, PNG 등 이미지 파일만 선택할 수 있습니다. (SVG는 지원하지 않음)"
+      );
       if (e.target) {
         e.target.value = "";
       }
@@ -260,19 +267,22 @@ function ChatBar({
   const handleSecretaryMessage = () => {
     if (secretaryInput.trim() && existingStompClient?.connected) {
       const messageContent = secretaryInput.trim();
-      console.log('[비서봇 질문 전송]', {
-        content: messageContent
+      console.log("[비서봇 질문 전송]", {
+        content: messageContent,
       });
 
       // 사용자 메시지 추가
-      setSecretaryMessages(prev => [...prev, { sender: "user", text: messageContent }]);
+      setSecretaryMessages((prev) => [
+        ...prev,
+        { sender: "user", text: messageContent },
+      ]);
 
       // WebSocket을 통해 메시지 전송
       existingStompClient.publish({
-        destination: '/app/api/assistant/send',
+        destination: "/app/api/assistant/send",
         body: JSON.stringify({
-          content: messageContent
-        })
+          content: messageContent,
+        }),
       });
 
       setSecretaryInput("");
@@ -410,7 +420,7 @@ function ChatBar({
                   >
                     <div
                       className={`w-12 h-12 rounded-full ${
-                        disabled ? "bg-gray-200" : "bg-[#722518]"
+                        disabled ? "bg-gray-600" : "bg-[#722518]"
                       } flex items-center justify-center ${
                         disabled ? "cursor-not-allowed" : "cursor-pointer"
                       }`}
@@ -430,16 +440,18 @@ function ChatBar({
       )}
 
       {selectedEmojiUrl && !isSearchMode && (
-        <div className="absolute z-40 bg-white/50 w-full font-GanwonEduAll_Light  duration-300 transition-all " style={{
-          bottom: emojiOpen ? 282 : 82,
-        }}>
+        <div
+          className="absolute z-40 bg-white/50 w-full font-GanwonEduAll_Light  duration-300 transition-all "
+          style={{
+            bottom: emojiOpen ? 282 : 82,
+          }}
+        >
           <div className="bg-white rounded-lg ml-auto w-fit relative">
             {/* ✕ 닫기 버튼 */}
             <button
               onClick={() => setSelectedEmojiUrl(null)}
               className="absolute top-1 right-1 text-gray-400 hover:text-black"
               aria-label="미리보기 닫기"
-              
             >
               ✕
             </button>
@@ -460,18 +472,31 @@ function ChatBar({
         >
           {!isBotMode && !isSearchMode && !isSecretaryMode && !emojiOpen && (
             <button
-              className="absolute right-2 z-20 w-11 h-11 rounded-full bg-[#743120] flex items-center justify-center shadow-lg transition-all duration-300 opacity-0 translate-y-2 animate-[fadeIn_0.3s_ease-in-out_0.3s_forwards] hover:bg-[#8a3d2d]"
+              className={`absolute right-2 z-20 w-11 h-11 rounded-full ${
+                isRoomActive
+                  ? "bg-[#743120] hover:bg-[#8a3d2d]"
+                  : "bg-gray-600 cursor-not-allowed"
+              } flex items-center justify-center shadow-lg transition-all duration-300 opacity-0 translate-y-2 animate-[fadeIn_0.3s_ease-in-out_0.3s_forwards]`}
               style={{
                 bottom: emojiOpen ? 302 : 102,
-                transition: "opacity 0.1s ease-in-out, transform 0.1s ease-in-out",
+                transition:
+                  "opacity 0.1s ease-in-out, transform 0.1s ease-in-out",
               }}
-              onClick={() => {
-                setIsSecretaryMode(true);
-                setSecretaryInput("");
-                setSecretaryMessages([
-                  { sender: "bot", text: "안녕, 반가워~ 난 채팅을 도와주는 너만의 비서 봇이야! 친구와 대화하면서 어렵거나 궁금하거나 어떤 것이든 편하게 물어봐!!" }
-                ]);
-              }}
+              onClick={
+                isRoomActive
+                  ? () => {
+                      setIsSecretaryMode(true);
+                      setSecretaryInput("");
+                      setSecretaryMessages([
+                        {
+                          sender: "bot",
+                          text: "안녕, 반가워~ 난 채팅을 도와주는 너만의 비서 봇이야! 친구와 대화하면서 어렵거나 궁금하거나 어떤 것이든 편하게 물어봐!!",
+                        },
+                      ]);
+                    }
+                  : undefined
+              }
+              disabled={!isRoomActive}
             >
               <img src={secretaryIcon} alt="secretary" className="w-7 h-7" />
             </button>
@@ -496,7 +521,11 @@ function ChatBar({
                 </button>
 
                 {/* 입력창 */}
-                <div className="flex items-center flex-1 bg-[#743120] rounded-full px-3 py-2">
+                <div
+                  className={`flex items-center flex-1 rounded-full px-3 py-2 ${
+                    isRoomActive ? "bg-[#743120]" : "bg-gray-600"
+                  }`}
+                >
                   <img
                     src={secretaryIcon}
                     alt="secretary"
@@ -506,7 +535,7 @@ function ChatBar({
                     type="text"
                     placeholder="AI 비서에게 무엇이든 물어보기"
                     value={secretaryInput}
-                    onChange={e => setSecretaryInput(e.target.value)}
+                    onChange={(e) => setSecretaryInput(e.target.value)}
                     onKeyPress={handleSecretaryKeyPress}
                     className="flex-1 bg-transparent text-white text-base placeholder:text-[#F2F2F280] outline-none"
                   />
@@ -529,12 +558,9 @@ function ChatBar({
               <>
                 {/* 좌측: 기능 열기 버튼 */}
                 <button
-                  className={`w-9 h-9 rounded-full ${
-                    isRoomActive ? "bg-[#743120]" : "bg-gray-200"
-                  } flex items-center justify-center flex-shrink-0 ${
-                    !isRoomActive ? "cursor-not-allowed" : ""
-                  }`}
-                  onClick={isRoomActive ? onEmojiToggle : undefined}
+                  className={`w-9 h-9 rounded-full bg-[#743120] 
+                  flex items-center justify-center flex-shrink-0`}
+                  onClick={onEmojiToggle}
                 >
                   <img
                     src={plus_icon}
@@ -548,7 +574,11 @@ function ChatBar({
                 </button>
 
                 {/* 중앙: 일반 입력창 */}
-                <div className="flex items-center flex-1 bg-[#743120] rounded-full px-3 py-0 h-[36px]">
+                <div
+                  className={`flex items-center flex-1 rounded-full px-3 py-0 h-[36px] ${
+                    isRoomActive ? "bg-[#743120]" : "bg-gray-600"
+                  }`}
+                >
                   <input
                     type="text"
                     placeholder={
@@ -599,9 +629,9 @@ function ChatBar({
                   className={`w-9 h-9 rounded-full ${
                     isRoomActive
                       ? message.trim()
-                        ? "bg-gray-200"
+                        ? "bg-gray-600"
                         : "bg-[#743120]"
-                      : "bg-gray-200"
+                      : "bg-gray-600"
                   } flex items-center justify-center flex-shrink-0 ${
                     !isRoomActive ? "cursor-not-allowed" : ""
                   }`}
@@ -633,7 +663,11 @@ function ChatBar({
                 </button>
 
                 {/* 챗봇 입력창 */}
-                <div className="flex items-center flex-1 bg-[#743120] rounded-full px-3 py-2">
+                <div
+                  className={`flex items-center flex-1 rounded-full px-3 py-2 ${
+                    isRoomActive ? "bg-[#743120]" : "bg-gray-600"
+                  }`}
+                >
                   <div className="w-5 h-5">
                     <img
                       src={questionmark_icon}

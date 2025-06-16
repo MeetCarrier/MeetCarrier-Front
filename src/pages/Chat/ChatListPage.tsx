@@ -35,6 +35,16 @@ type MatchData = {
   user2ImageUrl: string | null;
 };
 
+interface WrittenReview {
+  reviewId: number;
+  rating: number;
+  content: string;
+  step: number;
+  createdAt: string;
+  userId: number;
+  userName: string;
+}
+
 function ChatListPage() {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
@@ -44,6 +54,7 @@ function ChatListPage() {
   const [selectedUser, setSelectedUser] = useState<UserProfileData | null>(
     null
   );
+  const [writtenReviews, setWrittenReviews] = useState<WrittenReview[]>([]);
   const stompClientRef = useRef<Client | null>(null);
   const user = useSelector(
     (state: RootState) => state.user
@@ -80,7 +91,32 @@ function ChatListPage() {
       }
     };
 
+    const fetchWrittenReviews = async () => {
+      try {
+        const res = await fetch(
+          "https://www.mannamdeliveries.link/api/review/written",
+          {
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!res.ok) {
+          throw new Error(`리뷰 조회 실패: ${res.status}`);
+        }
+
+        const data = await res.json();
+        console.log("[작성한 리뷰 목록]", data);
+        setWrittenReviews(data);
+      } catch (e) {
+        console.error("[리뷰 조회] 실패:", e);
+      }
+    };
+
     fetchMatches();
+    fetchWrittenReviews();
   }, [dispatch]);
 
   useEffect(() => {
@@ -162,7 +198,8 @@ function ChatListPage() {
       (m) =>
         m.status === "Survey_Cancelled" ||
         m.status === "Chat_Cancelled" ||
-        m.status === "Reviewing"
+        m.status === "Reviewing" ||
+        m.status === "Completed"
     )
     .sort(sortByRecent);
 
@@ -291,7 +328,7 @@ function ChatListPage() {
 
         {cancelledList.length > 0 && (
           <>
-            <h2 className="text-xl font-GanwonEduAll_Bold text-center mt-6 mb-2">
+            <h2 className="text-xl font-GanwonEduAll_Bold text-center mb-2">
               종료된 만남
             </h2>
             {cancelledList.map((cancelled) => {
@@ -307,6 +344,16 @@ function ChatListPage() {
                 cancelled.user1Id === myId
                   ? cancelled.user2Id
                   : cancelled.user1Id;
+
+              const hasWrittenReview = writtenReviews.some(
+                (review) => review.userId === opponentId
+              );
+
+              console.log(
+                `[${opponentNickname}님에 대한 리뷰 작성 여부]`,
+                hasWrittenReview
+              );
+
               return (
                 <div key={cancelled.id} className="cursor-pointer">
                   <ItemCard
@@ -317,12 +364,14 @@ function ChatListPage() {
                     onProfileClick={() => handleProfileClick(opponentId)}
                     onClickReview={() => handleReviewClick(cancelled)}
                     userId={opponentId.toString()}
+                    hasWrittenReview={hasWrittenReview}
                     onClick={() => {
                       if (cancelled.status === "Survey_Cancelled") {
                         handleSurveyClick(cancelled);
                       } else if (
                         cancelled.status === "Chat_Cancelled" ||
-                        cancelled.status === "Reviewing"
+                        cancelled.status === "Reviewing" ||
+                        cancelled.status === "Completed"
                       ) {
                         handleChatClick(cancelled);
                       }
