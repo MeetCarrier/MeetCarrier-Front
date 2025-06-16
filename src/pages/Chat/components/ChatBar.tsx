@@ -94,8 +94,9 @@ function ChatBar({
   const [isSecretaryMode, setIsSecretaryMode] = useState(false);
   const [secretaryInput, setSecretaryInput] = useState("");
   const [secretaryMessages, setSecretaryMessages] = useState<
-    { sender: "bot" | "user"; text: string }[]
+    { sender: "bot" | "user"; text: string; createdAt: Date }[]
   >([]);
+  const secretarySubscriptionRef = useRef<any>(null);
 
   const emojis = [
     emoji1,
@@ -115,22 +116,107 @@ function ChatBar({
     emoji15,
   ];
 
-  useEffect(() => {
+  const fetchSecretaryHistory = async () => {
+    try {
+      console.log("[비서봇] 대화 내역 조회 시작");
+      const response = await axios.get(
+        "https://www.mannamdeliveries.link/api/assistant",
+        {
+          withCredentials: true,
+        }
+      );
+
+      if (response.data) {
+        console.log("[비서봇] 대화 내역 조회 성공:", response.data);
+        const { assistantQuestions, assistantAnswers } = response.data;
+
+        const allMessages = [
+          ...assistantQuestions.map((q: any) => ({
+            sender: "user" as const,
+            text: q.content,
+            createdAt: new Date(q.createdAt),
+          })),
+          ...assistantAnswers.map((a: any) => ({
+            sender: "bot" as const,
+            text: a.content,
+            createdAt: new Date(a.createdAt),
+          })),
+        ].sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+
+        console.log("[비서봇] 정렬된 메시지:", allMessages);
+        setSecretaryMessages(allMessages);
+      }
+    } catch (error) {
+      console.error("[비서봇] 대화 내역 조회 실패:", error);
+      toast.error("대화 내역을 불러오는데 실패했습니다.");
+    }
+  };
+
+  const subscribeToSecretary = () => {
     if (existingStompClient?.connected && myId) {
-      // 비서봇 메시지 구독
-      existingStompClient.subscribe(`/topic/assistant/${myId}`, (message) => {
-        const data = JSON.parse(message.body);
-        console.log("[비서봇 응답 수신]", {
-          content: data.content,
-          createdAt: data.createdAt,
-        });
-        setSecretaryMessages((prev) => [
-          ...prev,
-          { sender: "bot", text: data.content },
-        ]);
+      console.log("[비서봇] 구독 시작", {
+        topic: `/topic/assistant/${myId}`,
+        myId,
+        isConnected: existingStompClient.connected,
+      });
+
+      secretarySubscriptionRef.current = existingStompClient.subscribe(
+        `/topic/assistant/${myId}`,
+        (message) => {
+          console.log("[비서봇] 메시지 수신:", {
+            rawMessage: message,
+            body: message.body,
+            headers: message.headers,
+          });
+
+          try {
+            const data = JSON.parse(message.body);
+            console.log("[비서봇] 파싱된 응답:", {
+              content: data.content,
+              createdAt: data.createdAt,
+              fullData: data,
+            });
+
+            setSecretaryMessages((prev) => [
+              ...prev,
+              {
+                sender: "bot",
+                text: data.content,
+                createdAt: new Date(data.createdAt),
+              },
+            ]);
+          } catch (error) {
+            console.error("[비서봇] 메시지 파싱 에러:", error);
+          }
+        }
+      );
+    } else {
+      console.error("[비서봇] 구독 실패:", {
+        isConnected: existingStompClient?.connected,
+        myId,
       });
     }
-  }, [existingStompClient, myId]);
+  };
+
+  const unsubscribeFromSecretary = () => {
+    if (secretarySubscriptionRef.current) {
+      console.log("[비서봇] 구독 해제");
+      secretarySubscriptionRef.current.unsubscribe();
+      secretarySubscriptionRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    if (isSecretaryMode) {
+      subscribeToSecretary();
+    } else {
+      unsubscribeFromSecretary();
+    }
+
+    return () => {
+      unsubscribeFromSecretary();
+    };
+  }, [isSecretaryMode, existingStompClient, myId]);
 
   const handleSendMessage = () => {
     if (!isRoomActive) {
@@ -267,14 +353,20 @@ function ChatBar({
   const handleSecretaryMessage = () => {
     if (secretaryInput.trim() && existingStompClient?.connected) {
       const messageContent = secretaryInput.trim();
-      console.log("[비서봇 질문 전송]", {
+      console.log("[비서봇] 질문 전송:", {
         content: messageContent,
+        isConnected: existingStompClient.connected,
+        destination: "/app/api/assistant/send",
       });
 
       // 사용자 메시지 추가
       setSecretaryMessages((prev) => [
         ...prev,
-        { sender: "user", text: messageContent },
+        {
+          sender: "user",
+          text: messageContent,
+          createdAt: new Date(),
+        },
       ]);
 
       // WebSocket을 통해 메시지 전송
@@ -286,6 +378,11 @@ function ChatBar({
       });
 
       setSecretaryInput("");
+    } else {
+      console.log("[비서봇] 메시지 전송 실패:", {
+        isConnected: existingStompClient?.connected,
+        hasInput: secretaryInput.trim().length > 0,
+      });
     }
   };
 
@@ -484,15 +581,10 @@ function ChatBar({
               }}
               onClick={
                 isRoomActive
-                  ? () => {
+                  ? async () => {
                       setIsSecretaryMode(true);
                       setSecretaryInput("");
-                      setSecretaryMessages([
-                        {
-                          sender: "bot",
-                          text: "안녕, 반가워~ 난 채팅을 도와주는 너만의 비서 봇이야! 친구와 대화하면서 어렵거나 궁금하거나 어떤 것이든 편하게 물어봐!!",
-                        },
-                      ]);
+                      await fetchSecretaryHistory();
                     }
                   : undefined
               }
