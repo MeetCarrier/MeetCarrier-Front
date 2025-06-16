@@ -97,6 +97,13 @@ function ChatBar({
     { sender: "bot" | "user"; text: string; createdAt: Date }[]
   >([]);
   const secretarySubscriptionRef = useRef<any>(null);
+  const [lastQuestionTime, setLastQuestionTime] = useState<Date | null>(null);
+  const [remainingTime, setRemainingTime] = useState<number>(0);
+
+  const [botLastQuestionTime, setBotLastQuestionTime] = useState<Date | null>(
+    null
+  );
+  const [botRemainingTime, setBotRemainingTime] = useState<number>(0);
 
   const emojis = [
     emoji1,
@@ -218,6 +225,51 @@ function ChatBar({
     };
   }, [isSecretaryMode, existingStompClient, myId]);
 
+  // 남은 시간 계산 및 표시 업데이트
+  useEffect(() => {
+    if (!lastQuestionTime) {
+      setRemainingTime(0);
+      return;
+    }
+
+    const timer = setInterval(() => {
+      const now = new Date();
+      const timeDiff = Math.max(
+        0,
+        15 - Math.floor((now.getTime() - lastQuestionTime.getTime()) / 1000)
+      );
+      setRemainingTime(timeDiff);
+
+      if (timeDiff === 0) {
+        clearInterval(timer);
+      }
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [lastQuestionTime]);
+
+  useEffect(() => {
+    if (!botLastQuestionTime) {
+      setBotRemainingTime(0);
+      return;
+    }
+
+    const timer = setInterval(() => {
+      const now = new Date();
+      const timeDiff = Math.max(
+        0,
+        15 - Math.floor((now.getTime() - botLastQuestionTime.getTime()) / 1000)
+      );
+      setBotRemainingTime(timeDiff);
+
+      if (timeDiff === 0) {
+        clearInterval(timer);
+      }
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [botLastQuestionTime]);
+
   const handleSendMessage = () => {
     if (!isRoomActive) {
       toast.error("비활성화된 채팅방에서는 메시지를 보낼 수 없습니다.");
@@ -319,7 +371,18 @@ function ChatBar({
 
   const handleBotMessage = () => {
     if (botInput.trim()) {
-      // WebSocket을 통해 챗봇 메시지 전송
+      // 마지막 질문으로부터 15초가 지났는지 확인
+      if (botLastQuestionTime) {
+        const now = new Date();
+        const timeDiff = Math.floor(
+          (now.getTime() - botLastQuestionTime.getTime()) / 1000
+        );
+        if (timeDiff < 15) {
+          toast.error(`${15 - timeDiff}초 후에 질문할 수 있습니다.`);
+          return; // 쿨타임 미만이면 전송 차단
+        }
+      }
+
       if (existingStompClient && existingStompClient.connected) {
         const botMessageBody = {
           roomId: roomId,
@@ -332,7 +395,8 @@ function ChatBar({
           body: JSON.stringify(botMessageBody),
         });
 
-        console.log("[챗봇 메시지 전송]", botMessageBody);
+        setBotLastQuestionTime(new Date()); // ★ 쿨타임 시작점 기록
+        setBotRemainingTime(15); // ★ 추가! 즉시 15로 카운트다운 시작
         setBotInput("");
       } else {
         console.error("WebSocket 연결이 없습니다.");
@@ -353,13 +417,26 @@ function ChatBar({
   const handleSecretaryMessage = () => {
     if (secretaryInput.trim() && existingStompClient?.connected) {
       const messageContent = secretaryInput.trim();
-      console.log("[비서봇] 질문 전송:", {
-        content: messageContent,
-        isConnected: existingStompClient.connected,
-        destination: "/app/api/assistant/send",
-      });
 
-      // 사용자 메시지 추가
+      if (lastQuestionTime) {
+        const now = new Date();
+        const timeDiff = Math.floor(
+          (now.getTime() - lastQuestionTime.getTime()) / 1000
+        );
+        if (timeDiff < 15) {
+          console.log("[비서봇] 질문 제한 시간 미달:", {
+            remainingTime: 15 - timeDiff,
+            lastQuestionTime,
+            currentTime: now,
+          });
+          return;
+        }
+      }
+
+      setLastQuestionTime(new Date());
+      setRemainingTime(15); // ★ 추가! 보내자마자 바로 15초로 표시
+
+      // 이하 동일
       setSecretaryMessages((prev) => [
         ...prev,
         {
@@ -369,7 +446,6 @@ function ChatBar({
         },
       ]);
 
-      // WebSocket을 통해 메시지 전송
       existingStompClient.publish({
         destination: "/app/api/assistant/send",
         body: JSON.stringify({
@@ -612,7 +688,7 @@ function ChatBar({
                   />
                 </button>
 
-                {/* 입력창 */}
+                {/* 비서봇 입력창 */}
                 <div
                   className={`flex items-center flex-1 rounded-full px-3 py-2 ${
                     isRoomActive ? "bg-[#743120]" : "bg-gray-600"
@@ -625,7 +701,11 @@ function ChatBar({
                   />
                   <input
                     type="text"
-                    placeholder="AI 비서에게 무엇이든 물어보기"
+                    placeholder={
+                      remainingTime > 0
+                        ? `${remainingTime}초 후에 질문할 수 있습니다`
+                        : "AI 비서에게 무엇이든 물어보기"
+                    }
                     value={secretaryInput}
                     onChange={(e) => setSecretaryInput(e.target.value)}
                     onKeyPress={handleSecretaryKeyPress}
@@ -637,11 +717,15 @@ function ChatBar({
                 <button
                   onClick={handleSecretaryMessage}
                   className={`w-9 h-9 rounded-full ${
-                    secretaryInput.trim() ? "bg-gray-200" : "bg-[#743120]"
+                    secretaryInput.trim() && remainingTime === 0
+                      ? "bg-gray-200"
+                      : "bg-[#743120]"
                   } flex items-center justify-center flex-shrink-0 ${
-                    !secretaryInput.trim() ? "cursor-not-allowed" : ""
+                    !secretaryInput.trim() || remainingTime > 0
+                      ? "cursor-not-allowed"
+                      : ""
                   }`}
-                  disabled={!secretaryInput.trim()}
+                  disabled={!secretaryInput.trim() || remainingTime > 0}
                 >
                   <img src={arrow_icon} alt="send" className="w-5 h-5" />
                 </button>
@@ -721,7 +805,7 @@ function ChatBar({
                   className={`w-9 h-9 rounded-full ${
                     isRoomActive
                       ? message.trim()
-                        ? "bg-gray-600"
+                        ? "bg-gray-300"
                         : "bg-[#743120]"
                       : "bg-gray-600"
                   } flex items-center justify-center flex-shrink-0 ${
@@ -760,20 +844,24 @@ function ChatBar({
                     isRoomActive ? "bg-[#743120]" : "bg-gray-600"
                   }`}
                 >
-                  <div className="w-5 h-5">
-                    <img
-                      src={questionmark_icon}
-                      alt="?"
-                      className="w-full h-full"
-                    />
-                  </div>
+                  <img
+                    src={questionmark_icon}
+                    alt="?"
+                    className="w-5 h-5 opacity-80 mr-2"
+                  />
                   <input
                     type="text"
-                    placeholder="채팅 봇에게 요청/질문 내용 입력"
+                    placeholder={
+                      botRemainingTime > 0
+                        ? `${botRemainingTime}초 후에 질문할 수 있습니다`
+                        : "채팅 봇에게 요청/질문 내용 입력"
+                    }
                     value={botInput}
                     onChange={(e) => setBotInput(e.target.value)}
                     onKeyPress={handleBotKeyPress}
-                    className="ml-1 flex-1 bg-transparent text-white text-sm placeholder:text-gray text-opacity-50 outline-none"
+                    disabled={botRemainingTime > 0}
+                    className="flex-1 bg-transparent text-white text-base placeholder:text-[#F2F2F280] outline-none"
+                    // 통일된 스타일 적용: text-base, placeholder색, flex-1 등
                   />
                 </div>
 
@@ -781,11 +869,15 @@ function ChatBar({
                 <button
                   onClick={handleBotMessage}
                   className={`w-9 h-9 rounded-full ${
-                    botInput.trim() ? "bg-gray-200" : "bg-[#743120]"
+                    botInput.trim() && botRemainingTime === 0
+                      ? "bg-gray-200"
+                      : "bg-[#743120]"
                   } flex items-center justify-center flex-shrink-0 ${
-                    !botInput.trim() ? "cursor-not-allowed" : ""
+                    !botInput.trim() || botRemainingTime > 0
+                      ? "cursor-not-allowed"
+                      : ""
                   }`}
-                  disabled={!botInput.trim()}
+                  disabled={!botInput.trim() || botRemainingTime > 0}
                 >
                   <img src={arrow_icon} alt="send" className="w-5 h-5" />
                 </button>

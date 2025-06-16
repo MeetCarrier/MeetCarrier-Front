@@ -2,7 +2,6 @@ import type { FC } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useEffect, useRef } from "react";
 import secretaryProfile from "../../../../assets/img/icons/Chat/secretaryProfile.svg";
-
 interface Message {
   sender: "user" | "bot";
   text: string;

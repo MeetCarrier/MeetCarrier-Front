@@ -265,7 +265,6 @@ function ChatPage() {
   useEffect(() => {
     const updateRemainingTime = () => {
       if (roomInfo?.deactivationTime) {
-
       }
     };
 
@@ -333,7 +332,7 @@ function ChatPage() {
           console.log("[파싱된 메시지]", newMessage);
 
           setMessages((prev) => [...prev, newMessage]);
-          
+
           // 새 메시지가 추가된 후 스크롤을 최신 메시지로 이동
           setTimeout(() => {
             messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
