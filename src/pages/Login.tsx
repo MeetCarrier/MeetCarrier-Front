@@ -1,12 +1,8 @@
 import React from "react";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
 import googleIcon from "../assets/img/icons/Login/google.svg";
 import kakaoIcon from "../assets/img/icons/Login/kakao.svg";
 
 const Login: React.FC = () => {
-  const navigate = useNavigate();
-
   const requestNotificationPermission = async () => {
     try {
       const permission = await Notification.requestPermission();
@@ -20,23 +16,6 @@ const Login: React.FC = () => {
     await requestNotificationPermission();
     const baseUrl = "https://www.mannamdeliveries.link/oauth2/authorization";
     window.location.href = `${baseUrl}/${provider}`;
-  };
-
-  const handleTestLogin = async () => {
-    try {
-      const loginRes = await axios.post(
-        "https://www.mannamdeliveries.link/api/auth/test/login",
-        null,
-        { withCredentials: true }
-      );
-      console.log("로그인 성공", loginRes.data);
-
-      await requestNotificationPermission();
-
-      navigate("/main");
-    } catch (err) {
-      console.error("에러:", err);
-    }
   };
 
   return (
@@ -62,7 +41,7 @@ const Login: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex flex-col items-center mb-[90px] w-full">
+        <div className="flex flex-col items-center mb-[120px] w-full">
           <button
             onClick={() => handleLogin("google")}
             className="relative w-[100%] max-w-xs py-2 mb-4 rounded-lg bg-white shadow font-GanwonEduAll_Bold text-[#333] border border-gray-200 text-lg cursor-pointer hover:bg-[#f0f0f0] hover:shadow-md transition text-center"
@@ -85,13 +64,6 @@ const Login: React.FC = () => {
               className="absolute left-5 top-1/2 -translate-y-1/2 w-[18px] h-[18px]"
             />
             카카오톡으로 시작하기
-          </button>
-
-          <button
-            onClick={handleTestLogin}
-            className="w-[100%] max-w-xs py-2 mt-4 rounded-lg bg-blue-500 shadow font-GanwonEduAll_Bold text-white text-lg cursor-pointer hover:bg-blue-600 hover:shadow-md transition"
-          >
-            테스트 유저로 로그인
           </button>
         </div>
       </div>
