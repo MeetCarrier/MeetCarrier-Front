@@ -24,6 +24,7 @@ import InviteWritePage from "./pages/Chat/Invite/InviteWritePage";
 import MeetingSchedulePage from "./pages/MeetingSchedule/MeetingSchedulePage";
 import ProfileEditPage from "./pages/Profile/ProfileEditPage";
 import PsychTestResult from "./pages/Profile/PsychTestResult";
+import ReviewDetail from "./pages/Profile/ReviewDetail";
 
 import MatchResultWatcher from "./components/MatchResultWatcher";
 
@@ -48,7 +49,11 @@ axios.interceptors.response.use(
 function App() {
   return (
     <>
-      <Toaster position="top-center" reverseOrder={false} containerClassName="font-GanwonEduAll_Light text-base" />
+      <Toaster
+        position="top-center"
+        reverseOrder={false}
+        containerClassName="font-GanwonEduAll_Light text-base"
+      />
       <Provider store={store}>
         <BrowserRouter>
           <Routes>
@@ -89,6 +94,7 @@ function App() {
               <Route path="review/:userId" element={<ReviewPage />} />
               <Route path="Profile/edit" element={<ProfileEditPage />} />
               <Route path="PsychTestResult" element={<PsychTestResult />} />
+              <Route path="ReviewDetail" element={<ReviewDetail />} />
 
               {/* <Route path="*" element={<NotFoundPage />} /> */}
             </Route>
