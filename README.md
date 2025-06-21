@@ -110,16 +110,14 @@
   </blockquote>
   <br />
   <p align="center">
-    <img src="" alt="매칭중" height="400">
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    <img src="" alt="성공" height="400">
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    <img src="" alt="실패1" height="400">
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    <img src="" alt="실패2" height="400">
+    <img src="https://github.com/user-attachments/assets/1e51e6d4-2e01-4059-af5e-9a3cdaa79d0a" alt="성공" height="400">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <img src="https://github.com/user-attachments/assets/f777ba34-1afb-456f-9300-32458d61be06" alt="실패1" height="400">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <img src="https://github.com/user-attachments/assets/c9a7e1a9-9a9e-4bc3-a7de-00a4a9131e8e" alt="실패2" height="400">
 
   </p>
-  
+  - 성공, 실패1(점수가 부족), 실패2(매칭 큐에 아무도 없을 때) 화면
   - 매칭을 실시하면 자신의 매칭 정보에 따라 적합한 친구를 필터링을 통해서 매칭된다
   - 취미, 거리, 자기 평가 점수는 콘텐츠 필터링, 후기는 협업 필터링을 사용했다
   - 1점 만점에 0.75점 이상이면 바로 매칭이 실시되고 만약 실패하면 1~2명의 추천 친구를 보여준다
