@@ -1,5 +1,5 @@
 # 👫 만남 배달부
-<img src="https://github.com/user-attachments/assets/80490f92-a552-46b0-8faa-d82b32612425" alt="만남배달부" height="400">
+<img src="https://github.com/user-attachments/assets/80490f92-a552-46b0-8faa-d82b32612425" alt="만남배달부" height="300">
 
 ## 🧭 개발 배경
 현대의 20-30 청년 세대는 사회의 급격한 변화 속에서 관계 단절과 정서적 고립을 겪고 있습니다. SNS와 메신저 중심의 소통은 깊이 있는 관계 형성을 어렵게 하고, 반복되는 부정적 대인 경험은 자기효능감 저하와 정신 건강 악화로 이어질 수 있습니다.
@@ -47,7 +47,46 @@
 
 ## 💻 주요 기능
 
+<details>
+  <summary><b>회원가입 및 로그인</b></summary>
+  <br />
+  <blockquote>
+    회원가입 및 로그인
+  </blockquote>
+  <br />
+  <p align="center">
+    <img src="" alt="회원가입" height="400">
+    <img src="" alt="로그인" height="400">
+  </p>
+  
+  사용자는 시작 전 구글 또는 네이버에 회원 가입 및 로그인 할 수 있다.
+</details>
+<br />
+
+<details>
+  <summary><b>메인 화면</b></summary>
+  <br />
+  <blockquote>
+    메인 화면
+  </blockquote>
+  <br />
+  <p align="center">
+    <img src="" alt="시작화면" height="400">
+  </p>
+  
+  사용자가 매칭을 시작하거나, 매칭 정보를 수정할 수 있다
+  하단 NavBar를 통해서 다른 페이지로 넘어 갈 수 있다
+</details>
+<br />
+
 ## 👨🏻‍💻 팀원 소개
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/6d04eea5-cfbd-4632-b998-4b54384fc572" alt="팀원소개" height="250">
+</p>
+</br>
 
 ## 🛠️ 기술 스택
-
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/a9ea68d2-d8b3-41f9-ac9a-034c37d25334" alt="기술 스택" height="250">
+</p>
+</br>
