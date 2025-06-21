@@ -56,7 +56,7 @@
   <br />
   <p align="center">
     <img src="https://github.com/user-attachments/assets/59a6385d-a144-4249-9fec-0e1a62f4536b" alt="회원가입" height="400">
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     <img src="https://github.com/user-attachments/assets/f323d990-da98-4b09-a75d-2fc62c2eb207" alt="로그인" height="400">
   </p>
   
@@ -94,7 +94,6 @@
   <p align="center">
     <img src="https://github.com/user-attachments/assets/0e947a98-1c8f-4b1c-aa46-deb70337bc02" alt="자기평가" height="400">
 
-
   </p>
   
   - 사용자는 매칭 전에 자기 평가를 1회 이상 실시해야한다
@@ -111,7 +110,13 @@
   </blockquote>
   <br />
   <p align="center">
-    <img src="https://github.com/user-attachments/assets/6287d065-6686-45a5-9573-dc6bb5565a34" alt="매칭" height="400">
+    <img src="" alt="매칭중" height="400">
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <img src="" alt="성공" height="400">
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <img src="" alt="실패1" height="400">
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <img src="" alt="실패2" height="400">
 
   </p>
   
@@ -132,7 +137,7 @@
   </blockquote>
   <br />
   <p align="center">
-    <img src="https://github.com/user-attachments/assets/6287d065-6686-45a5-9573-dc6bb5565a34" alt="질문지" height="400">
+    <img src="" alt="질문지" height="400">
 
   </p>
   
@@ -151,7 +156,7 @@
   </blockquote>
   <br />
   <p align="center">
-    <img src="https://github.com/user-attachments/assets/6287d065-6686-45a5-9573-dc6bb5565a34" alt="채팅팅" height="400">
+    <img src="" alt="채팅" height="400">
 
   </p>
   
@@ -172,7 +177,7 @@
   </blockquote>
   <br />
   <p align="center">
-    <img src="https://github.com/user-attachments/assets/6287d065-6686-45a5-9573-dc6bb5565a34" alt="칭찬일기-칭찬도장" height="400">
+    <img src="https://github.com/user-attachments/assets/7140457b-1327-4c5e-be42-696bde7ad40c" alt="칭찬일기-칭찬도장" height="400">
 
   </p>
   
