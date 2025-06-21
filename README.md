@@ -1,54 +1,53 @@
-# React + TypeScript + Vite
+# 👫 만남 배달부
+<img src="https://github.com/user-attachments/assets/80490f92-a552-46b0-8faa-d82b32612425" alt="만남배달부" height="400">
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## 🧭 개발 배경
+현대의 20-30 청년 세대는 사회의 급격한 변화 속에서 관계 단절과 정서적 고립을 겪고 있습니다. SNS와 메신저 중심의 소통은 깊이 있는 관계 형성을 어렵게 하고, 반복되는 부정적 대인 경험은 자기효능감 저하와 정신 건강 악화로 이어질 수 있습니다.
+특히 통계청(2021)과 청소년정책연구원의 연구(2022)에 따르면, 좌절된 대인관계 욕구는 청년 자살률 증가의 주요 원인 중 하나로 지목되고 있습니다.
+이에 저희는 단순한 만남을 넘어 심리적 안정과 신뢰를 기반으로 한 친구 매칭 플랫폼 **만남 배달부**를 기획했습니다. 사용자의 심리 상태, 취미, 성격, 거리 등을 반영한 협업 필터링 & 콘텐츠 필티렁 매칭, 비대면 설문과 채팅 후 대면 만남(단계적 만남), 칭찬 일기, 만남 발자국 등의 기능을 통해 진정성 있는 관계 형성과 자기 효능감 향상을 유도하고자 합니다.
 
-Currently, two official plugins are available:
+## 📖 프로젝트 소개
+**만남 배달부**는 관계가 단절되고 정서적 고립을 겪는 청년들이 단계적 만남을 통해서 자기 효능감을 향상시킬 수 있도록 돕는 친구 매칭 플랫폼입니다. 
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+자기 평가
+- 자기 효능감, 대인관계 능력, 우울감 테스트
+- 테스트를 통해서 현재 자신의 심리 상태를 알 수 있음
+- 평가 점수는 이후 매칭 시스템에 활용됨
 
-## Expanding the ESLint configuration
+정밀한 맞춤 친구 매칭 시스템
+- 사용자의 정보(취미, 위치, 자기 평가 점수, 후기(평점))의 정보를 수집
+- 수집된 정보를 협업 필터링과 콘텐츠 필터링을 둘 다 이용해서 맞춤 친구를 매칭 해줌
+- 자기 평가 점수를 보고 현재 정서 상태에 따라 매칭 점수에 반영 
+  ex)우울감이 둘 다 높은 사람은 매칭에서 최대한 안 잡히도록
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+단계적 만남
+- 친구와 매칭이 되었다면 단계적 만남을 진행
+- 비대면 질문지는 친구와 동일한 질문에 답하여 가치관 확인 및 신뢰 쌓기
+- 채팅을 통해 서로 간 궁금증 해소 및 친밀감 형성
+- 이후 만남 초대장을 통해 대면 만남을 진행
+- 각 단계마다 중단 할 수 있고 중단하거나 끝나게 되면 후기를 작성하며 후기는 다음 매칭에 반영
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+챗봇
+- 채팅방에서 어색한 둘의 사이를 좁히기 위해 챗봇 기능을 제공
+- 대화 주제나, 만남 장소를 정해주는 등의 역할을 수행
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+개인 비서 챗봇
+- 상대방은 볼 수 없는 qna 기능
+- 같이 밥 먹자고 하고 싶은데 어떻게 해?와 같은 질문을 할 수 있음
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+칭찬 일기 & 칭찬 도장
+- 사용자가 자신의 칭찬할 점, 장점 등을 매일 작성하는 시스템
+- 자신에 대한 긍정적인 이야기를 적을 수 있도록 유도하여 자기 효능감을 향상시킴
+- 칭찬 도장은 자신의 하루를 요약할 수 이미지
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+만남 발자국
+- 자신의 활동 점수
+- 만남 발자국을 통해서 이용자가 이 앱을 계속 사용할 수 있도록 함.
+
+
+## 💻 주요 기능
+
+## 👨🏻‍💻 팀원 소개
+
+## 🛠️ 기술 스택
+
