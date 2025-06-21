@@ -55,11 +55,14 @@
   </blockquote>
   <br />
   <p align="center">
-    <img src="" alt="회원가입" height="400">
-    <img src="" alt="로그인" height="400">
+    <img src="https://github.com/user-attachments/assets/59a6385d-a144-4249-9fec-0e1a62f4536b" alt="회원가입" height="400">
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <img src="https://github.com/user-attachments/assets/f323d990-da98-4b09-a75d-2fc62c2eb207" alt="로그인" height="400">
   </p>
   
-  사용자는 시작 전 구글 또는 네이버에 회원 가입 및 로그인 할 수 있다.
+  - 사용자는 시작 전 구글 또는 네이버에 회원 가입 및 로그인 할 수 있다
+  - 회원가입은 중복 닉네임과 생년월일을 확인한다
+  - 회원가입을 완료하면 이후 로그인 버튼을 통해서 바로 로그인이 가능하다
 </details>
 <br />
 
@@ -71,11 +74,113 @@
   </blockquote>
   <br />
   <p align="center">
-    <img src="" alt="시작화면" height="400">
+    <img src="https://github.com/user-attachments/assets/6287d065-6686-45a5-9573-dc6bb5565a34" alt="메인화면" height="400">
+
   </p>
   
-  사용자가 매칭을 시작하거나, 매칭 정보를 수정할 수 있다
-  하단 NavBar를 통해서 다른 페이지로 넘어 갈 수 있다
+  - 사용자가 매칭을 시작하거나, 매칭 정보를 수정할 수 있다
+  - 매칭 정보 수정에는 취미, 질문지 질문, 매칭 거리, 이성 매칭 허용, 나이 차를 조절할 수 있다
+  - 하단 NavBar를 통해서 다른 페이지로 넘어 갈 수 있다
+</details>
+<br />
+
+<details>
+  <summary><b>자기 평가</b></summary>
+  <br />
+  <blockquote>
+    자기 평가
+  </blockquote>
+  <br />
+  <p align="center">
+    <img src="https://github.com/user-attachments/assets/0e947a98-1c8f-4b1c-aa46-deb70337bc02" alt="자기평가" height="400">
+
+
+  </p>
+  
+  - 사용자는 매칭 전에 자기 평가를 1회 이상 실시해야한다
+  - 자기 평가를 완료하면 자신의 심리 상태를 분석할 수 있다
+  - 자기 평가 결과는 매칭에 반영되어, 심리적으로 불안전한 사람의 매칭을 피하도록 한다.
+</details>
+<br />
+
+<details>
+  <summary><b>매칭</b></summary>
+  <br />
+  <blockquote>
+    매칭
+  </blockquote>
+  <br />
+  <p align="center">
+    <img src="https://github.com/user-attachments/assets/6287d065-6686-45a5-9573-dc6bb5565a34" alt="매칭" height="400">
+
+  </p>
+  
+  - 매칭을 실시하면 자신의 매칭 정보에 따라 적합한 친구를 필터링을 통해서 매칭된다
+  - 취미, 거리, 자기 평가 점수는 콘텐츠 필터링, 후기는 협업 필터링을 사용했다
+  - 1점 만점에 0.75점 이상이면 바로 매칭이 실시되고 만약 실패하면 1~2명의 추천 친구를 보여준다
+  - 심리적으로 불안정한 사람끼리 매칭이 되는 걸 피하기 위해 패널티 점수를 넣어서 매칭을 피한다
+  - 매칭이 성공하면 바로 만남 단계 중 질문지 단계로 간다
+  
+</details>
+<br />
+
+<details>
+  <summary><b>질문지</b></summary>
+  <br />
+  <blockquote>
+    질문지
+  </blockquote>
+  <br />
+  <p align="center">
+    <img src="https://github.com/user-attachments/assets/6287d065-6686-45a5-9573-dc6bb5565a34" alt="질문지" height="400">
+
+  </p>
+  
+  - 질문지 단계는 서로의 가치관을 알아 볼 수 있는 단계이다
+  - 랜덤 질문 3개와 상대방과 자신의 질문 2개가 더해져 총 5개 질문이 주어진다
+  - 답변 등록 전에는 상대방의 답변을 볼 수 없다
+  - 5개의 질문에 사용자가 모두 답변을 마치면 채팅방 입장이 가능하다
+</details>
+<br />
+
+<details>
+  <summary><b>채팅&챗봇&AI비서</b></summary>
+  <br />
+  <blockquote>
+    채팅&챗봇&AI비서
+  </blockquote>
+  <br />
+  <p align="center">
+    <img src="https://github.com/user-attachments/assets/6287d065-6686-45a5-9573-dc6bb5565a34" alt="채팅팅" height="400">
+
+  </p>
+  
+  - 채팅방에 입장 순간부터 24시간 카운트 다운이 시작된다
+  - 24시간 안에 대면 초대장을 보내 약속을 정하지 않으면 더 이상 대화를 이어갈 수 없다
+  - 대면 초대장은 상대방이 마음에 들면 보낼 수 있고 수락하게 되면 만남 일정을 정할 수 있다
+  - 채팅방에는 대화가 어색하거나 끊기지 않도록 챗봇과 AI비서가 있다
+  - 챗봇은 대화 주제 선정과 같이 어색한 둘의 사이를 좁히는 기능을 한다
+  - AI비서는 상대방이 볼 수 없는 qna 기능이다
+</details>
+<br />
+
+<details>
+  <summary><b>칭찬일기&칭찬도장</b></summary>
+  <br />
+  <blockquote>
+    칭찬일기&칭찬도장
+  </blockquote>
+  <br />
+  <p align="center">
+    <img src="https://github.com/user-attachments/assets/6287d065-6686-45a5-9573-dc6bb5565a34" alt="칭찬일기-칭찬도장" height="400">
+
+  </p>
+  
+  - 사용자의 자기 효능감을 높이긴 위한 시스템이다
+  - 매일 칭찬 일기를 쓸 수 있다
+  - 이전 일기는 만남 일지에 해당 날짜의 스탬프를 누르면 확인 가능하다
+  - 수정은 당일만 되며, 그 이후에는 삭제만 가능하다
+  - 만남 일지 아래에는 상대방과의 만남 일정을 확인 가능하다
 </details>
 <br />
 
