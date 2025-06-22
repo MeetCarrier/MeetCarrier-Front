@@ -156,15 +156,24 @@
   </blockquote>
   <br />
   <p align="center">
-    <img src="" alt="채팅" height="400">
+    <img src="https://github.com/user-attachments/assets/42d76a97-11b9-4fd2-859c-28277463e8d1" alt="채팅" height="400">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <img src="https://github.com/user-attachments/assets/118b6294-ed7b-4807-a1a3-00c42345459b" alt="챗봇" height="400">
+    <br />
+    <br />
+    <img src="https://github.com/user-attachments/assets/c3c3b072-797b-4d60-9421-4bb43f65d035" alt="AI 비서" height="400">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <img src="https://github.com/user-attachments/assets/fe004966-d58e-475d-895c-2e7aaf31308d" alt="채팅" height="400">
 
   </p>
-  
+
+  - 영상은 채팅, 챗봇, AI 비서, 채팅 순
   - 채팅방에 입장 순간부터 24시간 카운트 다운이 시작된다
   - 24시간 안에 대면 초대장을 보내 약속을 정하지 않으면 더 이상 대화를 이어갈 수 없다
   - 대면 초대장은 상대방이 마음에 들면 보낼 수 있고 수락하게 되면 만남 일정을 정할 수 있다
   - 채팅방에는 대화가 어색하거나 끊기지 않도록 챗봇과 AI비서가 있다
   - 챗봇은 대화 주제 선정과 같이 어색한 둘의 사이를 좁히는 기능을 한다
+  - 챗봇은 기존 대화 내용을 보고 답변을 해준다
   - AI비서는 상대방이 볼 수 없는 qna 기능이다
 </details>
 <br />
