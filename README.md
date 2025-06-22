@@ -45,7 +45,7 @@
 - 만남 발자국을 통해서 이용자가 이 앱을 계속 사용할 수 있도록 함.
 
 
-## 💻 주요 기능
+## 💻 주요 기능 (영상)
 
 <details>
   <summary><b>회원가입 및 로그인</b></summary>
@@ -135,7 +135,9 @@
   </blockquote>
   <br />
   <p align="center">
-    <img src="" alt="질문지" height="400">
+    <img src="https://github.com/user-attachments/assets/4149edd1-6d62-4438-b9da-d69ed1046a3e" alt="질문지1" height="400">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <img src="https://github.com/user-attachments/assets/05397dd9-f02e-4f5c-948b-68a2ee419e74" alt="질문지2" height="400">
 
   </p>
   
