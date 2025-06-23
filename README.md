@@ -22,7 +22,7 @@
 
 단계적 만남
 - 친구와 매칭이 되었다면 단계적 만남을 진행
-- 비대면 질문지는 친구와 동일한 질문에 답하여 가치관 확인 및 신뢰 쌓기
+- 비대면 설문지는 친구와 동일한 질문에 답하여 가치관 확인 및 신뢰 쌓기
 - 채팅을 통해 서로 간 궁금증 해소 및 친밀감 형성
 - 이후 만남 초대장을 통해 대면 만남을 진행
 - 각 단계마다 중단 할 수 있고 중단하거나 끝나게 되면 후기를 작성하며 후기는 다음 매칭에 반영
@@ -129,20 +129,20 @@
 <br />
 
 <details>
-  <summary><b>질문지</b></summary>
+  <summary><b>설설문지</b></summary>
   <br />
   <blockquote>
-    질문지
+    설문지
   </blockquote>
   <br />
   <p align="center">
-    <img src="https://github.com/user-attachments/assets/4149edd1-6d62-4438-b9da-d69ed1046a3e" alt="질문지1" height="400">
+    <img src="https://github.com/user-attachments/assets/4149edd1-6d62-4438-b9da-d69ed1046a3e" alt="설문지1" height="400">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    <img src="https://github.com/user-attachments/assets/05397dd9-f02e-4f5c-948b-68a2ee419e74" alt="질문지2" height="400">
+    <img src="https://github.com/user-attachments/assets/05397dd9-f02e-4f5c-948b-68a2ee419e74" alt="설문지2" height="400">
 
   </p>
   
-  - 질문지 단계는 서로의 가치관을 알아 볼 수 있는 단계이다.
+  - 설문지 단계는 서로의 가치관을 알아 볼 수 있는 단계이다.
   - 랜덤 질문 3개와 상대방과 자신의 질문 2개가 더해져 총 5개 질문이 주어진다.
   - 답변 등록 전에는 상대방의 답변을 볼 수 없다.
   - 5개의 질문에 사용자가 모두 답변을 마치면 채팅방 입장이 가능하다.
@@ -201,7 +201,7 @@
 
 ## 👨🏻‍💻 팀원 소개
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/6d04eea5-cfbd-4632-b998-4b54384fc572" alt="팀원소개" height="250">
+  <img src="https://github.com/user-attachments/assets/7a85b296-e1e7-4522-b03e-468ca2237694" alt="팀원소개" height="250">
 </p>
 </br>
 
