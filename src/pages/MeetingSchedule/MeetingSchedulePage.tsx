@@ -9,7 +9,7 @@ import back_arrow from "../../assets/img/icons/HobbyIcon/back_arrow.svg";
 function MeetingSchedulePage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { matchId, isModify, meetingId } = location.state;
+  const { matchId, isModify, meetingId, isConfirm } = location.state || {};
 
   const [date, setDate] = useState("");
   const [locationText, setLocationText] = useState("");
@@ -37,7 +37,7 @@ function MeetingSchedulePage() {
   // 기존 일정 조회
   useEffect(() => {
     const fetchMeetingInfo = async () => {
-      if (!isModify || !matchId) return;
+      if ((!isModify && !isConfirm) || !matchId) return;
 
       try {
         console.log("[MeetingSchedulePage] 만남 일정 조회 요청:", {
@@ -66,7 +66,7 @@ function MeetingSchedulePage() {
     };
 
     fetchMeetingInfo();
-  }, [isModify, matchId, navigate]);
+  }, [isModify, isConfirm, matchId, navigate]);
 
   const handleSubmit = async () => {
     if (!isFormValid) return;
@@ -131,6 +131,38 @@ function MeetingSchedulePage() {
     }
   };
 
+  // 확인 모드에서 승인하기 버튼 클릭 시
+  const handleApprove = async () => {
+    try {
+      await axios.patch(
+        `https://www.mannamdeliveries.link/api/meetings/${meetingId}/accept`,
+        {},
+        { withCredentials: true }
+      );
+      toast.success("일정이 승인되었습니다.");
+      navigate(-1);
+    } catch (error) {
+      toast.error("승인 처리 중 오류가 발생했습니다.");
+      console.error("[MeetingSchedulePage] 승인 실패:", error);
+    }
+  };
+
+  // 확인 모드에서 수정 요청 클릭 시
+  const handleRequestEdit = async () => {
+    try {
+      await axios.patch(
+        `https://www.mannamdeliveries.link/api/meetings/${meetingId}/reject`,
+        {},
+        { withCredentials: true }
+      );
+      toast.success("수정 요청이 전달되었습니다.");
+      navigate(-1);
+    } catch (error) {
+      toast.error("수정 요청 처리 중 오류가 발생했습니다.");
+      console.error("[MeetingSchedulePage] 수정 요청 실패:", error);
+    }
+  };
+
   return (
     <>
       <NavBar />
@@ -143,7 +175,11 @@ function MeetingSchedulePage() {
             onClick={() => navigate(-1)}
           />
           <p className="text-[20px] font-MuseumClassic_L italic">
-            {isModify ? "만남 일정 수정" : "만남 일정 등록"}
+            {isConfirm
+              ? "만남 일정 확인"
+              : isModify
+              ? "만남 일정 수정"
+              : "만남 일정 등록"}
           </p>
         </div>
 
@@ -168,6 +204,8 @@ function MeetingSchedulePage() {
                     ? "text-gray-800 font-semibold"
                     : "text-gray-400 font-normal"
                 }`}
+                readOnly={!!isConfirm}
+                disabled={!!isConfirm}
               />
               <p className="text-sm text-gray-500 mt-1">
                 * 한 달 이내의 날짜만 선택 가능합니다.
@@ -192,6 +230,8 @@ function MeetingSchedulePage() {
                     ? "text-gray-800 font-semibold"
                     : "text-gray-400 font-normal italic"
                 }`}
+                readOnly={!!isConfirm}
+                disabled={!!isConfirm}
               />
             </div>
 
@@ -213,20 +253,40 @@ function MeetingSchedulePage() {
                     ? "text-gray-800 font-semibold"
                     : "text-gray-400 font-normal italic"
                 }`}
+                readOnly={!!isConfirm}
+                disabled={!!isConfirm}
               />
             </div>
 
-            <button
-              onClick={handleSubmit}
-              disabled={!isFormValid}
-              className={`w-full font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ${
-                isFormValid
-                  ? "bg-[#D45A4B] hover:bg-[#bf4a3c] text-white"
-                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
-              }`}
-            >
-              {isModify ? "수정하기" : "등록하기"}
-            </button>
+            {/* 버튼 영역 */}
+            {isConfirm ? (
+              <div className="flex gap-4">
+                <button
+                  onClick={handleRequestEdit}
+                  className="w-1/2 font-bold py-2 px-4 rounded bg-gray-200 text-gray-700 hover:bg-gray-300"
+                >
+                  수정 요청
+                </button>
+                <button
+                  onClick={handleApprove}
+                  className="w-1/2 font-bold py-2 px-4 rounded bg-[#D45A4B] text-white hover:bg-[#bf4a3c]"
+                >
+                  승인하기
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={handleSubmit}
+                disabled={!isFormValid}
+                className={`w-full font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ${
+                  isFormValid
+                    ? "bg-[#D45A4B] hover:bg-[#bf4a3c] text-white"
+                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                }`}
+              >
+                {isModify ? "수정하기" : "등록하기"}
+              </button>
+            )}
           </div>
         </div>
       </div>

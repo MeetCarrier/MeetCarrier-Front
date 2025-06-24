@@ -4,11 +4,13 @@ import alarmCalIcon from "../../../assets/img/icons/ChatIcon/alarm_cal.svg";
 import alarmLetterIcon from "../../../assets/img/icons/ChatIcon/alarm_letter.svg";
 import MeetingInfoModal from "../../../components/MeetingInfoModal";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export type NotificationType =
   | "NO_INVITATION"
   | "PENDING"
   | "NEED_SCHEDULE"
+  | "PENDING_SCHEDULE"
   | "SCHEDULED";
 
 interface ChatNotificationBarProps {
@@ -24,6 +26,9 @@ interface ChatNotificationBarProps {
   matchId?: number;
   myId?: number;
   roomId?: number;
+  meetingId?: number;
+  isMeetingSender?: boolean;
+  updateCount?: number;
 }
 
 const ChatNotificationBar: FC<ChatNotificationBarProps> = ({
@@ -39,8 +44,12 @@ const ChatNotificationBar: FC<ChatNotificationBarProps> = ({
   matchId,
   myId,
   roomId,
+  meetingId,
+  isMeetingSender,
+  updateCount,
 }) => {
   const [showMeetingInfoModal, setShowMeetingInfoModal] = useState(false);
+  const navigate = useNavigate();
 
   const getNotificationMessage = () => {
     switch (type) {
@@ -59,14 +68,24 @@ const ChatNotificationBar: FC<ChatNotificationBarProps> = ({
           return `${month}월 ${day}일까지 만남 일정을 등록해주세요!!`;
         }
         return `만남 일정을 등록해주세요!!`;
-      case "SCHEDULED":
-        return `만남 일정: ${
+      case "PENDING_SCHEDULE":
+        return isMeetingSender
+          ? "상대방이 만남 일정을 검토중입니다"
+          : "만남 일정을 확인해주세요!";
+      case "SCHEDULED": {
+        const scheduleText = `만남 일정: ${
           meetingDate?.toLocaleDateString("ko-KR", {
             month: "long",
             day: "numeric",
             weekday: "long",
           }) ?? ""
-        } (수정 가능)`;
+        }`;
+        const suffix =
+          updateCount !== undefined && updateCount > 0
+            ? "(수정 가능)"
+            : "(수정 불가)";
+        return `${scheduleText} ${suffix}`;
+      }
       default:
         return "";
     }
@@ -81,6 +100,8 @@ const ChatNotificationBar: FC<ChatNotificationBarProps> = ({
       case "NEED_SCHEDULE":
       case "SCHEDULED":
         return alarmCalIcon;
+      case "PENDING_SCHEDULE":
+        return alarmCalIcon;
       default:
         return alarmClockIcon;
     }
@@ -90,7 +111,19 @@ const ChatNotificationBar: FC<ChatNotificationBarProps> = ({
     if (type === "NEED_SCHEDULE" && onScheduleMeeting) {
       onScheduleMeeting();
     } else if (type === "SCHEDULED") {
-      setShowMeetingInfoModal(true);
+      if (updateCount !== undefined && updateCount > 0) {
+        setShowMeetingInfoModal(true);
+      }
+    } else if (type === "PENDING_SCHEDULE") {
+      if (!isMeetingSender) {
+        navigate("/meeting-schedule", {
+          state: {
+            matchId,
+            meetingId,
+            isConfirm: true,
+          },
+        });
+      }
     }
   };
 
@@ -106,7 +139,11 @@ const ChatNotificationBar: FC<ChatNotificationBarProps> = ({
       <div className="absolute top-[100px] px-2 mx-auto w-full z-10 text-[#333] font-GanwonEduAll_Light text-l">
         <div
           className={`flex flex-col py-3 bg-[#D9CDBF] rounded-lg shadow-md ${
-            type === "NEED_SCHEDULE" || type === "SCHEDULED"
+            type === "NEED_SCHEDULE" ||
+            (type === "SCHEDULED" &&
+              updateCount !== undefined &&
+              updateCount > 0) ||
+            (type === "PENDING_SCHEDULE" && !isMeetingSender)
               ? "cursor-pointer hover:bg-[#d3c5b3]"
               : ""
           }`}
@@ -121,7 +158,11 @@ const ChatNotificationBar: FC<ChatNotificationBarProps> = ({
               />
               <p
                 className={`font-semibold flex-grow whitespace-pre-line ${
-                  type === "NEED_SCHEDULE" || type === "SCHEDULED"
+                  type === "NEED_SCHEDULE" ||
+                  (type === "SCHEDULED" &&
+                    updateCount !== undefined &&
+                    updateCount > 0) ||
+                  (type === "PENDING_SCHEDULE" && !isMeetingSender)
                     ? "underline"
                     : ""
                 }`}
@@ -152,6 +193,7 @@ const ChatNotificationBar: FC<ChatNotificationBarProps> = ({
         roomId={roomId}
         senderName={senderName}
         recipientName={recipientName}
+        updateCount={updateCount}
       />
     </>
   );

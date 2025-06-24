@@ -11,6 +11,7 @@ interface MeetingInfoModalProps {
   roomId?: number;
   senderName?: string;
   recipientName?: string;
+  updateCount?: number;
 }
 
 const MeetingInfoModal: FC<MeetingInfoModalProps> = ({
@@ -22,6 +23,7 @@ const MeetingInfoModal: FC<MeetingInfoModalProps> = ({
   roomId,
   senderName,
   recipientName,
+  updateCount,
 }) => {
   const navigate = useNavigate();
 
@@ -44,8 +46,11 @@ const MeetingInfoModal: FC<MeetingInfoModalProps> = ({
         <p className="text-sm text-gray-700 mb-4">
           만남 일정은 상호 동의 하에 실제로 만날 날을 정한 일정입니다.
           <br />
-          일정 변경은 <strong className="text-[#D45A4B]">최대 3회</strong>만
-          가능합니다.
+          {updateCount !== undefined && (
+            <strong className="text-[#D45A4B]">
+              일정 변경은 현재 {updateCount}회 가능합니다.
+            </strong>
+          )}
         </p>
         <p className="text-sm text-gray-700 mb-6">
           노쇼 등으로 약속을 불이행한 경우 서비스 사용에 제약이 있을 수
