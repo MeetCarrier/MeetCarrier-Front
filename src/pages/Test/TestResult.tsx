@@ -88,7 +88,9 @@ function TestResult() {
           className="absolute top-1/2 -translate-y-1/2 left-6 w-[9px] h-[20px] cursor-pointer"
           onClick={handleBackClick}
         />
-        <p className="text-[20px] font-MuseumClassic_L italic">관심사</p>
+        <p className="text-[20px] font-MuseumClassic_L italic">
+          자기 평가 테스트 결과
+        </p>
       </div>
 
       <div className="flex flex-col w-full h-[calc(100%-200px)] overflow-y-auto z-0">

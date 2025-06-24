@@ -123,7 +123,9 @@ function Test() {
           className="absolute top-1/2 -translate-y-1/2 left-6 w-[9px] h-[20px] cursor-pointer"
           onClick={handleBackClick}
         />
-        <p className="text-[20px] font-MuseumClassic_L italic">관심사</p>
+        <p className="text-[20px] font-MuseumClassic_L italic">
+          자기 평가 테스트
+        </p>
       </div>
 
       <div
