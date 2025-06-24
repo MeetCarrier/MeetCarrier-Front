@@ -199,6 +199,8 @@
 </details>
 <br />
 
+[전체 영상](https://youtu.be/0gw8jzbFsBc?si=N81MNjt1itidaUrr)
+
 ## 👨🏻‍💻 팀원 소개
 <p align="center">
   <img src="https://github.com/user-attachments/assets/7a85b296-e1e7-4522-b03e-468ca2237694" alt="팀원소개" height="250">
