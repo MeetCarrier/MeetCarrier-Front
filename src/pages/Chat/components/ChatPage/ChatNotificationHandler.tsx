@@ -11,6 +11,7 @@ interface ChatNotificationHandlerProps {
   otherNickname: string;
   isSender: boolean;
   roomInfo: any;
+  refreshKey: number;
 }
 
 const ChatNotificationHandler: React.FC<ChatNotificationHandlerProps> = ({
@@ -20,6 +21,7 @@ const ChatNotificationHandler: React.FC<ChatNotificationHandlerProps> = ({
   otherNickname,
   isSender,
   roomInfo,
+  refreshKey,
 }) => {
   const navigate = useNavigate();
   const [notificationType, setNotificationType] =
@@ -32,6 +34,9 @@ const ChatNotificationHandler: React.FC<ChatNotificationHandlerProps> = ({
 
   useEffect(() => {
     const fetchMeetingStatus = async () => {
+      console.log(
+        `[ChatNotificationHandler] 상태 갱신 (refreshKey: ${refreshKey})`
+      );
       if (!matchData?.id || !myId) {
         setNotificationType("NO_INVITATION");
         return;
@@ -46,15 +51,18 @@ const ChatNotificationHandler: React.FC<ChatNotificationHandlerProps> = ({
         setMeetingId(meetingInfo.id);
         setUpdateCount(meetingInfo.updateCount);
         if (meetingInfo.date) setMeetingDate(new Date(meetingInfo.date));
-        // 일정 등록자 구분 (meetingInfo.nickname은 받는 사람)
-        setIsMeetingSender(meetingInfo.nickname !== myNickname);
+        // 일정 등록자 구분 (meetingInfo.senderId는 보낸 사람)
+        console.log(
+          `[isMeetingSender] 비교: meetingInfo.senderId='${meetingInfo.senderId}', myId='${myId}'`
+        );
+        setIsMeetingSender(meetingInfo.senderId === myId);
         // status 분기
         if (meetingInfo.status === "PENDING") {
           setNotificationType("PENDING_SCHEDULE");
         } else if (meetingInfo.status === "ACCEPTED") {
           setNotificationType("SCHEDULED");
         } else if (meetingInfo.status === "REJECTED") {
-          setNotificationType("NEED_SCHEDULE");
+          setNotificationType("REJECTED_SCHEDULE");
         } else {
           setNotificationType("NEED_SCHEDULE");
         }
@@ -64,7 +72,7 @@ const ChatNotificationHandler: React.FC<ChatNotificationHandlerProps> = ({
       }
     };
     fetchMeetingStatus();
-  }, [matchData?.id, myId]);
+  }, [matchData?.id, myId, refreshKey]);
 
   useEffect(() => {
     const updateRemainingTime = () => {

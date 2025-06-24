@@ -54,6 +54,11 @@ function ChatPage() {
     (state: RootState) => state.user
   ) as UserState | null;
   const myId = user?.userId;
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const triggerRefresh = () => {
+    setRefreshKey((prevKey) => prevKey + 1);
+  };
 
   const [showMeetingInfoModal, setShowMeetingInfoModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -331,6 +336,12 @@ function ChatPage() {
           const newMessage: ChatMessage = JSON.parse(message.body);
           console.log("[파싱된 메시지]", newMessage);
 
+          // 챗봇 메시지인 경우, 알림바 상태 갱신
+          if (newMessage.chatbot) {
+            console.log("챗봇 메시지 수신, 알림바를 갱신합니다.");
+            triggerRefresh();
+          }
+
           setMessages((prev) => [...prev, newMessage]);
 
           // 새 메시지가 추가된 후 스크롤을 최신 메시지로 이동
@@ -607,6 +618,7 @@ function ChatPage() {
           otherNickname={otherNickname}
           isSender={user?.userId === matchData?.user1Id}
           roomInfo={roomInfo}
+          refreshKey={refreshKey}
         />
       )}
 

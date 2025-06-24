@@ -11,7 +11,8 @@ export type NotificationType =
   | "PENDING"
   | "NEED_SCHEDULE"
   | "PENDING_SCHEDULE"
-  | "SCHEDULED";
+  | "SCHEDULED"
+  | "REJECTED_SCHEDULE";
 
 interface ChatNotificationBarProps {
   type: NotificationType;
@@ -86,6 +87,10 @@ const ChatNotificationBar: FC<ChatNotificationBarProps> = ({
             : "(수정 불가)";
         return `${scheduleText} ${suffix}`;
       }
+      case "REJECTED_SCHEDULE":
+        return isMeetingSender
+          ? "상대방이 일정을 거절했습니다. 수정해주세요."
+          : "일정을 거절했습니다.";
       default:
         return "";
     }
@@ -101,6 +106,8 @@ const ChatNotificationBar: FC<ChatNotificationBarProps> = ({
       case "SCHEDULED":
         return alarmCalIcon;
       case "PENDING_SCHEDULE":
+        return alarmCalIcon;
+      case "REJECTED_SCHEDULE":
         return alarmCalIcon;
       default:
         return alarmClockIcon;
@@ -124,6 +131,10 @@ const ChatNotificationBar: FC<ChatNotificationBarProps> = ({
           },
         });
       }
+    } else if (type === "REJECTED_SCHEDULE") {
+      if (isMeetingSender && onModifySchedule) {
+        onModifySchedule();
+      }
     }
   };
 
@@ -143,7 +154,8 @@ const ChatNotificationBar: FC<ChatNotificationBarProps> = ({
             (type === "SCHEDULED" &&
               updateCount !== undefined &&
               updateCount > 0) ||
-            (type === "PENDING_SCHEDULE" && !isMeetingSender)
+            (type === "PENDING_SCHEDULE" && !isMeetingSender) ||
+            (type === "REJECTED_SCHEDULE" && isMeetingSender)
               ? "cursor-pointer hover:bg-[#d3c5b3]"
               : ""
           }`}
@@ -162,7 +174,8 @@ const ChatNotificationBar: FC<ChatNotificationBarProps> = ({
                   (type === "SCHEDULED" &&
                     updateCount !== undefined &&
                     updateCount > 0) ||
-                  (type === "PENDING_SCHEDULE" && !isMeetingSender)
+                  (type === "PENDING_SCHEDULE" && !isMeetingSender) ||
+                  (type === "REJECTED_SCHEDULE" && isMeetingSender)
                     ? "underline"
                     : ""
                 }`}
