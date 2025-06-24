@@ -129,7 +129,7 @@
 <br />
 
 <details>
-  <summary><b>설설문지</b></summary>
+  <summary><b>설문지</b></summary>
   <br />
   <blockquote>
     설문지
